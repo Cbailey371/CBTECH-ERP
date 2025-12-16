@@ -21,6 +21,10 @@ const Product = sequelize.define('Product', {
     allowNull: false,
     defaultValue: 'product'
   },
+  name: {
+    type: DataTypes.STRING(200),
+    allowNull: true
+  },
   code: {
     type: DataTypes.STRING(50),
     allowNull: true
@@ -59,6 +63,11 @@ const Product = sequelize.define('Product', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
   hooks: {
+    beforeValidate: (product) => {
+      if (!product.name && product.description) {
+        product.name = product.description.substring(0, 200);
+      }
+    },
     beforeSave: (product) => {
       // Calcular precio automáticamente: Costo / (1 - Margen)
       // Si margen es 1 (100%) o más, evitar división por cero o negativo absurdo, aunque validación debería prevenirlo.
