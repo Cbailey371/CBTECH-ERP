@@ -42,8 +42,8 @@ export default function LoginPage() {
                 <ThemeToggle />
             </div>
 
-            <div className="w-full max-w-md p-8 relative z-10">
-                <div className="bg-card/50 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-2xl animate-fade-in text-foreground">
+            <div className="w-full max-w-md p-4 md:p-8 relative z-10">
+                <div className="bg-card/50 backdrop-blur-xl border border-border rounded-2xl p-6 md:p-8 shadow-2xl animate-fade-in text-foreground">
                     <div className="text-center mb-8">
                         <img src={logo} alt="CBTECH Logo" className="mx-auto h-24 mb-4 object-contain" />
                         <p className="text-muted-foreground">Ingresa a tu cuenta para continuar</p>

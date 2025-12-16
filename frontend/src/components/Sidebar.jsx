@@ -57,19 +57,32 @@ export default function Sidebar() {
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
+
+  const handleLinkClick = () => {
+    setIsOpen(false);
+  };
+
   return (
     <>
       {/* Mobile Menu Button */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-card rounded-lg text-primary border border-border"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-card rounded-lg text-primary border border-border shadow-sm"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X /> : <Menu />}
       </button>
 
+      {/* Mobile Overlay Backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <div className={`
-                fixed top-0 left-0 h-full w-64 bg-card border-r border-border transition-transform duration-300 z-40 flex flex-col
+                fixed top-0 left-0 h-full w-64 bg-card border-r border-border transition-transform duration-300 z-50 flex flex-col
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
                 md:translate-x-0
             `}>
@@ -105,6 +118,7 @@ export default function Sidebar() {
                       <Link
                         key={subIndex}
                         to={sub.path}
+                        onClick={handleLinkClick}
                         className={`
                                                     flex items-center gap-3 px-4 py-2 text-sm rounded-lg transition-colors
                                                     ${isActive(sub.path)
@@ -121,6 +135,7 @@ export default function Sidebar() {
               ) : (
                 <Link
                   to={item.path}
+                  onClick={handleLinkClick}
                   className={`
                                         flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium
                                         ${isActive(item.path)
@@ -151,4 +166,5 @@ export default function Sidebar() {
       </div>
     </>
   );
+
 }
