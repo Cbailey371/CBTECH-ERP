@@ -6,7 +6,7 @@ module.exports = {
     return queryInterface.sequelize.transaction(async (transaction) => {
       // PostgreSQL specific command to add value to enum
       await queryInterface.sequelize.query(
-        "ALTER TYPE \"enum_purchase_orders_status\" ADD VALUE 'finalized';",
+        "ALTER TYPE \"enum_purchase_orders_status\" ADD VALUE IF NOT EXISTS 'finalized';",
         { transaction }
       );
     });
