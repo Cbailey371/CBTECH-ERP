@@ -25,7 +25,7 @@ module.exports = {
         allowNull: true,
         comment: 'Nombre comercial'
       },
-      
+
       // Identificación Fiscal
       tax_id: {
         type: Sequelize.STRING(50),
@@ -44,7 +44,7 @@ module.exports = {
         allowNull: true,
         comment: 'Dígito de verificación'
       },
-      
+
       // Información de Contacto
       email: {
         type: Sequelize.STRING(255),
@@ -69,7 +69,7 @@ module.exports = {
         allowNull: true,
         comment: 'Sitio web'
       },
-      
+
       // Dirección
       address_line1: {
         type: Sequelize.STRING(255),
@@ -102,16 +102,16 @@ module.exports = {
         defaultValue: 'Colombia',
         comment: 'País'
       },
-      
+
       // Información Fiscal y Tributaria
       tax_regime: {
-        type: Sequelize.ENUM('COMMON', 'SIMPLIFIED', 'SPECIAL', 'EXEMPT'),
+        type: Sequelize.ENUM('COMMON', 'SIMPLIFIED', 'SPECIAL', 'EXEMPT', 'ORDINARY'),
         allowNull: false,
         defaultValue: 'COMMON',
         comment: 'Régimen tributario'
       },
       taxpayer_type: {
-        type: Sequelize.ENUM('VAT_RESPONSIBLE', 'LARGE_TAXPAYER', 'SELF_RETAINER', 'SIMPLIFIED_REGIME', 'NON_RESPONSIBLE'),
+        type: Sequelize.ENUM('VAT_RESPONSIBLE', 'LARGE_TAXPAYER', 'SELF_RETAINER', 'SIMPLIFIED_REGIME', 'NON_RESPONSIBLE', 'JURIDICA', 'NATURAL'),
         allowNull: false,
         defaultValue: 'VAT_RESPONSIBLE',
         comment: 'Tipo de contribuyente'
@@ -126,7 +126,7 @@ module.exports = {
         allowNull: true,
         comment: 'Código CIIU'
       },
-      
+
       // Branding y Visual
       logo_url: {
         type: Sequelize.STRING(500),
@@ -145,7 +145,7 @@ module.exports = {
         defaultValue: '#64748B',
         comment: 'Color secundario corporativo (hex)'
       },
-      
+
       // Configuración Operativa
       default_currency: {
         type: Sequelize.STRING(3),
@@ -165,7 +165,7 @@ module.exports = {
         defaultValue: '01-01',
         comment: 'Inicio del año fiscal (MM-DD)'
       },
-      
+
       // Control y Estado
       is_main_company: {
         type: Sequelize.BOOLEAN,
@@ -179,14 +179,14 @@ module.exports = {
         defaultValue: true,
         comment: 'Estado activo/inactivo'
       },
-      
+
       // Metadatos
       notes: {
         type: Sequelize.TEXT,
         allowNull: true,
         comment: 'Notas adicionales'
       },
-      
+
       // Timestamps
       created_at: {
         allowNull: false,
@@ -205,15 +205,15 @@ module.exports = {
       unique: true,
       name: 'companies_tax_id_unique'
     });
-    
+
     await queryInterface.addIndex('companies', ['name'], {
       name: 'companies_name_index'
     });
-    
+
     await queryInterface.addIndex('companies', ['is_main_company'], {
       name: 'companies_is_main_index'
     });
-    
+
     await queryInterface.addIndex('companies', ['is_active'], {
       name: 'companies_is_active_index'
     });
