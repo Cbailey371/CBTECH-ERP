@@ -79,7 +79,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const companyId = req.companyContext.companyId;
-        const { projectId, title, description, status, priority, assignedTo, externalResponsibleName, dueDate, parentId } = req.body;
+        const { projectId, title, description, status, priority, assignedTo, externalResponsibleName, dueDate, parentId, code } = req.body;
 
         const fs = require('fs');
         const path = require('path');
