@@ -3,17 +3,23 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.addColumn('companies', 'code', {
-            type: Sequelize.STRING(50),
-            allowNull: true,
-            after: 'id'
-        });
+        const tableInfo = await queryInterface.describeTable('companies');
 
-        await queryInterface.addColumn('companies', 'dv', {
-            type: Sequelize.STRING(4),
-            allowNull: true,
-            after: 'tax_id'
-        });
+        if (!tableInfo.code) {
+            await queryInterface.addColumn('companies', 'code', {
+                type: Sequelize.STRING(50),
+                allowNull: true,
+                after: 'id'
+            });
+        }
+
+        if (!tableInfo.dv) {
+            await queryInterface.addColumn('companies', 'dv', {
+                type: Sequelize.STRING(4),
+                allowNull: true,
+                after: 'tax_id'
+            });
+        }
     },
 
     async down(queryInterface, Sequelize) {
