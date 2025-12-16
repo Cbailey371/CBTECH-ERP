@@ -18,8 +18,8 @@ const GestionRoles = () => {
   // Función para hacer peticiones a la API
   const apiRequest = async (endpoint, options = {}) => {
     const token = localStorage.getItem('token');
-    const url = `http://localhost:5001/api${endpoint}`;
-    
+    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}${endpoint}`;
+
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -29,7 +29,7 @@ const GestionRoles = () => {
     };
 
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `Error ${response.status}`);
@@ -85,7 +85,7 @@ const GestionRoles = () => {
     try {
       setModalType('edit');
       setError('');
-      
+
       // Cargar el rol completo con permisos
       const response = await apiRequest(`/roles/${role.id}?include_permissions=true`);
       setSelectedRole(response);
@@ -135,7 +135,7 @@ const GestionRoles = () => {
         });
         loadRoles(); // Recargar la lista
       }
-      
+
       setShowModal(false);
       setSelectedRole(null);
     } catch (error) {
@@ -211,7 +211,7 @@ const GestionRoles = () => {
           <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
             <span>⚠️</span>
             {error}
-            <button 
+            <button
               onClick={() => setError('')}
               className="ml-auto text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200"
             >
@@ -260,7 +260,7 @@ const GestionRoles = () => {
                 {searchTerm ? 'No se encontraron roles' : 'No hay roles'}
               </h4>
               <p className="text-gray-500 dark:text-gray-400">
-                {searchTerm 
+                {searchTerm
                   ? 'Intenta con otros términos de búsqueda'
                   : 'Comienza creando tu primer rol'
                 }
@@ -302,11 +302,10 @@ const GestionRoles = () => {
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          role.isActive 
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${role.isActive
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                             : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                        }`}>
+                          }`}>
                           {role.isActive ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>

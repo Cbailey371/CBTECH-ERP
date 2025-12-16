@@ -44,8 +44,8 @@ const UserRolesManagerSimple = () => {
   // Función para hacer peticiones a la API
   const apiRequest = async (endpoint, options = {}) => {
     const token = localStorage.getItem('token');
-    const url = `http://localhost:5001/api${endpoint}`;
-    
+    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}${endpoint}`;
+
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ const UserRolesManagerSimple = () => {
     };
 
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `Error ${response.status}`);
@@ -94,7 +94,7 @@ const UserRolesManagerSimple = () => {
     try {
       const data = await apiRequest(`/user-roles/${userId}/roles`);
       setUserRoles(data.roles || []);
-      
+
       // Calcular roles disponibles
       const userRoleIds = data.roles ? data.roles.map(role => role.id) : [];
       const available = roles.filter(role => !userRoleIds.includes(role.id) && role.is_active);
@@ -126,7 +126,7 @@ const UserRolesManagerSimple = () => {
         method: 'POST',
         body: JSON.stringify({ role_ids: [parseInt(selectedRoleToAdd)] })
       });
-      
+
       await loadUserRoles(selectedUser.id);
       await loadUsers();
       setSelectedRoleToAdd('');
@@ -146,7 +146,7 @@ const UserRolesManagerSimple = () => {
         method: 'DELETE',
         body: JSON.stringify({ role_ids: [roleId] })
       });
-      
+
       await loadUserRoles(selectedUser.id);
       await loadUsers();
     } catch (error) {

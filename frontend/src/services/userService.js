@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5001/api/users';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api') + '/users';
 
 const getAuthHeader = (token) => ({
   headers: { Authorization: `Bearer ${token}` }
@@ -30,7 +30,7 @@ export const deleteUser = async (token, id) => {
 };
 
 export const assignUserToCompany = async (token, userId, companyId, role = 'user') => {
-  const response = await axios.post('http://localhost:5001/api/user-companies', {
+  const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/user-companies`, {
     userId,
     companyId,
     role

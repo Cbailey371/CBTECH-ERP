@@ -1,10 +1,10 @@
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 // Función auxiliar para hacer peticiones HTTP
 const apiRequest = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ const apiRequest = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
@@ -42,7 +42,7 @@ const rolesService = {
     const params = new URLSearchParams();
     if (includePermissions) params.append('include_permissions', 'true');
     if (includeUsers) params.append('include_users', 'true');
-    
+
     return apiRequest(`/roles/${id}${params.toString() ? `?${params.toString()}` : ''}`);
   },
 
@@ -207,26 +207,26 @@ const userRolesService = {
 // Función de utilidad para manejar errores de la API
 export const handleApiError = (error) => {
   console.error('API Error:', error);
-  
+
   if (error.message.includes('401') || error.message.includes('403')) {
     // Token expirado o sin permisos
     localStorage.removeItem('token');
     window.location.href = '/login';
     return 'Sesión expirada. Por favor, inicia sesión nuevamente.';
   }
-  
+
   if (error.message.includes('404')) {
     return 'Recurso no encontrado.';
   }
-  
+
   if (error.message.includes('409')) {
     return 'Conflicto: El recurso ya existe.';
   }
-  
+
   if (error.message.includes('500')) {
     return 'Error interno del servidor. Por favor, intenta más tarde.';
   }
-  
+
   return error.message || 'Error desconocido. Por favor, intenta más tarde.';
 };
 

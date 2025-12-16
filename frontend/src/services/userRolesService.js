@@ -1,10 +1,10 @@
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 // Función auxiliar para hacer peticiones HTTP
 const apiRequest = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -16,7 +16,7 @@ const apiRequest = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);

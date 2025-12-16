@@ -52,8 +52,8 @@ const RolesManagerSimple = () => {
   // Función para hacer peticiones a la API
   const apiRequest = async (endpoint, options = {}) => {
     const token = localStorage.getItem('token');
-    const url = `http://localhost:5001/api${endpoint}`;
-    
+    const url = `${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}${endpoint}`;
+
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ const RolesManagerSimple = () => {
     };
 
     const response = await fetch(url, config);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || `Error ${response.status}`);
@@ -124,12 +124,12 @@ const RolesManagerSimple = () => {
 
       setOpenDialog(false);
       setSelectedRole(null);
-      setFormData({ 
-        name: '', 
-        display_name: '', 
-        description: '', 
-        is_active: true, 
-        permissions: [] 
+      setFormData({
+        name: '',
+        display_name: '',
+        description: '',
+        is_active: true,
+        permissions: []
       });
       loadRoles();
     } catch (error) {
@@ -164,12 +164,12 @@ const RolesManagerSimple = () => {
       });
     } else {
       setSelectedRole(null);
-      setFormData({ 
-        name: '', 
-        display_name: '', 
-        description: '', 
-        is_active: true, 
-        permissions: [] 
+      setFormData({
+        name: '',
+        display_name: '',
+        description: '',
+        is_active: true,
+        permissions: []
       });
     }
     setOpenDialog(true);
@@ -223,9 +223,9 @@ const RolesManagerSimple = () => {
                     <TableCell>{role.display_name || role.name}</TableCell>
                     <TableCell>{role.description || '-'}</TableCell>
                     <TableCell>
-                      <Chip 
-                        label={role.is_active ? 'Activo' : 'Inactivo'} 
-                        color={role.is_active ? 'success' : 'default'} 
+                      <Chip
+                        label={role.is_active ? 'Activo' : 'Inactivo'}
+                        color={role.is_active ? 'success' : 'default'}
                         size="small"
                       />
                     </TableCell>
