@@ -21,7 +21,7 @@ import PurchaseOrdersPage from './pages/purchases/PurchaseOrdersPage';
 import PurchaseOrderForm from './pages/purchases/PurchaseOrderForm';
 import PurchaseOrderDetail from './pages/purchases/PurchaseOrderDetail';
 import ReportsPage from './pages/reports/ReportsPage';
-import MainLayout from './components/layout/MainLayout';
+import MainLayout from './components/Layout/MainLayout';
 
 // Layout para rutas que requieren autenticación
 const ProtectedLayout = () => {
