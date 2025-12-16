@@ -1,0 +1,311 @@
+
+[2025-12-13T02:42:32.056Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:42:32.098Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:42:47.984Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:42:48.018Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:43:14.876Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:43:14.888Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:44:20.194Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[ERROR] column tasks.parent_id does not exist
+Error
+    at Query.run (/Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/dialects/postgres/query.js:50:25)
+    at /Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PostgresQueryInterface.select (/Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/dialects/abstract/query-interface.js:407:12)
+    at async Project.findAll (/Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/model.js:1140:21)
+    at async Project.findOne (/Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/model.js:1240:12)
+    at async /Users/cbailey/Documents/Proyectos/ERP/backend/routes/projects.js:113:25
+
+[2025-12-13T02:44:20.240Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[ERROR] column tasks.parent_id does not exist
+Error
+    at Query.run (/Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/dialects/postgres/query.js:50:25)
+    at /Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/sequelize.js:315:28
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PostgresQueryInterface.select (/Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/dialects/abstract/query-interface.js:407:12)
+    at async Project.findAll (/Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/model.js:1140:21)
+    at async Project.findOne (/Users/cbailey/Documents/Proyectos/ERP/backend/node_modules/sequelize/lib/model.js:1240:12)
+    at async /Users/cbailey/Documents/Proyectos/ERP/backend/routes/projects.js:113:25
+
+[2025-12-13T02:46:07.903Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:46:07.942Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:47:07.654Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:47:30.051Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:48:45.294Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:48:45.317Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:48:56.111Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:48:56.127Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:49:08.821Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:49:08.833Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:49:18.979Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:49:19.003Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:49:33.750Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:49:33.804Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:50:38.728Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:52:53.875Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:52:53.970Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:53:42.498Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:54:18.025Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:54:18.075Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:54:58.441Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:54:58.478Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:54:58.492Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:54:58.500Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:55:08.723Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:55:08.752Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:55:43.392Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:55:43.404Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:57:46.911Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:58:19.648Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:58:19.674Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T02:58:59.166Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:00:36.541Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:00:36.567Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:01:11.469Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:01:11.488Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:01:57.774Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:01:57.795Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:02:10.884Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:02:10.903Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:02:59.649Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:02:59.682Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:03:42.404Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:03:42.428Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:03:42.437Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:05:30.858Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:05:34.186Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:07:48.295Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:07:48.318Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:07:48.326Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:07:48.330Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:08:14.424Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:08:14.444Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:08:31.443Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:08:31.463Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:09:15.378Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:09:15.433Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:09:15.444Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:09:15.475Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:09:38.254Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:09:38.280Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:09:41.644Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:13:56.475Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:13:56.487Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:33:42.428Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:33:42.448Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:33:46.171Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:46:43.178Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:46:43.197Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:50:12.580Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:50:12.590Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:51:22.724Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:51:22.737Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:56:05.549Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:56:05.572Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:56:22.083Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:56:22.093Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:56:42.166Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T03:56:42.187Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:25:19.746Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:25:19.756Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:30:51.529Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:30:51.554Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:45:35.673Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:45:35.686Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:45:49.643Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:45:49.657Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:45:58.896Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:45:58.908Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:50:49.002Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T04:50:49.033Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T07:18:36.802Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T07:18:36.818Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T08:20:19.700Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T08:20:19.715Z] GET /projects/11 - Company: 1
+Exists in DB? true - CompanyID: 1
+[2025-12-13T08:43:28.663Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T08:43:28.680Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T08:47:59.380Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T08:47:59.397Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T08:48:03.285Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T08:48:03.299Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T17:55:34.678Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T17:55:34.728Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T18:02:31.984Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T18:02:32.012Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T18:05:55.265Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T18:05:55.286Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T18:37:51.917Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T18:37:51.935Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T18:38:10.105Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T18:38:10.124Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T19:50:14.495Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T19:50:14.527Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T19:51:25.252Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T19:51:27.232Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-13T19:51:32.330Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-14T22:51:26.853Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-14T22:51:26.883Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-14T22:51:32.419Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:05.050Z]GET / projects / 12 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:05.072Z]GET / projects / 12 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:31.617Z]GET / projects / 12 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:31.639Z]GET / projects / 12 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:44.407Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:44.426Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:49.847Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:52.934Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:56.172Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:56:58.486Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:57:00.851Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:57:03.300Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:57:12.995Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:57:13.002Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:57:23.597Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:57:23.610Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:57:37.706Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 
+[2025-12-15T16:57:37.720Z]GET / projects / 11 - Company: 1 
+Exists in DB ? true - CompanyID: 1 

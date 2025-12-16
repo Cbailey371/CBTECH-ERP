@@ -1,0 +1,124 @@
+
+[2025-12-13T02:50:38.701Z] POST /tasks - Project: 11 - Title: TRESS
+Creating task with data: {"projectId":11,"title":"TRESS","description":"SSSS","status":"pending","priority":"medium","assignedTo":5,"dueDate":"2025-12-13","parentId":null}
+Task created: 3
+[2025-12-13T02:53:42.407Z] POST /tasks - Project: 11 - Title: Retry Debug Task
+Creating task with data: {"projectId":11,"title":"Retry Debug Task","description":"","status":"pending","priority":"medium","assignedTo":null,"dueDate":null,"parentId":null}
+Task created: 4
+[2025-12-13T02:55:43.397Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T02:55:43.408Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T02:57:46.933Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T02:58:19.662Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T02:58:19.671Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T02:58:59.169Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:00:36.554Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:00:36.562Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:01:11.479Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:01:11.490Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:01:57.782Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:01:57.794Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:02:10.889Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:02:10.902Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:02:59.665Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:02:59.681Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:03:42.418Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:03:42.427Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:03:42.437Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:05:30.862Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:05:34.193Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:07:48.305Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:07:48.315Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:07:48.321Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:07:48.326Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:08:14.435Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:08:14.449Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:08:31.466Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:08:31.477Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:09:15.418Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:09:15.446Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:09:15.476Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:09:15.481Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:09:38.272Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:09:38.282Z] GET /tasks - Found: 4 tasks for query: {"projectId":"11"}
+[2025-12-13T03:09:41.641Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:13:56.481Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:13:56.491Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:33:42.436Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:33:42.450Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:33:46.180Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:46:43.184Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:46:43.194Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:50:12.588Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:50:12.597Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:51:22.726Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:51:22.734Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:56:05.556Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:56:05.574Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:56:22.084Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:56:22.092Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:56:42.169Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T03:56:42.183Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:25:19.749Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:25:19.761Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:30:51.536Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:30:51.551Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:45:35.680Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:45:35.687Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:45:49.651Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:45:49.661Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:45:58.901Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:45:58.912Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:50:49.019Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T04:50:49.038Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T07:18:36.819Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T07:18:36.830Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T08:20:19.714Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T08:20:19.719Z] GET /tasks - Found: 3 tasks for query: {"projectId":"11"}
+[2025-12-13T08:43:28.678Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T08:43:28.686Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T08:47:59.389Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T08:47:59.404Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T08:48:03.290Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T08:48:03.300Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T17:55:34.702Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T17:55:34.716Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T18:02:31.999Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T18:02:32.008Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T18:05:55.272Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T18:05:55.289Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T18:37:51.934Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T18:37:51.939Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T18:38:10.111Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T18:38:10.121Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T19:50:14.520Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T19:50:14.540Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T19:51:15.695Z]POST / tasks - Project: 11 - Title: instalacion  
+[ERROR] code is not defined 
+ReferenceError: code is not defined
+    at /Users/cbailey/Documents/Proyectos/ERP/backend/routes/tasks.js:109:24
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) 
+
+[2025-12-13T19:51:25.259Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T19:51:27.235Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-13T19:51:32.342Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-14T22:51:26.865Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-14T22:51:26.879Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-14T22:51:32.421Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:56:05.056Z]GET / tasks - Found: 0 tasks for query: {"projectId":"12"} 
+[2025-12-15T16:56:05.069Z]GET / tasks - Found: 0 tasks for query: {"projectId":"12"} 
+[2025-12-15T16:56:31.626Z]GET / tasks - Found: 0 tasks for query: {"projectId":"12"} 
+[2025-12-15T16:56:31.637Z]GET / tasks - Found: 0 tasks for query: {"projectId":"12"} 
+[2025-12-15T16:56:44.413Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:56:44.419Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:56:49.850Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:56:52.936Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:56:56.174Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:56:58.490Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:57:00.854Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:57:03.302Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:57:12.998Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:57:13.003Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:57:23.604Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:57:23.611Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:57:37.713Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
+[2025-12-15T16:57:37.719Z]GET / tasks - Found: 3 tasks for query: {"projectId":"11"} 
