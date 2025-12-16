@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthProvider';
 import * as companyService from '../services/companyService';
 import { Button } from '../components/ui/Button';
-import { ThemeToggle } from '../components/layout/ThemeToggle';
+import { ThemeToggle } from '../components/Layout/ThemeToggle';
 
 export default function CompanySelectionPage() {
     const [companies, setCompanies] = useState([]);

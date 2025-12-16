@@ -22,7 +22,7 @@ import {
 import { useState } from 'react';
 import { useAuth } from '../context/AuthProvider';
 import logo from '../assets/logo.png';
-import { ThemeToggle } from './layout/ThemeToggle';
+import { ThemeToggle } from './Layout/ThemeToggle';
 
 export default function Sidebar() {
   const location = useLocation();

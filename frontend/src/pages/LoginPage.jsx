@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthProvider';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import logo from '../assets/logo.png';
-import { ThemeToggle } from '../components/layout/ThemeToggle';
+import { ThemeToggle } from '../components/Layout/ThemeToggle';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
