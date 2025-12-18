@@ -260,9 +260,11 @@ export default function QuotationForm() {
         const total = taxable + tax;
 
         setTotals({
-            subtotal: grossItemsTotal, // Now showing Gross before any discount
-            discount: totalDiscount,   // Now showing Sum of ALL discounts
-            taxable,
+            subtotal: grossItemsTotal, // Subtotal Bruto
+            lineDiscounts: totalItemDiscounts, // Descuentos por línea
+            globalDiscount: globalDiscount, // Descuento Global
+            totalSavings: totalDiscount, // Total Ahorro
+            taxable, // Subtotal Neto
             tax,
             total
         });
@@ -583,13 +585,20 @@ export default function QuotationForm() {
 
                     <Card className="bg-card/50 border-border backdrop-blur-sm">
                         <CardContent className="p-6 space-y-3">
-                            <div className="flex justify-between text-muted-foreground">
-                                <span>Subtotal Items:</span>
+                            <div className="flex justify-between text-muted-foreground font-medium">
+                                <span>Subtotal Bruto:</span>
                                 <span>${totals.subtotal.toFixed(2)}</span>
                             </div>
 
+                            {totals.lineDiscounts > 0 && (
+                                <div className="flex justify-between text-sm text-muted-foreground">
+                                    <span>Descuentos por Línea:</span>
+                                    <span>- ${totals.lineDiscounts.toFixed(2)}</span>
+                                </div>
+                            )}
+
                             <div className="flex justify-between items-center text-muted-foreground py-2 border-t border-border/50">
-                                <span className="text-sm">Descuento Global:</span>
+                                <span className="text-sm">Descuento Global Comercial:</span>
                                 <div className="flex gap-2 items-center">
                                     <Input
                                         type="number"
@@ -609,13 +618,24 @@ export default function QuotationForm() {
                                     </select>
                                 </div>
                             </div>
-                            <div className="flex justify-between text-destructive text-sm">
-                                <span>- Descuento Aplicado:</span>
-                                <span>${totals.discount.toFixed(2)}</span>
-                            </div>
+
+                            {/* Mostrar valor real del descuento global si aplica */}
+                            {totals.globalDiscount > 0 && (
+                                <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                                    <span>(Valor Global Aplicado):</span>
+                                    <span>- ${totals.globalDiscount.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            {(totals.totalSavings > 0) && (
+                                <div className="flex justify-between font-bold text-green-600 border-t border-border/50 pt-2 pb-2">
+                                    <span>Total de Ahorro Cliente:</span>
+                                    <span>${totals.totalSavings.toFixed(2)}</span>
+                                </div>
+                            )}
 
                             <div className="flex justify-between text-muted-foreground font-medium pt-2 border-t border-border/50">
-                                <span>Subtotal (Base Imponible):</span>
+                                <span>Subtotal Neto (Base Imponible):</span>
                                 <span>${totals.taxable.toFixed(2)}</span>
                             </div>
 

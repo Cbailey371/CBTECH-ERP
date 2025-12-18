@@ -194,26 +194,58 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
         // Use the calculated Gross Total for display
         doc.setFontSize(10);
         doc.setTextColor(80);
-        doc.text('Subtotal Items:', totalsX, finalY);
+
+        // 1. Subtotal Bruto
+        doc.text('Subtotal Bruto:', totalsX, finalY);
         doc.text(`$${grossItemsTotal.toFixed(2)}`, pageWidth - 15, finalY, { align: 'right' });
 
-        doc.text('Descuento Global:', totalsX, finalY + 6);
-        doc.text(`$${globalDiscountAmt.toFixed(2)}`, pageWidth - 15, finalY + 6, { align: 'right' });
+        let currentY = finalY;
 
-        // Total Applied (Red)
-        doc.setTextColor(220, 38, 38); // Red-600
-        doc.text('Descuento Aplicado:', totalsX, finalY + 12);
-        doc.text(`- $${totalDiscountApplied.toFixed(2)}`, pageWidth - 15, finalY + 12, { align: 'right' });
+        // 2. Descuentos por Línea (Solo si hay)
+        if (totalItemDiscounts > 0) {
+            currentY += 6;
+            doc.text('Descuentos por Línea:', totalsX, currentY);
+            doc.text(`- $${totalItemDiscounts.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+        }
 
-        // Reset Color
-        doc.setTextColor(80);
-        doc.text('Impuestos:', totalsX, finalY + 18);
-        doc.text(`$${(parseFloat(quotation.tax) || 0).toFixed(2)}`, pageWidth - 15, finalY + 18, { align: 'right' });
+        // 3. Descuento Global Comercial (Solo si hay)
+        if (globalDiscountAmt > 0) {
+            currentY += 6;
+            doc.text('Descuento Global Comercial:', totalsX, currentY);
+            doc.text(`- $${globalDiscountAmt.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+        }
 
+        // 4. Total de Ahorro Cliente (Green/Bold)
+        if (totalDiscountApplied > 0) {
+            currentY += 6;
+            doc.setTextColor(22, 163, 74); // Green-600
+            doc.setFont(undefined, 'bold');
+            doc.text('Total de Ahorro Cliente:', totalsX, currentY);
+            doc.text(`$${totalDiscountApplied.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+
+            // Reset styles
+            doc.setTextColor(80);
+            doc.setFont(undefined, 'normal');
+        }
+
+        // 5. Subtotal Neto (Base Imponible)
+        currentY += 6;
+        doc.text('Subtotal Neto (Base Imponible):', totalsX, currentY);
+        const taxable = Math.max(0, netItemsTotal - globalDiscountAmt);
+        // Note: netItemsTotal = Gross - ItemDisc. So Taxable = Gross - ItemDisc - GlobalDisc
+        doc.text(`$${taxable.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+
+        // 6. Impuestos
+        currentY += 6;
+        doc.text(`Impuestos (${quotation.taxRate !== undefined ? quotation.taxRate : 7}%):`, totalsX, currentY);
+        doc.text(`$${(parseFloat(quotation.tax) || 0).toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+
+        // 7. TOTAL A PAGAR
+        currentY += 8;
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.text('Total:', totalsX, finalY + 26);
-        doc.text(`$${(parseFloat(quotation.total) || 0).toFixed(2)}`, pageWidth - 15, finalY + 26, { align: 'right' });
+        doc.text('TOTAL A PAGAR:', totalsX, currentY);
+        doc.text(`$${(parseFloat(quotation.total) || 0).toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
 
         // Notes (Left aligned)
         if (quotation.notes) {
