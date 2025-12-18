@@ -130,6 +130,10 @@ const Quotation = sequelize.define('Quotation', {
           transaction: options.transaction
         });
         quotation.sequence = lastQuotation ? lastQuotation.sequence + 1 : 1;
+
+        // Force update the number to match the sequence (prevent frontend conflicts)
+        const year = new Date().getFullYear();
+        quotation.number = `COT-${year}-${String(quotation.sequence).padStart(4, '0')}`;
       }
     }
   }
