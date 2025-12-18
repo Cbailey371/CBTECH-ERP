@@ -189,6 +189,8 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
         // Total Discount to show (Item Discounts + Global)
         const totalDiscountApplied = totalItemDiscounts + globalDiscountAmt;
 
+        const totalsX = pageWidth - 70;
+
         // Use the calculated Gross Total for display
         doc.setFontSize(10);
         doc.setTextColor(80);
