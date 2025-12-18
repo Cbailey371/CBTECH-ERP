@@ -217,38 +217,51 @@ export default function QuotationForm() {
     };
 
     const calculateTotals = () => {
-        // 1. Calcular totales de línea con descuentos
-        const itemsTotal = formData.items.reduce((sum, item) => {
-            let itemTotal = parseFloat(item.quantity) * parseFloat(item.unitPrice);
-            let itemDiscount = 0;
+        let grossItemsTotal = 0;
+        let totalItemDiscounts = 0;
 
+        // 1. Calcular totales de línea y descuentos de línea
+        formData.items.forEach(item => {
+            const qty = parseFloat(item.quantity) || 0;
+            const price = parseFloat(item.unitPrice) || 0;
+            const itemGross = qty * price;
+
+            let itemDiscount = 0;
             if (item.discountType === 'percentage') {
-                itemDiscount = itemTotal * (parseFloat(item.discountValue) / 100);
+                itemDiscount = itemGross * (parseFloat(item.discountValue || 0) / 100);
             } else {
-                itemDiscount = parseFloat(item.discountValue);
+                itemDiscount = parseFloat(item.discountValue || 0);
             }
 
-            return sum + (itemTotal - itemDiscount);
-        }, 0);
+            grossItemsTotal += itemGross;
+            totalItemDiscounts += itemDiscount;
+        });
+
+        // Net Items Total (Base for Global Discount)
+        const netItemsTotal = grossItemsTotal - totalItemDiscounts;
 
         // 2. Calcular descuento global
         let globalDiscount = 0;
         if (formData.discountType === 'percentage') {
-            globalDiscount = itemsTotal * (parseFloat(formData.discountValue) / 100);
+            globalDiscount = netItemsTotal * (parseFloat(formData.discountValue || 0) / 100);
         } else {
-            globalDiscount = parseFloat(formData.discountValue);
+            globalDiscount = parseFloat(formData.discountValue || 0);
         }
 
-        // 3. Calcular base imponible y totales
-        const subtotal = itemsTotal;
-        const taxable = Math.max(0, subtotal - globalDiscount);
+        // 3. Totales Finales
+        // Total Discount = Item Discounts + Global Discount
+        const totalDiscount = totalItemDiscounts + globalDiscount;
+
+        // Taxable = Gross - Total Discount (or NetItems - Global)
+        const taxable = Math.max(0, netItemsTotal - globalDiscount);
+
         const effectiveTaxRate = formData.taxEnabled ? (parseFloat(formData.taxRate) / 100) : 0;
         const tax = taxable * effectiveTaxRate;
         const total = taxable + tax;
 
         setTotals({
-            subtotal,
-            discount: globalDiscount,
+            subtotal: grossItemsTotal, // Now showing Gross before any discount
+            discount: totalDiscount,   // Now showing Sum of ALL discounts
             taxable,
             tax,
             total
