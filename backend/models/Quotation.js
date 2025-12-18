@@ -25,6 +25,10 @@ const Quotation = sequelize.define('Quotation', {
       key: 'id'
     }
   },
+  sequence: {
+    type: DataTypes.INTEGER,
+    allowNull: true // Allow null initially so beforeCreate can set it
+  },
   number: {
     type: DataTypes.STRING(50),
     allowNull: false
@@ -111,8 +115,24 @@ const Quotation = sequelize.define('Quotation', {
     },
     {
       fields: ['status']
+    },
+    {
+      fields: ['company_id', 'sequence'],
+      unique: true
     }
-  ]
+  ],
+  hooks: {
+    beforeCreate: async (quotation, options) => {
+      if (!quotation.sequence) {
+        const lastQuotation = await quotation.constructor.findOne({
+          where: { companyId: quotation.companyId },
+          order: [['sequence', 'DESC']],
+          transaction: options.transaction
+        });
+        quotation.sequence = lastQuotation ? lastQuotation.sequence + 1 : 1;
+      }
+    }
+  }
 });
 
 module.exports = Quotation;
