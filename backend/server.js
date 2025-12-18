@@ -1,9 +1,24 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path');
 // Cargar variables de entorno robustamente (usando ruta absoluta)
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const envPath = path.join(__dirname, '.env');
+const result = require('dotenv').config({ path: envPath });
+
+if (result.error) {
+  console.error('❌ Error cargando .env desde:', envPath);
+} else {
+  console.log('✅ Archivo .env cargado desde:', envPath);
+}
+
+// Debug de variables críticas (sin mostrar valores reales)
+console.log('🔍 Estado de Variables de Entorno:', {
+  DB_HOST: process.env.DB_HOST,
+  DB_USER: process.env.DB_USER,
+  DB_NAME: process.env.DB_NAME,
+  DB_PASS_EXISTS: !!process.env.DB_PASSWORD, // True si existe, False si no
+  ENV_PATH: envPath
+});
 
 const { testConnection, sequelize } = require('./config/database');
 const authRoutes = require('./routes/auth');
