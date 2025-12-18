@@ -1,7 +1,10 @@
-const express = require('express'); // Force Restart 4
+const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
+const path = require('path');
+// Cargar variables de entorno robustamente (usando ruta absoluta)
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 const { testConnection, sequelize } = require('./config/database');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -21,9 +24,6 @@ const productRoutes = require('./routes/products');
 const projectRoutes = require('./routes/projects');
 const taskRoutes = require('./routes/tasks');
 const { companyContext } = require('./middleware/companyContext');
-
-// Configuración de variables de entorno
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
