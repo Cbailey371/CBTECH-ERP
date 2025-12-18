@@ -296,7 +296,7 @@ export default function QuotationForm() {
 
         const newItems = [...formData.items];
         newItems[index].productId = product.id;
-        newItems[index].description = product.description || product.name || ''; // Adjust according to Product model
+        newItems[index].description = ''; // Leave empty for user additional details
         newItems[index].unitPrice = parseFloat(product.price) || 0;
         newItems[index].quantity = 1;
 
