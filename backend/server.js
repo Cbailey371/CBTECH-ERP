@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 // Cargar variables de entorno robustamente (usando ruta absoluta)
 const envPath = path.join(__dirname, '.env');
 const result = require('dotenv').config({ path: envPath });
