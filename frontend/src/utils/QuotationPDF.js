@@ -211,7 +211,9 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
         // 3. Descuento Global Comercial (Solo si hay)
         if (globalDiscountAmt > 0) {
             currentY += 6;
+            doc.setFontSize(9);
             doc.text('Descuento Global Comercial:', totalsX, currentY);
+            doc.setFontSize(10);
             doc.text(`- $${globalDiscountAmt.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
         }
 
@@ -230,7 +232,7 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
 
         // 5. Subtotal Neto (Base Imponible)
         currentY += 6;
-        doc.text('Subtotal Neto (Base Imponible):', totalsX, currentY);
+        doc.text('Subtotal Neto:', totalsX, currentY);
         const taxable = Math.max(0, netItemsTotal - globalDiscountAmt);
         // Note: netItemsTotal = Gross - ItemDisc. So Taxable = Gross - ItemDisc - GlobalDisc
         doc.text(`$${taxable.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });

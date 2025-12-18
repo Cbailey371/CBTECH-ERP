@@ -635,7 +635,7 @@ export default function QuotationForm() {
                             )}
 
                             <div className="flex justify-between text-muted-foreground font-medium pt-2 border-t border-border/50">
-                                <span>Subtotal Neto (Base Imponible):</span>
+                                <span>Subtotal Neto:</span>
                                 <span>${totals.taxable.toFixed(2)}</span>
                             </div>
 
