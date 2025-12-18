@@ -626,6 +626,12 @@ export default function QuotationForm() {
                                                 className="bg-background border-border text-foreground text-right w-12 h-6 text-xs px-1"
                                                 value={formData.taxRate}
                                                 onChange={(e) => setFormData({ ...formData, taxRate: e.target.value })}
+                                                onBlur={(e) => {
+                                                    const val = parseFloat(e.target.value);
+                                                    if (!isNaN(val)) {
+                                                        setFormData({ ...formData, taxRate: val.toFixed(2) });
+                                                    }
+                                                }}
                                             />
                                             <span className="text-xs">%)</span>
                                         </div>
