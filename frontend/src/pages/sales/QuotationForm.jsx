@@ -171,7 +171,7 @@ export default function QuotationForm() {
                     discountType: q.discountType || 'amount',
                     discountValue: q.discountValue || 0,
                     items: items,
-                    taxRate: q.taxRate !== undefined ? (parseFloat(q.taxRate) * 100) : 7, // Convert 0.07 to 7
+                    taxRate: q.taxRate !== undefined ? parseFloat((parseFloat(q.taxRate) * 100).toFixed(2)) : 7, // Convert 0.07 to 7 and round
                     taxEnabled: q.taxRate !== undefined ? parseFloat(q.taxRate) > 0 : true
                 });
             }
@@ -622,7 +622,7 @@ export default function QuotationForm() {
                                             <Input
                                                 type="number"
                                                 min="0"
-                                                step="0.01"
+                                                step="any"
                                                 className="bg-background border-border text-foreground text-right w-12 h-6 text-xs px-1"
                                                 value={formData.taxRate}
                                                 onChange={(e) => setFormData({ ...formData, taxRate: e.target.value })}
