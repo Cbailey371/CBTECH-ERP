@@ -156,22 +156,62 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
             finalY = 85 + (tableRows.length * 10) + 20;
         }
 
-        const totalsX = pageWidth - 70;
+        // Create breakdown calculation
+        let grossItemsTotal = 0;
+        let totalItemDiscounts = 0;
 
+        if (quotation.items && Array.isArray(quotation.items)) {
+            quotation.items.forEach(item => {
+                const qty = parseFloat(item.quantity) || 0;
+                const price = parseFloat(item.unitPrice) || 0;
+                const itemGross = qty * price;
+                let itemDiscount = 0;
+                if (item.discountType === 'percentage') {
+                    itemDiscount = itemGross * (parseFloat(item.discountValue || 0) / 100);
+                } else {
+                    itemDiscount = parseFloat(item.discountValue || 0);
+                }
+                grossItemsTotal += itemGross;
+                totalItemDiscounts += itemDiscount;
+            });
+        }
+
+        const netItemsTotal = grossItemsTotal - totalItemDiscounts;
+
+        // Calculate Global Discount
+        let globalDiscountAmt = 0;
+        if (quotation.discountType === 'percentage') {
+            globalDiscountAmt = netItemsTotal * (parseFloat(quotation.discountValue || 0) / 100);
+        } else {
+            globalDiscountAmt = parseFloat(quotation.discountValue || 0);
+        }
+
+        // Total Discount to show (Item Discounts + Global)
+        const totalDiscountApplied = totalItemDiscounts + globalDiscountAmt;
+
+        // Use the calculated Gross Total for display
         doc.setFontSize(10);
-        doc.text('Subtotal:', totalsX, finalY);
-        doc.text(`$${(parseFloat(quotation.subtotal) || 0).toFixed(2)}`, pageWidth - 15, finalY, { align: 'right' });
+        doc.setTextColor(80);
+        doc.text('Subtotal Items:', totalsX, finalY);
+        doc.text(`$${grossItemsTotal.toFixed(2)}`, pageWidth - 15, finalY, { align: 'right' });
 
         doc.text('Descuento Global:', totalsX, finalY + 6);
-        doc.text(`- $${(parseFloat(quotation.discount) || 0).toFixed(2)}`, pageWidth - 15, finalY + 6, { align: 'right' });
+        doc.text(`$${globalDiscountAmt.toFixed(2)}`, pageWidth - 15, finalY + 6, { align: 'right' });
 
-        doc.text('Impuestos:', totalsX, finalY + 12);
-        doc.text(`$${(parseFloat(quotation.tax) || 0).toFixed(2)}`, pageWidth - 15, finalY + 12, { align: 'right' });
+        // Total Applied (Red)
+        doc.setTextColor(220, 38, 38); // Red-600
+        doc.text('Descuento Aplicado:', totalsX, finalY + 12);
+        doc.text(`- $${totalDiscountApplied.toFixed(2)}`, pageWidth - 15, finalY + 12, { align: 'right' });
+
+        // Reset Color
+        doc.setTextColor(80);
+        doc.text('Impuestos:', totalsX, finalY + 18);
+        doc.text(`$${(parseFloat(quotation.tax) || 0).toFixed(2)}`, pageWidth - 15, finalY + 18, { align: 'right' });
 
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.text('Total:', totalsX, finalY + 20);
-        doc.text(`$${(parseFloat(quotation.total) || 0).toFixed(2)}`, pageWidth - 15, finalY + 20, { align: 'right' });
+        doc.text('Total:', totalsX, finalY + 26);
+        doc.text(`$${(parseFloat(quotation.total) || 0).toFixed(2)}`, pageWidth - 15, finalY + 26, { align: 'right' });
 
         // Notes (Left aligned)
         if (quotation.notes) {
