@@ -313,9 +313,24 @@ export default function QuotationForm() {
     };
 
     const removeItem = (index) => {
-        if (formData.items.length === 1) return;
         const newItems = formData.items.filter((_, i) => i !== index);
-        setFormData({ ...formData, items: newItems });
+        if (newItems.length === 0) {
+            // If deleting the last item, reset it to empty instead of removing
+            setFormData({
+                ...formData,
+                items: [{
+                    productId: '',
+                    description: '',
+                    quantity: 1,
+                    unitPrice: 0,
+                    discountType: 'amount',
+                    discountValue: 0,
+                    total: 0
+                }]
+            });
+        } else {
+            setFormData({ ...formData, items: newItems });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -512,15 +527,14 @@ export default function QuotationForm() {
                                                 ${parseFloat(item.total).toFixed(2)}
                                             </td>
                                             <td className="py-2 text-center">
-                                                {formData.items.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeItem(index)}
-                                                        className="text-muted-foreground hover:text-destructive transition-colors"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeItem(index)}
+                                                    className="text-red-500 hover:text-red-700 bg-red-100 p-1 rounded-full transition-colors"
+                                                    title="Eliminar línea"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}
