@@ -347,36 +347,47 @@ async function generateRealMetrics(companyId, startDate, endDate) {
     }
   });
 
-  // Sales (Quotes for now as Sales might be complex)
-  // Assuming Quotation model has 'status' and 'total'
-  const activeQuotesCounts = await Quotation.count({
+  // Sales (Accepted Quotations Income)
+  const acceptedQuotesCount = await Quotation.count({
     where: {
       companyId,
-      status: ['draft', 'sent'] // Adjust statuses as needed
+      status: 'accepted',
+      date: { [Op.gte]: startDate }
     }
   });
 
-  const activeQuotesValue = await Quotation.sum('total', {
+  const acceptedQuotesValue = await Quotation.sum('total', {
+    where: {
+      companyId,
+      status: 'accepted',
+      date: { [Op.gte]: startDate }
+    }
+  }) || 0;
+
+  // Active (Draft/Sent) for operational view
+  const activeQuotesCounts = await Quotation.count({
+    where: {
+      companyId,
+      status: ['draft', 'sent']
+    }
+  });
+
+  const activeQuotesDraftValue = await Quotation.sum('total', {
     where: {
       companyId,
       status: ['draft', 'sent']
     }
   }) || 0;
 
-  // Mocking Sales Total for now if no "Sales" model, usually derived from Invoices or Orders
-  // We'll keep the mock logic for "Sales Revenue" but use real Quote data
-  const companyIdStr = String(companyId);
-  const lastDigit = parseInt(companyIdStr.slice(-1), 10);
-  const baseMultiplier = Number.isNaN(lastDigit) || lastDigit === 0 ? 1 : lastDigit;
-
   return {
     sales: {
-      total: Math.floor((Math.random() * 100000 + 50000) * baseMultiplier), // Keep mock for invoiced revenue
-      trend: (Math.random() - 0.5) * 30,
+      total: parseFloat(acceptedQuotesValue.toFixed(2)),
+      trend: 0, // Placeholder for trend calculation
       activeQuotes: activeQuotesCounts,
-      activeQuotesValue: activeQuotesValue,
-      period: 'Este mes',
-      currency: 'PAB'
+      activeQuotesValue: activeQuotesDraftValue,
+      acceptedQuotes: acceptedQuotesCount,
+      period: 'Este periodo',
+      currency: 'USD' // Changed to USD as per screenshot symbols, or use 'PAB'
     },
     customers: {
       total: totalCustomers,

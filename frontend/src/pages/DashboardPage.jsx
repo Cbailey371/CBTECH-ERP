@@ -39,21 +39,25 @@ export default function DashboardPage() {
         {/* Block 1: Commercial (Sales & Quotes) */}
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ventas y Cotizaciones</CardTitle>
+            <CardTitle className="text-sm font-medium">Ingresos y Cotizaciones</CardTitle>
             <DollarSign className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${metrics.sales.total.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mb-4">Ventas del mes</p>
+            <div className="text-2xl font-bold">${metrics.sales.total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-xs text-muted-foreground mb-4">Ingresos (Cotiz. Aceptadas)</p>
 
             <div className="space-y-2 pt-2 border-t">
+              <div className="flex justify-between text-sm text-emerald-600 font-medium">
+                <span>Aceptadas este mes:</span>
+                <span>{metrics.sales.acceptedQuotes || 0}</span>
+              </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Cotizaciones Activas:</span>
+                <span className="text-muted-foreground">En Borrador/Enviadas:</span>
                 <span className="font-medium">{metrics.sales.activeQuotes}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Valor en juego:</span>
-                <span className="font-medium text-emerald-600">${metrics.sales.activeQuotesValue.toLocaleString()}</span>
+                <span className="font-medium text-amber-600">${metrics.sales.activeQuotesValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </CardContent>
