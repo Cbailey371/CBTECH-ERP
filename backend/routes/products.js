@@ -221,7 +221,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/products/:id - Eliminar (soft delete)
+// DELETE /api/products/:id - Eliminar (Validando uso)
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -236,18 +236,34 @@ router.delete('/:id', async (req, res) => {
       });
     }
 
-    // Soft delete
-    await product.update({ isActive: false });
+    // Verificar si está en uso en alguna cotización (Items)
+    // Necesitamos importar QuotationItem (asegurar que esté disponible)
+    const { QuotationItem } = require('../models');
+
+    const usageCount = await QuotationItem.count({
+      where: { productId: id }
+    });
+
+    if (usageCount > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `No se puede eliminar el producto porque está siendo usado en ${usageCount} cotización(es).`
+      });
+    }
+
+    // Si no está en uso, Hard Delete
+    await product.destroy();
 
     res.json({
       success: true,
-      message: 'Producto eliminado exitosamente'
+      message: 'Producto eliminado permanentemente'
     });
   } catch (error) {
     console.error('Error al eliminar producto:', error);
     res.status(500).json({
       success: false,
-      message: 'Error al eliminar el producto'
+      message: 'Error al eliminar el producto',
+      error: error.message
     });
   }
 });
