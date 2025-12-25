@@ -34,11 +34,30 @@ export default function QuotationsPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
-    const fetchQuotations = async (page = 1, search = '') => {
+    const [filters, setFilters] = useState({
+        startDate: '',
+        endDate: '',
+        status: ''
+    });
+
+    const handleFilterChange = (key, value) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+        // Reset page to 1 on filter change
+        setPagination(prev => ({ ...prev, current_page: 1 }));
+    };
+
+    const fetchQuotations = async (page = 1, search = '', currentFilters = filters) => {
         if (!selectedCompany) return;
         setLoading(true);
         try {
-            const response = await quotationService.getQuotations(token, selectedCompany.id, { page, search });
+            const params = {
+                page,
+                search,
+                startDate: currentFilters.startDate,
+                endDate: currentFilters.endDate,
+                status: currentFilters.status
+            };
+            const response = await quotationService.getQuotations(token, selectedCompany.id, params);
             if (response.success) {
                 setQuotations(response.quotations);
                 setPagination(response.pagination);
@@ -52,11 +71,11 @@ export default function QuotationsPage() {
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-            fetchQuotations(1, searchTerm);
+            fetchQuotations(1, searchTerm, filters);
         }, 500);
 
         return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, token, selectedCompany]);
+    }, [searchTerm, filters, token, selectedCompany]);
 
     const handleStatusChange = async (quotation, newStatus) => {
         // Optimistic update
@@ -139,7 +158,7 @@ export default function QuotationsPage() {
 
             <Card className="bg-card border-border backdrop-blur-sm">
                 <CardHeader className="pb-4">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-col md:flex-row gap-4">
                         <div className="relative flex-1 max-w-sm">
                             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
@@ -148,6 +167,44 @@ export default function QuotationsPage() {
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
+                        </div>
+                        <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                            <Input
+                                type="date"
+                                className="w-full sm:w-auto bg-background border-input"
+                                value={filters.startDate}
+                                onChange={(e) => handleFilterChange('startDate', e.target.value)}
+                                title="Fecha Inicio"
+                            />
+                            <Input
+                                type="date"
+                                className="w-full sm:w-auto bg-background border-input"
+                                value={filters.endDate}
+                                onChange={(e) => handleFilterChange('endDate', e.target.value)}
+                                title="Fecha Fin"
+                            />
+                            <select
+                                className="h-10 w-full sm:w-[150px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                value={filters.status}
+                                onChange={(e) => handleFilterChange('status', e.target.value)}
+                            >
+                                <option value="">Todos</option>
+                                <option value="draft">Borrador</option>
+                                <option value="sent">Enviada</option>
+                                <option value="accepted">Aceptada</option>
+                                <option value="rejected">Rechazada</option>
+                                <option value="expired">Vencida</option>
+                            </select>
+                            {(filters.startDate || filters.endDate || filters.status) && (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setFilters({ startDate: '', endDate: '', status: '' })}
+                                    className="text-muted-foreground"
+                                    title="Limpiar filtros"
+                                >
+                                    Limpiar
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardHeader>

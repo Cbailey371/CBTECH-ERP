@@ -17,7 +17,7 @@ router.use(companyContext);
 // GET /api/quotations - Listar cotizaciones
 router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.read'], 'user'), async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query;
+    const { page = 1, limit = 10, search = '', startDate, endDate, status } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     const whereClause = {
@@ -29,6 +29,20 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
         { number: { [Op.iLike]: `%${search}%` } },
         { '$customer.name$': { [Op.iLike]: `%${search}%` } }
       ];
+    }
+
+    if (startDate && endDate) {
+      whereClause.date = {
+        [Op.between]: [startDate, endDate]
+      };
+    } else if (startDate) {
+      whereClause.date = { [Op.gte]: startDate };
+    } else if (endDate) {
+      whereClause.date = { [Op.lte]: endDate };
+    }
+
+    if (status) {
+      whereClause.status = status;
     }
 
     const { count, rows } = await Quotation.findAndCountAll({
