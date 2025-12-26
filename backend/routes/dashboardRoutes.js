@@ -348,18 +348,73 @@ async function generateRealMetrics(companyId, startDate, endDate) {
   });
 
   // Sales (Accepted Quotations Income)
-  // Sales (Accepted Quotations Income) - Fetch rows to ensure consistency
+  // Sales (Accepted Quotations Income) - Fetch rows with items to calculate PROFIT
+  // We need to import models if not already in scope, but they seem to be required at top in some files.
+  // Assuming Quotation is available. We need QuotationItem and Product too.
+  const { QuotationItem, Product } = require('../models');
+
   const acceptedQuotes = await Quotation.findAll({
     where: {
       companyId,
       status: 'accepted',
       date: { [Op.gte]: startDate }
     },
-    attributes: ['total']
+    include: [
+      {
+        model: QuotationItem,
+        as: 'items',
+        include: [
+          {
+            model: Product,
+            as: 'product',
+            attributes: ['cost']
+          }
+        ]
+      }
+    ]
   });
 
   const acceptedQuotesCount = acceptedQuotes.length;
-  const acceptedQuotesValue = acceptedQuotes.reduce((sum, q) => sum + parseFloat(q.total || 0), 0);
+
+  // Calculate Totals and Profit
+  let totalRevenue = 0;
+  let totalCost = 0;
+
+  acceptedQuotes.forEach(q => {
+    // Revenue: Subtotal - Discount (We use Subtotal to be cleaner, or Total if we want including Tax? Usually Revenue is ex-tax)
+    // User asked for "Monto en dolares de la ganancia" (Profit amount).
+    // Let's use: Revenue = (Subtotal - GlobalDiscount).
+    // Cost = Sum(Item.qty * Product.cost)
+
+    // Note: q.subtotal is sum of items.total. items.total includes item discounts.
+    const revenue = parseFloat(q.subtotal || 0) - parseFloat(q.discount || 0);
+    totalRevenue += revenue;
+
+    // Cost
+    if (q.items) {
+      q.items.forEach(item => {
+        const qty = parseFloat(item.quantity || 0);
+        // If product is deleted or null, assume 0 cost ? Or try to preserve? 
+        // For now take product.cost.
+        const cost = parseFloat(item.product?.cost || 0);
+        totalCost += (qty * cost);
+      });
+    }
+  });
+
+  const totalProfit = totalRevenue - totalCost;
+
+  // Use the calculated totalRevenue instead of q.total (which has tax) for "Ingresos" if desired, 
+  // BUT previous chart was showing "Total" (with tax).
+  // "Ingresos" usually means Revenue (pre-tax).
+  // I will switch "Ingresos" to utilize `totalRevenue` (Net Sales) and add `profit`.
+  // Wait, the user was seeing $214.83 which MATCHED the table "Total" column. 
+  // If I change it to Pre-Tax, numbers won't match the table "Total". 
+  // I should probably Keep "Total" as "Ventas Totales" (Gross) if that's what they expect, 
+  // OR clarify. Given the table shows Total (Inc Tax), I will stick to returning `q.total` sum for `sales.total` to avoid confusion, 
+  // and add `sales.profit`.
+
+  const acceptedQuotesTotalValue = acceptedQuotes.reduce((sum, q) => sum + parseFloat(q.total || 0), 0);
 
   // Active (Draft/Sent) for operational view
   const activeQuotesCounts = await Quotation.count({
@@ -378,7 +433,8 @@ async function generateRealMetrics(companyId, startDate, endDate) {
 
   return {
     sales: {
-      total: parseFloat(acceptedQuotesValue.toFixed(2)),
+      total: parseFloat(acceptedQuotesTotalValue.toFixed(2)),
+      profit: parseFloat(totalProfit.toFixed(2)),
       trend: 0, // Placeholder for trend calculation
       activeQuotes: activeQuotesCounts,
       activeQuotesValue: activeQuotesDraftValue,

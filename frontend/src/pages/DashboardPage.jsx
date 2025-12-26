@@ -47,9 +47,13 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground mb-4">Ingresos (Cotiz. Aceptadas)</p>
 
             <div className="space-y-2 pt-2 border-t">
+              <div className="flex justify-between text-sm font-medium">
+                <span>Ganancia Estimada:</span>
+                <span className="text-emerald-600">${metrics.sales.profit?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}</span>
+              </div>
               <div className="flex justify-between text-sm text-emerald-600 font-medium">
                 <span>Aceptadas este mes:</span>
-                <span>{metrics.sales.acceptedQuotes || 0}</span>
+                <span>{metrics.sales.acceptedQuotes}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">En Borrador/Enviadas:</span>
