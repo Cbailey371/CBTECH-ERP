@@ -348,21 +348,18 @@ async function generateRealMetrics(companyId, startDate, endDate) {
   });
 
   // Sales (Accepted Quotations Income)
-  const acceptedQuotesCount = await Quotation.count({
+  // Sales (Accepted Quotations Income) - Fetch rows to ensure consistency
+  const acceptedQuotes = await Quotation.findAll({
     where: {
       companyId,
       status: 'accepted',
       date: { [Op.gte]: startDate }
-    }
+    },
+    attributes: ['total']
   });
 
-  const acceptedQuotesValue = await Quotation.sum('total', {
-    where: {
-      companyId,
-      status: 'accepted',
-      date: { [Op.gte]: startDate }
-    }
-  }) || 0;
+  const acceptedQuotesCount = acceptedQuotes.length;
+  const acceptedQuotesValue = acceptedQuotes.reduce((sum, q) => sum + parseFloat(q.total || 0), 0);
 
   // Active (Draft/Sent) for operational view
   const activeQuotesCounts = await Quotation.count({
