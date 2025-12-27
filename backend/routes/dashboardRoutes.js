@@ -367,7 +367,7 @@ async function generateRealMetrics(companyId, startDate, endDate) {
           {
             model: Product,
             as: 'product',
-            attributes: ['cost']
+            attributes: ['cost', 'margin', 'type']
           }
         ]
       }
@@ -392,7 +392,7 @@ async function generateRealMetrics(companyId, startDate, endDate) {
     if (subtotal > 0) {
       revenue = subtotal - discount;
     } else {
-      revenue = total;
+      revenue = total; // Fallback
     }
 
     totalRevenue += revenue;
@@ -401,9 +401,21 @@ async function generateRealMetrics(companyId, startDate, endDate) {
     if (q.items) {
       q.items.forEach(item => {
         const qty = parseFloat(item.quantity || 0);
-        // If product is deleted or null, assume 0 cost
-        const cost = parseFloat(item.product?.cost || 0);
-        totalCost += (qty * cost);
+        const product = item.product || {};
+        const cost = parseFloat(product.cost || 0);
+        const margin = parseFloat(product.margin || 0);
+
+        // Logic Adjustment:
+        // If Margin is 0 (Service provided by user with 100% gain semantics), we ignore cost.
+        // User stated: "ganancia del servicio es 100% mi no le pongo margen ... margen es 0%"
+        // If Margin is > 0 (Subcontracted), we enforce cost.
+        if (margin === 0) {
+          // Treated as 100% Profit (Own Service). Cost for Profit Calc is 0.
+          totalCost += 0;
+        } else {
+          // Treated as Resale/Subcontract. Cost reduces Profit.
+          totalCost += (qty * cost);
+        }
       });
     }
   });
