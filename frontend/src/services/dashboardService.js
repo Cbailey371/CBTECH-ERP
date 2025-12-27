@@ -99,9 +99,11 @@ class DashboardService {
     return {
       sales: {
         total: rawMetrics.sales?.total || 0,
+        profit: rawMetrics.sales?.profit || 0,
         trend: rawMetrics.sales?.trend || 0,
         activeQuotes: rawMetrics.sales?.activeQuotes || 0,
         activeQuotesValue: rawMetrics.sales?.activeQuotesValue || 0,
+        acceptedQuotes: rawMetrics.sales?.acceptedQuotes || 0,
         period: rawMetrics.sales?.period || 'Este mes',
         currency: rawMetrics.sales?.currency || 'PAB',
         loading: false
