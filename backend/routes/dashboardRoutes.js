@@ -381,21 +381,27 @@ async function generateRealMetrics(companyId, startDate, endDate) {
   let totalCost = 0;
 
   acceptedQuotes.forEach(q => {
-    // Revenue: Subtotal - Discount (We use Subtotal to be cleaner, or Total if we want including Tax? Usually Revenue is ex-tax)
-    // User asked for "Monto en dolares de la ganancia" (Profit amount).
-    // Let's use: Revenue = (Subtotal - GlobalDiscount).
-    // Cost = Sum(Item.qty * Product.cost)
-
     // Note: q.subtotal is sum of items.total. items.total includes item discounts.
-    const revenue = parseFloat(q.subtotal || 0) - parseFloat(q.discount || 0);
+    // Revenue = Subtotal - Discount
+    // Fallback: If subtotal is 0 but Total > 0, assume revenue = total (tax included as proxy if subtotal missing)
+    const subtotal = parseFloat(q.subtotal || 0);
+    const total = parseFloat(q.total || 0);
+    const discount = parseFloat(q.discount || 0);
+
+    let revenue = 0;
+    if (subtotal > 0) {
+      revenue = subtotal - discount;
+    } else {
+      revenue = total;
+    }
+
     totalRevenue += revenue;
 
     // Cost
     if (q.items) {
       q.items.forEach(item => {
         const qty = parseFloat(item.quantity || 0);
-        // If product is deleted or null, assume 0 cost ? Or try to preserve? 
-        // For now take product.cost.
+        // If product is deleted or null, assume 0 cost
         const cost = parseFloat(item.product?.cost || 0);
         totalCost += (qty * cost);
       });
@@ -403,16 +409,6 @@ async function generateRealMetrics(companyId, startDate, endDate) {
   });
 
   const totalProfit = totalRevenue - totalCost;
-
-  // Use the calculated totalRevenue instead of q.total (which has tax) for "Ingresos" if desired, 
-  // BUT previous chart was showing "Total" (with tax).
-  // "Ingresos" usually means Revenue (pre-tax).
-  // I will switch "Ingresos" to utilize `totalRevenue` (Net Sales) and add `profit`.
-  // Wait, the user was seeing $214.83 which MATCHED the table "Total" column. 
-  // If I change it to Pre-Tax, numbers won't match the table "Total". 
-  // I should probably Keep "Total" as "Ventas Totales" (Gross) if that's what they expect, 
-  // OR clarify. Given the table shows Total (Inc Tax), I will stick to returning `q.total` sum for `sales.total` to avoid confusion, 
-  // and add `sales.profit`.
 
   const acceptedQuotesTotalValue = acceptedQuotes.reduce((sum, q) => sum + parseFloat(q.total || 0), 0);
 
@@ -438,7 +434,7 @@ async function generateRealMetrics(companyId, startDate, endDate) {
       trend: 0, // Placeholder for trend calculation
       activeQuotes: activeQuotesCounts,
       activeQuotesValue: activeQuotesDraftValue,
-      acceptedQuotes: acceptedQuotesCount,
+      acceptedQuotes: parseInt(acceptedQuotesCount || 0, 10), // Explicit integer
       period: 'Este periodo',
       currency: 'USD' // Changed to USD as per screenshot symbols, or use 'PAB'
     },

@@ -53,7 +53,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex justify-between text-sm text-emerald-600 font-medium">
                 <span>Aceptadas este mes:</span>
-                <span>{metrics.sales.acceptedQuotes}</span>
+                <span>{metrics.sales.acceptedQuotes ?? 0}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">En Borrador/Enviadas:</span>
