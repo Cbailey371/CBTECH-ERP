@@ -21,8 +21,8 @@ router.get('/metrics', requireAdvancedPermissions(['dashboard.view']), async (re
     const currentDate = new Date();
     const startDate = getStartDate(period);
 
-    // Simular consultas a la base de datos
-    const metrics = await generateMockMetrics(companyId, startDate, currentDate);
+    // Obtener métricas reales de la base de datos
+    const metrics = await generateRealMetrics(companyId, startDate, currentDate);
 
     res.json({
       success: true,
