@@ -32,6 +32,10 @@ export default function DashboardPage() {
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-foreground">Dashboard General</h2>
         <p className="text-muted-foreground">Visión general del estado de la empresa.</p>
+        {/* DEBUG: Show raw metrics to verify mock vs real */}
+        <div className="bg-black text-green-400 p-2 text-xs font-mono mt-2 rounded overflow-auto max-h-40">
+          DEBUG DATA: {JSON.stringify(metrics?.sales, null, 2)}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
