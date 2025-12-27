@@ -98,6 +98,10 @@ Quotation.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
 Quotation.hasMany(QuotationItem, { foreignKey: 'quotationId', as: 'items' });
 QuotationItem.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
 
+// Items y Productos
+QuotationItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
+Product.hasMany(QuotationItem, { foreignKey: 'productId', as: 'quotationItems' });
+
 // Empresas y Productos
 Company.hasMany(Product, { foreignKey: 'companyId', as: 'products' });
 Product.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
