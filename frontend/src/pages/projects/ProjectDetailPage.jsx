@@ -212,15 +212,30 @@ export default function ProjectDetailPage() {
         }
     };
 
-    const renderTaskRow = (task, level = 0) => {
-        const statusColors = {
-            pending: 'bg-card text-muted-foreground border-border',
-            in_progress: 'bg-info/10 text-info border-info/20',
-            review: 'bg-primary/10 text-primary border-primary/20',
-            completed: 'bg-success/10 text-success border-success/20',
-            cancelled: 'bg-destructive/10 text-destructive border-destructive/20'
+    const getTaskStatusStyle = (status) => {
+        const styles = {
+            in_progress: "bg-info/10 text-info border-info/20",
+            review: "bg-primary/10 text-primary border-primary/20",
+            completed: "bg-success/10 text-success border-success/20",
+            cancelled: "bg-destructive/10 text-destructive border-destructive/20",
+            pending: "bg-muted text-muted-foreground border-border"
         };
+        return styles[status] || styles.pending;
+    };
 
+    const getTaskStatusLabel = (status) => {
+        const labels = {
+            in_progress: 'En Progreso',
+            review: 'En Revisión',
+            completed: 'Completada',
+            cancelled: 'Cancelada',
+            pending: 'Pendiente'
+        };
+        return labels[status] || 'Pendiente';
+    };
+
+    const renderTaskRow = (task, level = 0) => {
+        // ... previous renderTaskRow logic ...
         return (
             <>
                 <TableRow key={task.id} className="hover:bg-accent/50 border-border transition-colors">
@@ -237,17 +252,9 @@ export default function ProjectDetailPage() {
                         </div>
                     </TableCell>
                     <TableCell>
-                        <div className="relative inline-block group">
-                            <Badge variant="outline" className={`cursor-pointer group-hover:bg-accent ${task.status === 'completed' ? 'bg-success/10 text-success border-success/20' :
-                                task.status === 'in_progress' ? 'bg-info/10 text-info border-info/20' :
-                                    task.status === 'review' ? 'bg-primary/10 text-primary border-primary/20' :
-                                        task.status === 'cancelled' ? 'bg-destructive/10 text-destructive border-destructive/20' :
-                                            'bg-muted text-muted-foreground border-border'
-                                }`}>
-                                {task.status === 'in_progress' ? 'En Progreso' :
-                                    task.status === 'review' ? 'En Revisión' :
-                                        task.status === 'completed' ? 'Completada' :
-                                            task.status === 'cancelled' ? 'Cancelada' : 'Pendiente'}
+                        <div className="relative inline-block group min-w-[100px]">
+                            <Badge variant="outline" className={`cursor-pointer group-hover:bg-accent whitespace-nowrap ${getTaskStatusStyle(task.status)}`}>
+                                {getTaskStatusLabel(task.status)}
                             </Badge>
                             <select
                                 value={task.status}
