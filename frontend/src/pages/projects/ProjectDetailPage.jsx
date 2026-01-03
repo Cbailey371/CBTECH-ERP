@@ -224,10 +224,12 @@ export default function ProjectDetailPage() {
         return (
             <>
                 <TableRow key={task.id} className="hover:bg-accent/50 border-border transition-colors">
+                    <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                        {task.code || '-'}
+                    </TableCell>
                     <TableCell className="font-medium text-foreground">
                         <div style={{ paddingLeft: `${level * 24}px` }} className="flex items-center">
                             {level > 0 && <div className="w-4 h-px bg-border mr-2" />}
-                            <span className="text-muted-foreground font-mono text-xs mr-2">{task.code || '-'}</span>
                             <div>
                                 {task.title}
                                 {task.description && <div className="text-xs text-muted-foreground truncate max-w-[200px]">{task.description}</div>}
