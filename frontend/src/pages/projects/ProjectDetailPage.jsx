@@ -259,7 +259,8 @@ export default function ProjectDetailPage() {
                             <select
                                 value={task.status}
                                 onChange={(e) => handleQuickStatusChange(task.id, e.target.value)}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer text-[0px]"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer appearance-none border-none bg-transparent"
+                                style={{ color: 'transparent', textShadow: '0 0 0 transparent' }} // Firefox hack to hide text
                             >
                                 <option value="pending">Pendiente</option>
                                 <option value="in_progress">En Progreso</option>
