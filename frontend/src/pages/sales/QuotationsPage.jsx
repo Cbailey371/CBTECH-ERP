@@ -152,14 +152,16 @@ export default function QuotationsPage() {
             sent: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
             accepted: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
             rejected: 'bg-destructive/10 text-destructive border-destructive/20',
-            expired: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+            expired: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+            invoiced: 'bg-purple-500/10 text-purple-500 border-purple-500/20'
         };
         const labels = {
             draft: 'Borrador',
             sent: 'Enviada',
             accepted: 'Aceptada',
             rejected: 'Rechazada',
-            expired: 'Vencida'
+            expired: 'Vencida',
+            invoiced: 'Facturada'
         };
 
         return (
@@ -223,6 +225,7 @@ export default function QuotationsPage() {
                                 <option value="accepted">Aceptada</option>
                                 <option value="rejected">Rechazada</option>
                                 <option value="expired">Vencida</option>
+                                <option value="invoiced">Facturada</option>
                             </select>
                             {(filters.startDate || filters.endDate || filters.status) && (
                                 <Button
