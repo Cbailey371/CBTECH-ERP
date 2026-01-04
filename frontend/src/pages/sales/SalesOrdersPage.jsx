@@ -15,16 +15,26 @@ export default function SalesOrdersPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
 
     useEffect(() => {
         if (selectedCompany) fetchOrders();
-    }, [selectedCompany, searchTerm]);
+    }, [selectedCompany, searchTerm, startDate, endDate, statusFilter]);
 
     const fetchOrders = async (page = 1) => {
         setLoading(true);
         try {
-            const response = await salesOrderService.getOrders(token, selectedCompany.id, { page, search: searchTerm });
+            const params = {
+                page,
+                search: searchTerm,
+                startDate: startDate || undefined,
+                endDate: endDate || undefined,
+                status: statusFilter === 'all' ? undefined : statusFilter || undefined
+            };
+            const response = await salesOrderService.getOrders(token, selectedCompany.id, params);
             if (response.success) {
                 setOrders(response.orders);
                 setPagination(response.pagination);
@@ -66,14 +76,41 @@ export default function SalesOrdersPage() {
 
             <Card className="bg-card border-border">
                 <CardHeader className="pb-4">
-                    <div className="relative max-w-sm">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Buscar por número o cliente..."
-                            className="pl-9"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                    <div className="flex flex-col md:flex-row gap-4 items-center">
+                        <div className="relative flex-1 w-full">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Buscar por número o cliente..."
+                                className="pl-9 w-full"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex gap-2 w-full md:w-auto">
+                            <Input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="w-full md:w-40"
+                            />
+                            <Input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="w-full md:w-40"
+                            />
+                            <select
+                                className="flex h-9 w-full md:w-40 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                            >
+                                <option value="">Todos</option>
+                                <option value="draft">No Fiscalizada</option>
+                                <option value="confirmed">Confirmada</option>
+                                <option value="fulfilled">Fiscalizada</option>
+                                <option value="cancelled">Cancelada</option>
+                            </select>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -92,7 +129,7 @@ export default function SalesOrdersPage() {
                             {loading ? (
                                 <TableRow><TableCell colSpan={6} className="text-center py-8">Cargando...</TableCell></TableRow>
                             ) : orders.length === 0 ? (
-                                <TableRow><TableCell colSpan={6} className="text-center py-8">No hay facturas registradas.</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={6} className="text-center py-8">No hay facturas que coincidan con los filtros.</TableCell></TableRow>
                             ) : (
                                 orders.map(order => (
                                     <TableRow key={order.id}>
