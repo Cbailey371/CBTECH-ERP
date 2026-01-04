@@ -323,8 +323,12 @@ const CreditNoteForm = () => {
 
         try {
             setLoading(true);
-            const baseUrl = import.meta.env.VITE_API_URL || '';
-            const response = await fetch(`${baseUrl}/api/credit-notes/${id}`, {
+            // Fix URL construction: Check if VITE_API_URL already contains '/api'
+            const envUrl = import.meta.env.VITE_API_URL || '';
+            const urlPath = envUrl.endsWith('/api') ? '/credit-notes' : '/api/credit-notes';
+            const url = `${envUrl}${urlPath}/${id}`;
+
+            const response = await fetch(url, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
