@@ -339,6 +339,7 @@ async function generateRealMetrics(companyId, startDate, endDate) {
     activeProjects = await Project.count({
       where: {
         companyId,
+        isActive: true, // Validate active status
         status: ['planning', 'in_progress']
       }
     });
