@@ -9,7 +9,8 @@ export function Combobox({
     onChange,
     placeholder = "Seleccionar...",
     searchPlaceholder = "Buscar...",
-    className
+    className,
+    disabled = false
 }) {
     const [open, setOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
@@ -37,10 +38,11 @@ export function Combobox({
         <div className={twMerge("relative", className)} ref={wrapperRef}>
             <div
                 className={clsx(
-                    "flex h-10 w-full items-center justify-between rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer",
+                    "flex h-10 w-full items-center justify-between rounded-md border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer",
+                    disabled && "cursor-not-allowed opacity-50",
                     open && "ring-2 ring-primary-500 border-primary-500"
                 )}
-                onClick={() => setOpen(!open)}
+                onClick={() => !disabled && setOpen(!open)}
             >
                 <span className={clsx(!selectedOption && "text-slate-400")}>
                     {selectedOption ? selectedOption.label : placeholder}

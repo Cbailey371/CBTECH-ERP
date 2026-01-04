@@ -28,11 +28,11 @@ class WebPOSAdapter extends PACAdapter {
     mapToPayload(docData) {
         const { totals, breakdown } = calculateTaxes(docData.items);
 
-        return {
+        const payload = {
             "documento": {
-                "tipo": docData.docType, // 01, 03, 04
+                "tipo": docData.docType, // 01 (Factura), 03 or C (Nota Credito), etc - Adapter should normalize this or use raw if valid
                 "puntoFacturacion": this.config.puntoDeVenta,
-                "fechaEmision": new Date().toISOString(), // Check format required by PAC (usually ISO8601 or YYYY-MM-DDTHH:mm:ss)
+                "fechaEmision": new Date().toISOString(),
                 "numero": docData.documentNumber
             },
             "emisor": {
@@ -46,14 +46,14 @@ class WebPOSAdapter extends PACAdapter {
                 "ruc": docData.customer.ruc,
                 "razonSocial": docData.customer.name,
                 "direccion": docData.customer.address || "Ciudad de Panamá",
-                "tipo": docData.customer.taxType || "01" // 01=Contribuyente, 02=Final, etc.
+                "tipo": docData.customer.taxType || "01"
             },
             "items": docData.items.map(item => ({
                 "descripcion": item.description,
                 "cantidad": Number(item.quantity),
-                "precioUnitario": Number(item.price),
+                "precioUnitario": Number(item.price || item.unitPrice),
                 "total": Number(item.total),
-                "tasaItbms": item.taxRate // 0.07, 0.10, etc.
+                "tasaItbms": item.taxRate
             })),
             "totales": {
                 "subtotal": totals.totalTaxable,
@@ -62,6 +62,22 @@ class WebPOSAdapter extends PACAdapter {
                 "totalItems": docData.items.length
             }
         };
+
+        // Add Reference for Credit Notes
+        if (docData.docType === 'C' || docData.docType === '04') { // 04 might be internal code, but WebPOS uses C
+            // Ensure docType is 'C' for WebPOS if using their simplified API, or specific code.
+            // The docs say: docType: "C".
+            payload.documento.tipo = 'C';
+
+            if (docData.invoiceNumber) {
+                payload.invoiceNumber = docData.invoiceNumber;
+            }
+            if (docData.invoiceNumberRefDate) {
+                payload.invoiceNumberRefDate = docData.invoiceNumberRefDate;
+            }
+        }
+
+        return payload;
     }
 
     /**

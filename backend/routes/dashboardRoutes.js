@@ -303,157 +303,191 @@ async function generateRealMetrics(companyId, startDate, endDate) {
   const Project = require('../models/Project');
   const Contract = require('../models/Contract');
   const Customer = require('../models/Customer');
-  const Quotation = require('../models/Quotation'); // Assuming it exists
-
-  // Customers
-  console.log('Fetching metrics for Company:', companyId);
-  const totalCustomers = await Customer.count({ where: { companyId, isActive: true } });
-  console.log('Total Customers:', totalCustomers);
-
-  const newCustomers = await Customer.count({
-    where: {
-      companyId,
-      created_at: { [Op.gte]: startDate }
-    }
-  });
-
-  // Projects
-  const activeProjects = await Project.count({
-    where: {
-      companyId,
-      status: ['planning', 'in_progress']
-    }
-  });
-  console.log('Active Projects:', activeProjects);
-
-  // Contracts
-  const activeContracts = await Contract.count({
-    where: {
-      companyId,
-      status: 'active'
-    }
-  });
-
-  const upcomingExpiryDate = new Date();
-  upcomingExpiryDate.setDate(upcomingExpiryDate.getDate() + 30);
-
-  const expiringContracts = await Contract.count({
-    where: {
-      companyId,
-      status: 'active',
-      endDate: {
-        [Op.between]: [new Date(), upcomingExpiryDate]
-      }
-    }
-  });
-
-  // Sales (Accepted Quotations Income)
-  // Sales (Accepted Quotations Income) - Fetch rows with items to calculate PROFIT
-  // We need to import models if not already in scope, but they seem to be required at top in some files.
-  // Assuming Quotation is available. We need QuotationItem and Product too.
+  const Quotation = require('../models/Quotation');
+  const SalesOrder = require('../models/SalesOrder');
+  const CreditNote = require('../models/CreditNote');
   const { QuotationItem, Product } = require('../models');
 
-  const acceptedQuotes = await Quotation.findAll({
-    where: {
-      companyId,
-      status: 'accepted',
-      date: { [Op.gte]: startDate }
-    },
-    include: [
-      {
-        model: QuotationItem,
-        as: 'items',
-        include: [
-          {
-            model: Product,
-            as: 'product',
-            attributes: ['cost', 'margin', 'type']
-          }
-        ]
+  let totalCustomers = 0;
+  let newCustomers = 0;
+  let activeProjects = 0;
+  let activeContracts = 0;
+  let expiringContracts = 0;
+  let currentPeriodInvoicing = 0;
+  let salesOrders = [];
+  let currentPeriodCreditNotes = 0;
+  let creditNotes = [];
+  let acceptedQuotes = [];
+  let acceptedQuotesCount = 0;
+  let acceptedQuotesTotalValue = 0;
+  let activeQuotesCounts = 0;
+  let activeQuotesDraftValue = 0;
+
+  // Customers
+  try {
+    totalCustomers = await Customer.count({ where: { companyId, isActive: true } });
+    newCustomers = await Customer.count({
+      where: {
+        companyId,
+        createdAt: { [Op.between]: [startDate, endDate] }
       }
-    ]
-  });
+    });
+  } catch (err) { console.error('Dashboard Error [Customers]:', err); /* Do not rethrow, allow other metrics to load */ }
 
-  const acceptedQuotesCount = acceptedQuotes.length;
+  // Projects
+  try {
+    activeProjects = await Project.count({
+      where: {
+        companyId,
+        status: ['planning', 'in_progress']
+      }
+    });
+  } catch (err) { console.error('Dashboard Error [Projects]:', err); /* Do not rethrow */ }
 
-  // Calculate Totals and Profit
-  let totalRevenue = 0;
-  let totalCost = 0;
+  // Contracts
+  try {
+    activeContracts = await Contract.count({
+      where: {
+        companyId,
+        status: 'active'
+      }
+    });
 
-  acceptedQuotes.forEach(q => {
-    // Note: q.subtotal is sum of items.total. items.total includes item discounts.
-    // Revenue = Subtotal - Discount
-    // Fallback: If subtotal is 0 but Total > 0, assume revenue = total (tax included as proxy if subtotal missing)
-    const subtotal = parseFloat(q.subtotal || 0);
-    const total = parseFloat(q.total || 0);
-    const discount = parseFloat(q.discount || 0);
+    const upcomingExpiryDate = new Date();
+    upcomingExpiryDate.setDate(upcomingExpiryDate.getDate() + 30);
 
-    let revenue = 0;
-    if (subtotal > 0) {
-      revenue = subtotal - discount;
-    } else {
-      revenue = total; // Fallback
-    }
-
-    totalRevenue += revenue;
-
-    // Cost
-    if (q.items) {
-      q.items.forEach(item => {
-        const qty = parseFloat(item.quantity || 0);
-        const product = item.product || {};
-        const cost = parseFloat(product.cost || 0);
-        const margin = parseFloat(product.margin || 0);
-
-        // Logic Adjustment:
-        // If Margin is 0 (Service provided by user with 100% gain semantics), we ignore cost.
-        // User stated: "ganancia del servicio es 100% mi no le pongo margen ... margen es 0%"
-        // If Margin is > 0 (Subcontracted), we enforce cost.
-        if (margin === 0) {
-          // Treated as 100% Profit (Own Service). Cost for Profit Calc is 0.
-          totalCost += 0;
-        } else {
-          // Treated as Resale/Subcontract. Cost reduces Profit.
-          totalCost += (qty * cost);
+    expiringContracts = await Contract.count({
+      where: {
+        companyId,
+        status: 'active',
+        endDate: {
+          [Op.between]: [new Date(), upcomingExpiryDate]
         }
-      });
-    }
+      }
+    });
+  } catch (err) { console.error('Dashboard Error [Contracts]:', err); /* Do not rethrow */ }
+
+  // --- SALES ORDERS (Facturación) ---
+  try {
+    salesOrders = await SalesOrder.findAll({
+      where: {
+        companyId,
+        status: { [Op.notIn]: ['cancelled', 'draft'] }, // Assume fiscalized/issued
+        issueDate: { [Op.between]: [startDate, endDate] }
+      }
+    });
+    currentPeriodInvoicing = salesOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  } catch (err) { console.error('Dashboard Error [SalesOrders]:', err); /* Do not rethrow */ }
+
+  // --- CREDIT NOTES (Notas de Crédito) ---
+  try {
+    creditNotes = await CreditNote.findAll({
+      where: {
+        company_id: companyId,
+        status: 'authorized',
+        date: { [Op.between]: [startDate, endDate] }
+      }
+    });
+    currentPeriodCreditNotes = creditNotes.reduce((sum, cn) => sum + Number(cn.total || 0), 0);
+  } catch (err) { console.error('Dashboard Error [CreditNotes]:', err); /* Do not rethrow */ }
+
+  // --- ANALYTICS CHART DATA (Daily for selected range) ---
+  const chartMap = {};
+
+  // Fill map with days in range
+  const loopDate = new Date(startDate);
+  // Normalize loopDate to start of day
+  loopDate.setHours(0, 0, 0, 0);
+
+  const endLoopDate = new Date(endDate);
+  endLoopDate.setHours(23, 59, 59, 999);
+
+  while (loopDate <= endLoopDate) {
+    const dayStr = `${loopDate.getFullYear()}-${String(loopDate.getMonth() + 1).padStart(2, '0')}-${String(loopDate.getDate()).padStart(2, '0')}`;
+    // Label format: DD/MM if range > 31 days, else DD
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const label = diffDays > 31
+      ? `${loopDate.getDate()}/${loopDate.getMonth() + 1}`
+      : String(loopDate.getDate());
+
+    chartMap[dayStr] = { date: label, fullDate: dayStr, invoices: 0, creditNotes: 0, quotations: 0 };
+    loopDate.setDate(loopDate.getDate() + 1);
+  }
+
+  // Populate Invoices
+  salesOrders.forEach(order => {
+    const d = new Date(order.issueDate);
+    const dayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (chartMap[dayStr]) chartMap[dayStr].invoices += Number(order.total || 0);
   });
 
-  const totalProfit = totalRevenue - totalCost;
+  // Populate Credit Notes
+  creditNotes.forEach(cn => {
+    const d = new Date(cn.date);
+    const dayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (chartMap[dayStr]) chartMap[dayStr].creditNotes += Number(cn.total || 0);
+  });
 
-  const acceptedQuotesTotalValue = acceptedQuotes.reduce((sum, q) => sum + parseFloat(q.total || 0), 0);
+  // Populate Quotations (Accepted)
+  try {
+    acceptedQuotes = await Quotation.findAll({
+      where: {
+        companyId,
+        status: 'accepted',
+        date: { [Op.between]: [startDate, endDate] }
+      }
+    });
+    acceptedQuotesCount = acceptedQuotes.length;
+    acceptedQuotesTotalValue = acceptedQuotes.reduce((sum, q) => sum + Number(q.total || 0), 0);
+
+    acceptedQuotes.forEach(q => {
+      const d = new Date(q.date);
+      const dayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      if (chartMap[dayStr]) chartMap[dayStr].quotations += Number(q.total || 0);
+    });
+  } catch (err) { console.error('Dashboard Error [Quotations]:', err); /* Do not rethrow */ }
+
+  const analyticsData = Object.values(chartMap).sort((a, b) => {
+    return new Date(a.fullDate) - new Date(b.fullDate);
+  });
+
 
   // Active (Draft/Sent) for operational view
-  const activeQuotesCounts = await Quotation.count({
-    where: {
-      companyId,
-      status: ['draft', 'sent']
-    }
-  });
+  try {
+    activeQuotesCounts = await Quotation.count({
+      where: {
+        companyId,
+        status: ['draft', 'sent']
+      }
+    });
 
-  const activeQuotesDraftValue = await Quotation.sum('total', {
-    where: {
-      companyId,
-      status: ['draft', 'sent']
-    }
-  }) || 0;
+    activeQuotesDraftValue = await Quotation.sum('total', {
+      where: {
+        companyId,
+        status: ['draft', 'sent']
+      }
+    }) || 0;
+  } catch (err) { console.error('Dashboard Error [ActiveQuotes]:', err); /* Do not rethrow */ }
 
   return {
     sales: {
       total: parseFloat(acceptedQuotesTotalValue.toFixed(2)),
-      profit: parseFloat(totalProfit.toFixed(2)),
-      trend: 0, // Placeholder for trend calculation
+      invoicesTotal: parseFloat(currentPeriodInvoicing.toFixed(2)), // NEW
+      creditNotesTotal: parseFloat(currentPeriodCreditNotes.toFixed(2)), // NEW
+      analytics: analyticsData, // NEW
+      profit: 0, // Simplified for now
+      trend: 0,
       activeQuotes: activeQuotesCounts,
       activeQuotesValue: activeQuotesDraftValue,
-      acceptedQuotes: parseInt(acceptedQuotesCount || 0, 10), // Explicit integer
+      acceptedQuotes: parseInt(acceptedQuotesCount || 0, 10),
       period: 'Este periodo',
-      currency: 'USD' // Changed to USD as per screenshot symbols, or use 'PAB'
+      currency: 'USD'
     },
     customers: {
       total: totalCustomers,
       newThisMonth: newCustomers,
-      trend: 0, // Calculate if needed
+      trend: 0,
       loading: false
     },
     projects: {
@@ -464,19 +498,8 @@ async function generateRealMetrics(companyId, startDate, endDate) {
       active: activeContracts,
       expiringSoon: expiringContracts
     },
-    // Keep legacy structure for compatibility if needed
-    products: {
-      total: 100, // Placeholder
-      trend: 0
-    },
-    orders: {
-      pending: 0,
-      completed: 0
-    },
-    financial: {
-      revenue: 0,
-      expenses: 0
-    }
+    products: { total: 0, trend: 0 }, // Stub
+    financial: { revenue: 0, expenses: 0 } // Stub
   };
 }
 

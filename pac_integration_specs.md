@@ -17,7 +17,7 @@ El objeto JSON enviado consta de las siguientes secciones principales:
 
 | Campo | Tipo | Descripción | Ejemplo |
 | :--- | :--- | :--- | :--- |
-| `tipo` | String | Tipo de documento fiscal (01=Factura, 03=NC, 04=ND) | "01" |
+| `tipo` | String | Tipo de documento fiscal (01=Factura, 04=Nota de Crédito) | "01" |
 | `puntoFacturacion` | String | Código del punto de venta emisor | "01" |
 | `fechaEmision` | ISO8601 | Fecha y hora de emisión | "2024-01-20T10:30:00Z" |
 | `numero` | String | Número consecutivo del documento interno | "F-2024-001" |
@@ -68,7 +68,13 @@ Resumen de montos de la transacción.
 | `total` | Number | Monto total a pagar (subtotal + impuestos) | 160.50 |
 | `totalItems` | Integer | Cantidad de líneas en la factura | 1 |
 
-## Ejemplo de Payload Completo
+---
+
+## Tipos de Documentos y Ejemplos
+
+### A. Factura de Venta (Tipo 01)
+
+Documento estándar de venta.
 
 ```json
 {
@@ -94,6 +100,57 @@ Resumen de montos de la transacción.
   "items": [
     {
       "descripcion": "Licencia Software Anual",
+      "cantidad": 1,
+      "precioUnitario": 500.00,
+      "total": 500.00,
+      "tasaItbms": 0.07
+    }
+  ],
+  "totales": {
+    "subtotal": 500.00,
+    "itbms": 35.00,
+    "total": 535.00,
+    "totalItems": 1
+  }
+}
+```
+
+### B. Nota de Crédito (Tipo 04)
+
+Documento para anulaciones o devoluciones. Requiere referencia a la factura original.
+
+**Campos Adicionales:**
+| Campo | Ubicación | Descripción | Ejemplo |
+| :--- | :--- | :--- | :--- |
+| `invoiceNumber` | Raíz | CUFE de la factura afectada (Original) | "FE01-20000..." |
+| `invoiceNumberRefDate` | Raíz | Fecha de emisión de la factura afectada | "2024-05-20" |
+
+```json
+{
+  "documento": {
+    "tipo": "04",
+    "puntoFacturacion": "01",
+    "fechaEmision": "2024-06-01T10:00:00.000Z",
+    "numero": "NC-2024-005"
+  },
+  "invoiceNumber": "FE01-200000000000000000",
+  "invoiceNumberRefDate": "2024-05-20",
+  "emisor": {
+    "ruc": "1234567-1-1234",
+    "dv": "00",
+    "razonSocial": "Empresa Demo S.A.",
+    "sucursal": "0000",
+    "direccion": "Vía España, Ciudad de Panamá"
+  },
+  "receptor": {
+    "ruc": "8-123-456",
+    "razonSocial": "Cliente Pruebas",
+    "direccion": "Ciudad de Panamá",
+    "tipo": "01"
+  },
+  "items": [
+    {
+      "descripcion": "DEVOLUCION: Licencia Software",
       "cantidad": 1,
       "precioUnitario": 500.00,
       "total": 500.00,

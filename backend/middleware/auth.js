@@ -132,9 +132,21 @@ const requireAdmin = async (req, res, next) => {
   }
 };
 
+// Middleware to ensure company context is present
+const requireCompanyContext = (req, res, next) => {
+  if (!req.user || !req.user.companyId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Contexto de empresa requerido (header x-company-id)'
+    });
+  }
+  next();
+};
+
 module.exports = {
   authenticateToken,
   requireAuth: authenticateToken,
   requirePermission,
-  requireAdmin
+  requireAdmin,
+  requireCompanyContext
 };

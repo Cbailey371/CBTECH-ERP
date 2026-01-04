@@ -20,6 +20,7 @@ const PurchaseOrder = require('./PurchaseOrder');
 const PurchaseOrderItem = require('./PurchaseOrderItem');
 const PacProvider = require('./PacProvider');
 const FE_IssuerConfig = require('./FE_IssuerConfig');
+const CreditNote = require('./CreditNote');
 
 // Definir asociaciones
 // Usuarios y Roles (Many-to-Many)
@@ -174,6 +175,14 @@ SalesOrderItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 Quotation.hasOne(SalesOrder, { foreignKey: 'quotationId', as: 'salesOrder' });
 SalesOrder.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
 
+
+// Sales Orders & Credit Notes
+SalesOrder.hasMany(CreditNote, { foreignKey: 'salesOrderId', as: 'creditNotes' });
+CreditNote.belongsTo(SalesOrder, { foreignKey: 'salesOrderId', as: 'salesOrder' });
+
+CreditNote.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+CreditNote.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+CreditNote.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 const models = {
   User,
   Role,
@@ -196,6 +205,7 @@ const models = {
   SalesOrderItem,
   PacProvider,
   FE_IssuerConfig,
+  CreditNote,
   sequelize
 };
 

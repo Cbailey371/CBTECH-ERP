@@ -14,6 +14,8 @@ import PacProvidersPage from './pages/admin/PacProvidersPage';
 
 import SalesOrdersPage from './pages/sales/SalesOrdersPage';
 import SalesOrderForm from './pages/sales/SalesOrderForm';
+import CreditNotesPage from './pages/sales/CreditNotesPage';
+import CreditNoteForm from './pages/sales/CreditNoteForm';
 import ProductsPage from './pages/inventory/ProductsPage';
 import ProjectsPage from './pages/projects/ProjectsPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
@@ -66,7 +68,11 @@ function App() {
                 <Route path="/quotations/:id" element={<QuotationForm />} />
                 <Route path="/sales-orders" element={<SalesOrdersPage />} />
                 <Route path="/sales-orders/new" element={<SalesOrderForm />} />
+
                 <Route path="/sales-orders/:id" element={<SalesOrderForm />} />
+                <Route path="/credit-notes" element={<CreditNotesPage />} />
+                <Route path="/credit-notes/new" element={<CreditNoteForm />} />
+                <Route path="/credit-notes/:id" element={<CreditNoteForm />} />
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />

@@ -8,15 +8,20 @@ const ENDPOINTS = {
 
 class DashboardService {
   // Obtener métricas principales del dashboard
-  async getDashboardMetrics(companyId, period = 'month') {
+  async getDashboardMetrics(companyId, period = 'month', startDate = null, endDate = null) {
     try {
-      const response = await api.get(ENDPOINTS.DASHBOARD_METRICS, {
-        params: {
-          companyId,
-          period,
-          timestamp: new Date().getTime()
-        }
-      });
+      const params = {
+        companyId,
+        period,
+        timestamp: new Date().getTime()
+      };
+
+      if (startDate && endDate) {
+        params.startDate = startDate;
+        params.endDate = endDate;
+      }
+
+      const response = await api.get(ENDPOINTS.DASHBOARD_METRICS, { params });
 
       return {
         success: true,
@@ -99,6 +104,9 @@ class DashboardService {
     return {
       sales: {
         total: rawMetrics.sales?.total || 0,
+        invoicesTotal: rawMetrics.sales?.invoicesTotal || 0,
+        creditNotesTotal: rawMetrics.sales?.creditNotesTotal || 0,
+        analytics: rawMetrics.sales?.analytics || [],
         profit: rawMetrics.sales?.profit || 0,
         trend: rawMetrics.sales?.trend || 0,
         activeQuotes: rawMetrics.sales?.activeQuotes || 0,

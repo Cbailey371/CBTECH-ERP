@@ -302,3 +302,39 @@ exports.updateOrderStatus = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.deleteOrder = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = req.user.companyId;
+
+        const order = await SalesOrder.findOne({
+            where: { id, companyId },
+            include: [{ model: SalesOrderItem, as: 'items' }]
+        });
+
+        if (!order) return res.status(404).json({ error: 'Orden no encontrada' });
+
+        // Check status - only 'draft' (No Fiscalizada) can be deleted
+        if (order.status !== 'draft') {
+            return res.status(400).json({ error: 'Solo se pueden eliminar facturas en estado Borrador (No Fiscalizadas)' });
+        }
+
+        // Optional: Extra safety check for fiscal document existence?
+        // If status logic is consistent, draft implies no fiscal doc.
+        // But let's be safe if we had FE_Document imported.
+        // logic: if (await FE_Document.findOne({where: {salesOrderId: id, status: 'AUTHORIZED'}})) ...
+
+        // Delete items (if cascade not set, but bulkDelete is safer)
+        if (order.items && order.items.length > 0) {
+            await SalesOrderItem.destroy({ where: { salesOrderId: id } });
+        }
+
+        await order.destroy();
+        res.json({ success: true, message: 'Factura eliminada correctamente' });
+
+    } catch (error) {
+        console.error('Error deleting order:', error);
+        res.status(500).json({ error: error.message });
+    }
+};

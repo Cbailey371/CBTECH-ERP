@@ -372,6 +372,31 @@ export default function SalesOrderForm() {
         }
     };
 
+    const handleDelete = async () => {
+        if (!confirm('¿Está seguro de eliminar esta factura? Esta acción no se puede deshacer.')) return;
+        setLoading(true);
+        try {
+            const baseUrl = import.meta.env.VITE_API_URL || '';
+            const response = await fetch(`${baseUrl}/api/sales-orders/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'x-company-id': selectedCompany.id
+                }
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+
+            alert('Factura eliminada exitosamente');
+            navigate('/sales-orders');
+        } catch (error) {
+            console.error(error);
+            alert('Error al eliminar: ' + (error.message || 'Error desconocido'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
     if (loading && !formData.customerId && isEditMode) return <div>Cargando...</div>;
 
     return (
@@ -392,12 +417,17 @@ export default function SalesOrderForm() {
                         </Button>
                     )}
                     {isEditMode && formData.status === 'draft' && (
-                        <Button
-                            onClick={handleEmitFiscal}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                        >
-                            <Send className="w-4 h-4 mr-2" /> Emitir Fiscalmente
-                        </Button>
+                        <>
+                            <Button onClick={handleDelete} variant="destructive" className="mr-2">
+                                <Trash2 className="w-4 h-4 mr-2" /> Eliminar
+                            </Button>
+                            <Button
+                                onClick={handleEmitFiscal}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                                <Send className="w-4 h-4 mr-2" /> Emitir Fiscalmente
+                            </Button>
+                        </>
                     )}
                     {!isEditMode && (
                         <Button onClick={handleSubmit} disabled={loading}>

@@ -64,9 +64,13 @@ module.exports = {
             }
         });
 
-        await queryInterface.addIndex('customers', ['company_id'], {
-            name: 'customers_company_id_idx'
-        });
+        try {
+            await queryInterface.addIndex('customers', ['company_id'], {
+                name: 'customers_company_id_idx'
+            });
+        } catch (e) {
+            console.log('Index customers_company_id_idx already exists, skipping.');
+        }
     },
 
     down: async (queryInterface, Sequelize) => {
