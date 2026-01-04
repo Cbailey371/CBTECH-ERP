@@ -64,6 +64,23 @@ const SalesOrder = sequelize.define('SalesOrder', {
     allowNull: false,
     defaultValue: 'USD'
   },
+  discount: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0
+  },
+  discountType: {
+    type: DataTypes.ENUM('percentage', 'amount'),
+    allowNull: false,
+    defaultValue: 'amount',
+    field: 'discount_type'
+  },
+  discountValue: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0,
+    field: 'discount_value'
+  },
   subtotal: {
     type: DataTypes.DECIMAL(18, 2),
     allowNull: false,

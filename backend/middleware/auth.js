@@ -5,6 +5,7 @@ const { User, Role, Permission } = require('../models');
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
+  const companyId = req.headers['x-company-id']; // Extract company ID from header
 
   if (!token) {
     return res.status(401).json({
@@ -21,6 +22,9 @@ const authenticateToken = (req, res, next) => {
       });
     }
     req.user = user;
+    if (companyId) {
+      req.user.companyId = parseInt(companyId); // Attach to user object for easy access in controllers
+    }
     next();
   });
 };
@@ -31,9 +35,9 @@ const requirePermission = (permission) => {
     try {
       // Este middleware debe ejecutarse después de authenticateToken
       if (!req.user) {
-        return res.status(401).json({ 
+        return res.status(401).json({
           success: false,
-          message: 'Usuario no autenticado' 
+          message: 'Usuario no autenticado'
         });
       }
 
@@ -53,9 +57,9 @@ const requirePermission = (permission) => {
       });
 
       if (!userWithRoles) {
-        return res.status(401).json({ 
+        return res.status(401).json({
           success: false,
-          message: 'Usuario no encontrado' 
+          message: 'Usuario no encontrado'
         });
       }
 
@@ -71,18 +75,18 @@ const requirePermission = (permission) => {
 
       // Verificar si el usuario tiene el permiso requerido
       if (!userPermissions.includes(permission)) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           success: false,
-          message: 'No tienes permisos para realizar esta acción' 
+          message: 'No tienes permisos para realizar esta acción'
         });
       }
 
       next();
     } catch (error) {
       console.error('Error en middleware de permisos:', error);
-      return res.status(500).json({ 
+      return res.status(500).json({
         success: false,
-        message: 'Error interno del servidor' 
+        message: 'Error interno del servidor'
       });
     }
   };
@@ -92,9 +96,9 @@ const requirePermission = (permission) => {
 const requireAdmin = async (req, res, next) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
-        message: 'Usuario no autenticado' 
+        message: 'Usuario no autenticado'
       });
     }
 
@@ -103,7 +107,7 @@ const requireAdmin = async (req, res, next) => {
       include: [{
         model: Role,
         as: 'roles',
-        where: { 
+        where: {
           name: ['super_admin', 'admin'],
           is_active: true
         },
@@ -112,18 +116,18 @@ const requireAdmin = async (req, res, next) => {
     });
 
     if (!userWithRoles || userWithRoles.roles.length === 0) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         success: false,
-        message: 'Acceso denegado. Se requieren permisos de administrador' 
+        message: 'Acceso denegado. Se requieren permisos de administrador'
       });
     }
 
     next();
   } catch (error) {
     console.error('Error en middleware de administrador:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      message: 'Error interno del servidor' 
+      message: 'Error interno del servidor'
     });
   }
 };

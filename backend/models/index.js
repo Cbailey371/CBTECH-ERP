@@ -9,7 +9,8 @@ const UserCompany = require('./UserCompany');
 const Customer = require('./Customer');
 const Quotation = require('./Quotation');
 const QuotationItem = require('./QuotationItem');
-// const SalesOrder = require('./SalesOrder');
+const SalesOrder = require('./SalesOrder');
+const SalesOrderItem = require('./SalesOrderItem');
 const Product = require('./Product');
 const Project = require('./Project');
 const Task = require('./Task');
@@ -17,6 +18,8 @@ const Contract = require('./Contract');
 const Supplier = require('./Supplier');
 const PurchaseOrder = require('./PurchaseOrder');
 const PurchaseOrderItem = require('./PurchaseOrderItem');
+const PacProvider = require('./PacProvider');
+const FE_IssuerConfig = require('./FE_IssuerConfig');
 
 // Definir asociaciones
 // Usuarios y Roles (Many-to-Many)
@@ -155,6 +158,22 @@ PurchaseOrderItem.belongsTo(PurchaseOrder, { foreignKey: 'purchaseOrderId', as: 
 Product.hasMany(PurchaseOrderItem, { foreignKey: 'productId', as: 'purchaseOrderItems' });
 PurchaseOrderItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 
+// Órdenes de Venta (Sales Orders)
+Company.hasMany(SalesOrder, { foreignKey: 'companyId', as: 'salesOrders' });
+SalesOrder.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+
+Customer.hasMany(SalesOrder, { foreignKey: 'customerId', as: 'salesOrders' });
+SalesOrder.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+
+SalesOrder.hasMany(SalesOrderItem, { foreignKey: 'salesOrderId', as: 'items' });
+SalesOrderItem.belongsTo(SalesOrder, { foreignKey: 'salesOrderId', as: 'salesOrder' });
+
+Product.hasMany(SalesOrderItem, { foreignKey: 'productId', as: 'salesOrderItems' });
+SalesOrderItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
+
+Quotation.hasOne(SalesOrder, { foreignKey: 'quotationId', as: 'salesOrder' });
+SalesOrder.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
+
 const models = {
   User,
   Role,
@@ -173,6 +192,10 @@ const models = {
   Contract,
   PurchaseOrder,
   PurchaseOrderItem,
+  SalesOrder,
+  SalesOrderItem,
+  PacProvider,
+  FE_IssuerConfig,
   sequelize
 };
 

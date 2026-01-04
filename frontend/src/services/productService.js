@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api') + '/products';
 
-const getProducts = async (token, companyId, params = {}) => {
+export const getProducts = async (token, companyId, params = {}) => {
   try {
     const response = await axios.get(API_URL, {
       headers: {
@@ -17,7 +17,7 @@ const getProducts = async (token, companyId, params = {}) => {
   }
 };
 
-const getProduct = async (token, companyId, id) => {
+export const getProduct = async (token, companyId, id) => {
   try {
     const response = await axios.get(`${API_URL}/${id}`, {
       headers: {
@@ -31,7 +31,7 @@ const getProduct = async (token, companyId, id) => {
   }
 };
 
-const createProduct = async (token, companyId, data) => {
+export const createProduct = async (token, companyId, data) => {
   try {
     const response = await axios.post(API_URL, data, {
       headers: {
@@ -45,7 +45,7 @@ const createProduct = async (token, companyId, data) => {
   }
 };
 
-const updateProduct = async (token, companyId, id, data) => {
+export const updateProduct = async (token, companyId, id, data) => {
   try {
     const response = await axios.put(`${API_URL}/${id}`, data, {
       headers: {
@@ -59,7 +59,7 @@ const updateProduct = async (token, companyId, id, data) => {
   }
 };
 
-const deleteProduct = async (token, companyId, id) => {
+export const deleteProduct = async (token, companyId, id) => {
   try {
     const response = await axios.delete(`${API_URL}/${id}`, {
       headers: {

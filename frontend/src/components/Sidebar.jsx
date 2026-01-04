@@ -17,7 +17,8 @@ import {
   UserCheck,
   Building,
   UserCog,
-  BarChart
+  BarChart,
+  Banknote
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthProvider';
@@ -34,6 +35,7 @@ export default function Sidebar() {
     {
       icon: ShoppingCart, label: 'Ventas', path: '/quotations', submenu: [
         { icon: FileText, label: 'Cotizaciones', path: '/quotations' },
+        { icon: Banknote, label: 'Facturas', path: '/sales-orders' },
         { icon: Users, label: 'Clientes', path: '/customers' },
         { icon: ClipboardList, label: 'Contratos', path: '/contracts' }
       ]
@@ -50,7 +52,8 @@ export default function Sidebar() {
     {
       icon: Building2, label: 'Administración', path: '/admin/companies', submenu: [
         { icon: Building, label: 'Empresas', path: '/admin/companies' },
-        { icon: UserCog, label: 'Usuarios', path: '/admin/users' }
+        { icon: UserCog, label: 'Usuarios', path: '/admin/users' },
+        { icon: Settings, label: 'Proveedores PAC', path: '/admin/pac-providers' }
       ]
     }
   ];

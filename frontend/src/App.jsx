@@ -5,9 +5,15 @@ import CompanySelectionPage from './pages/CompanySelectionPage';
 import DashboardPage from './pages/DashboardPage';
 import CompaniesPage from './pages/admin/CompaniesPage';
 import UsersPage from './pages/admin/UsersPage';
+import FepaConfigPage from './pages/admin/FepaConfigPage';
 import CustomersPage from './pages/sales/CustomersPage';
 import QuotationsPage from './pages/sales/QuotationsPage';
 import QuotationForm from './pages/sales/QuotationForm';
+import PacProvidersPage from './pages/admin/PacProvidersPage';
+
+
+import SalesOrdersPage from './pages/sales/SalesOrdersPage';
+import SalesOrderForm from './pages/sales/SalesOrderForm';
 import ProductsPage from './pages/inventory/ProductsPage';
 import ProjectsPage from './pages/projects/ProjectsPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
@@ -58,11 +64,20 @@ function App() {
                 <Route path="/quotations" element={<QuotationsPage />} />
                 <Route path="/quotations/new" element={<QuotationForm />} />
                 <Route path="/quotations/:id" element={<QuotationForm />} />
+                <Route path="/sales-orders" element={<SalesOrdersPage />} />
+                <Route path="/sales-orders/new" element={<SalesOrderForm />} />
+                <Route path="/sales-orders/:id" element={<SalesOrderForm />} />
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/projects" element={<ProjectsPage />} />
                 <Route path="/projects/:id" element={<ProjectDetailPage />} />
                 <Route path="/admin/users" element={<UsersPage />} />
                 <Route path="/admin/companies" element={<CompaniesPage />} />
+
+
+                <Route path="/admin/users" element={<UsersPage />} />
+                <Route path="/admin/companies" element={<CompaniesPage />} />
+                <Route path="/admin/pac-providers" element={<PacProvidersPage />} />
+                <Route path="/admin/fepa-config" element={<FepaConfigPage />} />
                 <Route path="/contracts" element={<ContractsPage />} />
                 <Route path="/contracts/new" element={<ContractForm />} />
                 <Route path="/contracts/:id" element={<ContractDetail />} />

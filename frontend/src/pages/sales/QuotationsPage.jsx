@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthProvider';
 import * as quotationService from '../../services/quotationService';
-import { Plus, Search, Eye, Trash2 } from 'lucide-react';
+import * as salesOrderService from '../../services/salesOrderService';
+import { Plus, Search, Eye, Trash2, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -33,6 +34,11 @@ export default function QuotationsPage() {
     const [quotationToDelete, setQuotationToDelete] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
+
+    // Generate Invoice State
+    const [quotationToInvoice, setQuotationToInvoice] = useState(null);
+    const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+    const [generating, setGenerating] = useState(false);
 
     const [filters, setFilters] = useState({
         startDate: '',
@@ -91,6 +97,29 @@ export default function QuotationsPage() {
             console.error('Error updating quotation status:', error);
             alert('Error al actualizar estado de la cotización');
             fetchQuotations(pagination.current_page, searchTerm); // Revert on error
+        }
+    };
+
+    const handleCreateInvoiceClick = (quotation) => {
+        setQuotationToInvoice(quotation);
+        setIsGenerateModalOpen(true);
+    };
+
+    const confirmGenerateInvoice = async () => {
+        if (!quotationToInvoice) return;
+        setGenerating(true);
+        try {
+            const newOrder = await salesOrderService.createFromQuotation(token, selectedCompany.id, quotationToInvoice.id);
+            setIsGenerateModalOpen(false);
+            setQuotationToInvoice(null);
+            alert('Factura generada con éxito');
+            // Backend returns { success: true, orderId: ... }
+            navigate(`/sales-orders/${newOrder.orderId}`);
+        } catch (error) {
+            console.error(error);
+            alert('Error al generar factura: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setGenerating(false);
         }
     };
 
@@ -267,6 +296,17 @@ export default function QuotationsPage() {
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end space-x-2">
+                                                    {quotation.status === 'accepted' && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => handleCreateInvoiceClick(quotation)}
+                                                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                            title="Generar Factura"
+                                                        >
+                                                            <FileText className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
@@ -341,6 +381,25 @@ export default function QuotationsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div>
+
+            <Dialog open={isGenerateModalOpen} onOpenChange={setIsGenerateModalOpen}>
+                <DialogContent className="sm:max-w-[425px] bg-background border-border text-slate-200">
+                    <DialogHeader>
+                        <DialogTitle className="text-foreground">Generar Factura</DialogTitle>
+                        <DialogDescription className="text-muted-foreground">
+                            ¿Está seguro que desea generar una factura a partir de la cotización "{quotationToInvoice?.number}"?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setIsGenerateModalOpen(false)} disabled={generating} className="text-muted-foreground hover:text-foreground">
+                            Cancelar
+                        </Button>
+                        <Button onClick={confirmGenerateInvoice} disabled={generating} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                            {generating ? 'Generando...' : 'Confirmar'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div >
     );
 }

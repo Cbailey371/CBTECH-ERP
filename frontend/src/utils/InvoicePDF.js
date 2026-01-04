@@ -1,0 +1,308 @@
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import logo from '../assets/imprimiblelogo.jpg';
+
+// Helper to load image
+const loadImage = (src) => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+    });
+};
+
+export const generateInvoicePDF = async (invoice, company = {}) => {
+    try {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.width;
+
+        // --- Header ---
+
+        // Logo
+        try {
+            if (typeof logo === 'string') {
+                const img = await loadImage(logo);
+                doc.addImage(img, 'JPEG', 15, 10, 40, 15, undefined, 'FAST');
+            }
+        } catch (e) {
+            console.warn('Could not add logo', e);
+        }
+
+        // Helper for safe text
+        const safeText = (text, x, y, options) => {
+            const str = text !== null && text !== undefined ? String(text) : '';
+            doc.text(str, x, y, options);
+        };
+
+        // Company Info (Right aligned)
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        safeText(`${company.name || 'CBTECH SOLUTIONS'}`, pageWidth - 15, 15, { align: 'right' });
+        safeText(`RUC: ${company.taxId || ''} DV: ${company.dv || ''}`, pageWidth - 15, 20, { align: 'right' });
+        safeText(company.address || 'Panamá, Ciudad de Panamá', pageWidth - 15, 25, { align: 'right' });
+        safeText(company.email || 'info@cbtech.com', pageWidth - 15, 30, { align: 'right' });
+        const phoneText = company.phone ? `Tel: ${company.phone}` : '';
+        safeText(phoneText, pageWidth - 15, 35, { align: 'right' });
+
+        // Title
+        doc.setFontSize(20);
+        doc.setTextColor(40, 40, 40);
+        doc.text('FACTURA NO FISCAL', 15, 45);
+
+        // Invoice Details
+        doc.setFontSize(10);
+        doc.setTextColor(80);
+
+        // Helper to formatting date without timezone shift
+        const formatDate = (dateString) => {
+            if (!dateString) return new Date().toLocaleDateString();
+            const date = new Date(dateString);
+            return new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000).toLocaleDateString();
+        };
+
+        const detailsY = 55;
+        doc.text(`Número: ${invoice.number || '---'}`, 15, detailsY);
+        doc.text(`Fecha: ${formatDate(invoice.issueDate || invoice.date)}`, 15, detailsY + 5);
+        if (invoice.dueDate) {
+            doc.text(`Vencimiento: ${formatDate(invoice.dueDate)}`, 15, detailsY + 10);
+        }
+
+        // Customer Details (Right side, below company info)
+        doc.text(`Cliente:`, pageWidth - 80, detailsY);
+        doc.setFont(undefined, 'bold');
+        const clientName = invoice.customer?.name || (invoice.Customer ? invoice.Customer.name : 'Cliente');
+        safeText(clientName, pageWidth - 80, detailsY + 5);
+        doc.setFont(undefined, 'normal');
+
+        const clientRuc = invoice.customer?.taxId || (invoice.Customer ? invoice.Customer.taxId : '');
+        const clientDv = invoice.customer?.dv || (invoice.Customer ? invoice.Customer.dv : '');
+        if (clientRuc) {
+            safeText(`RUC: ${clientRuc} DV: ${clientDv}`, pageWidth - 80, detailsY + 10);
+        }
+
+        // --- Items Table ---
+        const tableColumn = ["Descripción", "Cant.", "Precio", "Desc.", "Total"];
+        const tableRows = [];
+
+        if (invoice.items && Array.isArray(invoice.items)) {
+            invoice.items.forEach(item => {
+                const qty = parseFloat(item.quantity) || 0;
+                const price = parseFloat(item.unitPrice) || 0;
+
+                // Calculate discrete discount for display
+                let discountAmt = 0;
+                if (item.discountType === 'percentage') {
+                    discountAmt = (qty * price) * (parseFloat(item.discountValue || 0) / 100);
+                } else {
+                    discountAmt = parseFloat(item.discountValue || 0);
+                }
+
+                let description = item.description || '';
+                if (item.productCode || item.productName) {
+                    const parts = [];
+                    if (item.productCode) parts.push(item.productCode);
+                    if (item.productName) parts.push(item.productName);
+                    const productLabel = parts.join(' - ');
+
+                    if (productLabel && description !== productLabel) {
+                        if (description) {
+                            description = `${productLabel}\n${description}`;
+                        } else {
+                            description = productLabel;
+                        }
+                    } else if (!description) {
+                        description = productLabel;
+                    }
+                }
+
+                const itemData = [
+                    String(description),
+                    String(qty),
+                    `$${price.toFixed(2)}`,
+                    `$${discountAmt.toFixed(2)}`,
+                    `$${(parseFloat(item.total) || 0).toFixed(2)}`
+                ];
+                tableRows.push(itemData);
+            });
+        }
+
+        try {
+            autoTable(doc, {
+                head: [tableColumn],
+                body: tableRows,
+                startY: 85,
+                theme: 'grid',
+                headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] },
+                styles: { fontSize: 9 },
+                columnStyles: {
+                    0: { cellWidth: 'auto' },
+                    1: { cellWidth: 15, halign: 'center' },
+                    2: { cellWidth: 25, halign: 'right' },
+                    3: { cellWidth: 25, halign: 'right' },
+                    4: { cellWidth: 25, halign: 'right' }
+                }
+            });
+        } catch (tableError) {
+            console.error('Error generating table:', tableError);
+            doc.text('Error al generar tabla de items', 15, 85);
+        }
+
+        // --- Footer / Totals ---
+        let finalY = 150;
+        if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
+            finalY = doc.lastAutoTable.finalY + 10;
+        } else {
+            finalY = 85 + (tableRows.length * 10) + 20;
+        }
+
+        let grossItemsTotal = 0;
+        let totalItemDiscounts = 0;
+
+        if (invoice.items && Array.isArray(invoice.items)) {
+            invoice.items.forEach(item => {
+                const qty = parseFloat(item.quantity) || 0;
+                const price = parseFloat(item.unitPrice) || 0;
+                const itemGross = qty * price;
+                let itemDiscount = 0;
+                if (item.discountType === 'percentage') {
+                    itemDiscount = itemGross * (parseFloat(item.discountValue || 0) / 100);
+                } else {
+                    itemDiscount = parseFloat(item.discountValue || 0);
+                }
+                grossItemsTotal += itemGross;
+                totalItemDiscounts += itemDiscount;
+            });
+        }
+
+        const netItemsTotal = grossItemsTotal - totalItemDiscounts;
+
+        let globalDiscountAmt = 0; // Using invoice.discount which likely stores the calculated amount, or recalculate if type present
+        if (invoice.discount) {
+            // If invoice has pre-calculated total discount
+            // But we need to separate Global from Line. 
+            // If we follow frontend logic:
+            if (invoice.discountType === 'percentage') {
+                globalDiscountAmt = netItemsTotal * (parseFloat(invoice.discountValue || 0) / 100);
+            } else if (invoice.discountValue) {
+                globalDiscountAmt = parseFloat(invoice.discountValue || 0);
+            } else {
+                // Fallback if passing simple 'discount' field
+                globalDiscountAmt = parseFloat(invoice.discount || 0);
+            }
+        }
+
+        const totalDiscountApplied = totalItemDiscounts + globalDiscountAmt;
+
+        const totalsX = pageWidth - 70;
+        doc.setFontSize(10);
+        doc.setTextColor(80);
+
+        // 1. Subtotal Bruto
+        doc.text('Subtotal Bruto:', totalsX, finalY);
+        doc.text(`$${grossItemsTotal.toFixed(2)}`, pageWidth - 15, finalY, { align: 'right' });
+
+        let currentY = finalY;
+
+        // 2. Descuentos por Línea
+        if (totalItemDiscounts > 0) {
+            currentY += 6;
+            doc.text('Descuentos por Línea:', totalsX, currentY);
+            doc.text(`- $${totalItemDiscounts.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+        }
+
+        // 3. Descuento Global
+        if (globalDiscountAmt > 0) {
+            currentY += 6;
+            doc.setFontSize(9);
+            doc.text('Descuento Global:', totalsX, currentY);
+            doc.setFontSize(10);
+            doc.text(`- $${globalDiscountAmt.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+        }
+
+        // 4. Ahorro
+        if (totalDiscountApplied > 0) {
+            currentY += 6;
+            doc.setTextColor(22, 163, 74);
+            doc.setFont(undefined, 'bold');
+            doc.text('Total de Ahorro:', totalsX, currentY);
+            doc.text(`$${totalDiscountApplied.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+            doc.setTextColor(80);
+            doc.setFont(undefined, 'normal');
+        }
+
+        // 5. Subtotal Neto
+        currentY += 6;
+        doc.text('Subtotal Neto:', totalsX, currentY);
+        const taxable = Math.max(0, netItemsTotal - globalDiscountAmt);
+        doc.text(`$${taxable.toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+
+        // 6. Impuestos
+        currentY += 6;
+        let taxRateVal = parseFloat(invoice.taxRate) || 0;
+        // Heuristic: If rate is <= 1 (and non-zero), assume decimal (e.g. 0.07) -> multiply by 100
+        // If > 1, assume percentage (e.g. 7) -> use as is.
+        if (taxRateVal > 0 && taxRateVal <= 1) {
+            taxRateVal = taxRateVal * 100;
+        }
+
+        const taxRateStr = Number.isInteger(taxRateVal) ? taxRateVal.toString() : taxRateVal.toFixed(2);
+
+        doc.text(`Impuestos (${taxRateVal > 0 ? taxRateStr + '%' : 'Exento'}):`, totalsX, currentY);
+        doc.text(`$${(parseFloat(invoice.tax) || 0).toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+
+        // 7. TOTAL A PAGAR
+        currentY += 8;
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text('TOTAL A PAGAR:', totalsX, currentY);
+        doc.text(`$${(parseFloat(invoice.total) || 0).toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+
+        // Notes
+        if (invoice.notes) {
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            doc.text('Notas:', 15, finalY);
+            doc.setFont(undefined, 'normal');
+            doc.setTextColor(100);
+            try {
+                const safeNotes = String(invoice.notes);
+                const splitNotes = doc.splitTextToSize(safeNotes, 100);
+                doc.text(splitNotes, 15, finalY + 5);
+            } catch (noteError) {
+                console.warn('Error rendering notes', noteError);
+            }
+        }
+
+        // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text('Generado por CBTECH-ERP', 15, doc.internal.pageSize.height - 10);
+
+        let safeNumber = 'borrador';
+        if (invoice && invoice.number) {
+            safeNumber = String(invoice.number).replace(/[^a-zA-Z0-9_\-.]/g, '_');
+        }
+        const filename = `factura-${safeNumber}.pdf`;
+
+        const pdfOutput = doc.output('arraybuffer');
+        const blob = new Blob([pdfOutput], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 2000);
+
+        return true;
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        throw error;
+    }
+};

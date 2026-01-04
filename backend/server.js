@@ -100,6 +100,9 @@ app.use('/api/contracts', require('./routes/contracts'));
 app.use('/api/suppliers', require('./routes/suppliers'));
 app.use('/api/purchase-orders', require('./routes/purchaseOrders'));
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/fepa', require('./routes/fepaRoutes'));
+app.use('/api/sales-orders', require('./routes/salesOrderRoutes'));
+app.use('/api/pac-providers', require('./routes/pacProviders'));
 
 // Ruta de prueba
 app.get('/', (req, res) => {

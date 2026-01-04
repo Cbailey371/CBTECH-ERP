@@ -409,4 +409,53 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
+// GET /api/companies/:id/fiscal-config - Obtener configuración fiscal
+router.get('/:id/fiscal-config', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { FE_IssuerConfig } = require('../models');
+    const config = await FE_IssuerConfig.findOne({ where: { companyId: req.params.id } });
+    res.json({ success: true, config });
+  } catch (error) {
+    console.error('Error getting fiscal config:', error);
+    res.status(500).json({ message: 'Error interno' });
+  }
+});
+
+// PUT /api/companies/:id/fiscal-config - Actualizar configuración fiscal
+router.put('/:id/fiscal-config', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { FE_IssuerConfig } = require('../models');
+    const companyId = req.params.id;
+    const {
+      ruc, dv, razonSocial, direccion, sucursal, puntoDeVenta,
+      pacProvider, environment, pacUser, pacPassword, resolutionNumber, apiKey
+    } = req.body;
+
+    let config = await FE_IssuerConfig.findOne({ where: { companyId } });
+
+    const data = {
+      companyId,
+      ruc, dv, razonSocial, direccion, sucursal, puntoDeVenta,
+      pacProvider, environment,
+      authData: {
+        user: pacUser,
+        password: pacPassword,
+        apiKey: apiKey, // Added apiKey
+        resolutionNumber
+      }
+    };
+
+    if (config) {
+      await config.update(data);
+    } else {
+      config = await FE_IssuerConfig.create(data);
+    }
+
+    res.json({ success: true, config });
+  } catch (error) {
+    console.error('Error updating fiscal config:', error);
+    res.status(500).json({ message: 'Error interno: ' + error.message });
+  }
+});
+
 module.exports = router;

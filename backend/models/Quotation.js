@@ -44,7 +44,7 @@ const Quotation = sequelize.define('Quotation', {
     field: 'valid_until'
   },
   status: {
-    type: DataTypes.ENUM('draft', 'sent', 'accepted', 'rejected', 'expired'),
+    type: DataTypes.ENUM('draft', 'sent', 'accepted', 'rejected', 'expired', 'invoiced'),
     defaultValue: 'draft',
     allowNull: false
   },

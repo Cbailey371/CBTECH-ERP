@@ -39,3 +39,13 @@ export const deleteCompany = async (token, id) => {
   const response = await axios.delete(`${API_URL}/companies/${id}`, getAuthHeader(token));
   return response.data;
 };
+
+export const getFiscalConfig = async (token, companyId) => {
+  const response = await axios.get(`${API_URL}/companies/${companyId}/fiscal-config`, getAuthHeader(token));
+  return response.data;
+};
+
+export const updateFiscalConfig = async (token, companyId, data) => {
+  const response = await axios.put(`${API_URL}/companies/${companyId}/fiscal-config`, data, getAuthHeader(token));
+  return response.data;
+};
