@@ -4,33 +4,57 @@ module.exports = {
     async up(queryInterface, Sequelize) {
         const transaction = await queryInterface.sequelize.transaction();
         try {
-            // 1. Add columns to pac_providers
-            // Check if columns exist first to avoid errors if run multiple times or if sync was used partially
-            const tableInfo = await queryInterface.describeTable('pac_providers');
+            // 1. Add columns to pac_providers OR create table if missing
 
-            if (!tableInfo.test_url) {
-                await queryInterface.addColumn('pac_providers', 'test_url', {
-                    type: Sequelize.STRING,
-                    allowNull: true
-                }, { transaction });
-            }
+            // Check if table exists
+            const tableExists = await queryInterface.tableExists('pac_providers');
 
-            if (!tableInfo.prod_url) {
-                await queryInterface.addColumn('pac_providers', 'prod_url', {
-                    type: Sequelize.STRING,
-                    allowNull: true
+            if (!tableExists) {
+                // Table doesn't exist, create it with all columns
+                await queryInterface.createTable('pac_providers', {
+                    id: {
+                        allowNull: false,
+                        autoIncrement: true,
+                        primaryKey: true,
+                        type: Sequelize.INTEGER
+                    },
+                    code: { type: Sequelize.STRING, allowNull: false, unique: true },
+                    name: { type: Sequelize.STRING, allowNull: false },
+                    website: { type: Sequelize.STRING },
+                    test_url: { type: Sequelize.STRING },
+                    prod_url: { type: Sequelize.STRING },
+                    auth_type: {
+                        type: Sequelize.ENUM('API_KEY', 'USER_PASS', 'OAUTH'),
+                        defaultValue: 'API_KEY'
+                    },
+                    is_active: { type: Sequelize.BOOLEAN, defaultValue: true },
+                    created_at: { allowNull: false, type: Sequelize.DATE },
+                    updated_at: { allowNull: false, type: Sequelize.DATE }
                 }, { transaction });
-            }
+            } else {
+                // Table exists, check for columns
+                const tableInfo = await queryInterface.describeTable('pac_providers');
 
-            if (!tableInfo.auth_type) {
-                // ENUM handling for Postgres can be tricky. Using STRING for safety in migration if generic, 
-                // or explicitly handling ENUM type creation. 
-                // Simplest portable way given prior issues: Use STRING or ensure ENUM type exists.
-                // Let's try standard ENUM.
-                await queryInterface.addColumn('pac_providers', 'auth_type', {
-                    type: Sequelize.ENUM('API_KEY', 'USER_PASS', 'OAUTH'),
-                    defaultValue: 'API_KEY'
-                }, { transaction });
+                if (!tableInfo.test_url) {
+                    await queryInterface.addColumn('pac_providers', 'test_url', {
+                        type: Sequelize.STRING,
+                        allowNull: true
+                    }, { transaction });
+                }
+
+                if (!tableInfo.prod_url) {
+                    await queryInterface.addColumn('pac_providers', 'prod_url', {
+                        type: Sequelize.STRING,
+                        allowNull: true
+                    }, { transaction });
+                }
+
+                if (!tableInfo.auth_type) {
+                    await queryInterface.addColumn('pac_providers', 'auth_type', {
+                        type: Sequelize.ENUM('API_KEY', 'USER_PASS', 'OAUTH'),
+                        defaultValue: 'API_KEY'
+                    }, { transaction });
+                }
             }
 
             // 2. Create fe_issuer_configs table
