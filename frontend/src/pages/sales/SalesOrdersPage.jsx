@@ -106,9 +106,7 @@ export default function SalesOrdersPage() {
                             >
                                 <option value="">Todos</option>
                                 <option value="draft">No Fiscalizada</option>
-                                <option value="confirmed">Confirmada</option>
                                 <option value="fulfilled">Fiscalizada</option>
-                                <option value="cancelled">Cancelada</option>
                             </select>
                         </div>
                     </div>
