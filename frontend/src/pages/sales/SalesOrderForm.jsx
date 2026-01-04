@@ -634,21 +634,7 @@ export default function SalesOrderForm() {
                 </CardContent>
             </Card>
 
-            <Card className="border-red-500 border-2">
-                <CardHeader><CardTitle>Debug Info (Remove Later)</CardTitle></CardHeader>
-                <CardContent>
-                    <pre className="text-xs overflow-auto">
-                        {JSON.stringify({
-                            customerId: formData.customerId,
-                            customersCount: customers.length,
-                            customersSample: customers.slice(0, 2),
-                            isEditMode,
-                            paramsId: id,
-                            LOGS: debugLog
-                        }, null, 2)}
-                    </pre>
-                </CardContent>
-            </Card>
+
         </div >
     );
 }
