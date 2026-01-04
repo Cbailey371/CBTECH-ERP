@@ -65,10 +65,27 @@ const generateInvoicePdf = async (order, company, issuerConfig = null) => {
                                     columns: [
                                         {
                                             width: '*',
-                                            text: [
-                                                { text: 'Cliente: ', style: 'label' }, { text: (order.customer?.name || 'Consumidor Final') + '\n' },
-                                                { text: 'RUC/Cédula: ', style: 'label' }, { text: (order.customer?.taxId || 'N/A') + '\n' },
-                                                { text: 'Dirección: ', style: 'label' }, { text: (order.customer?.address || 'N/A') }
+                                            stack: [
+                                                {
+                                                    text: [
+                                                        { text: 'Cliente: ', style: 'label' },
+                                                        { text: (order.customer?.name || 'Consumidor Final'), style: 'value' }
+                                                    ],
+                                                    margin: [0, 0, 0, 2]
+                                                },
+                                                {
+                                                    text: [
+                                                        { text: 'RUC/Cédula: ', style: 'label' },
+                                                        { text: (order.customer?.taxId || 'N/A'), style: 'value' }
+                                                    ],
+                                                    margin: [0, 0, 0, 2]
+                                                },
+                                                {
+                                                    text: [
+                                                        { text: 'Dirección: ', style: 'label' },
+                                                        { text: (order.customer?.address || 'N/A'), style: 'value' }
+                                                    ]
+                                                }
                                             ]
                                         }
                                     ]
