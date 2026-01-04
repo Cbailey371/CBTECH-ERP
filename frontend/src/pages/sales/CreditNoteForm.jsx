@@ -59,10 +59,14 @@ const CreditNoteForm = () => {
     const fetchEligibleOrders = async () => {
         try {
             console.log('Fetching eligible orders for company:', selectedCompany?.id);
-            // Fetch orders with status = fulfilled and existing in FE_Document (ideally)
-            // For now, just status=fulfilled
-            const baseUrl = import.meta.env.VITE_API_URL || '';
-            const url = `${baseUrl}/api/sales-orders?status=fulfilled&limit=100`;
+
+            // Fix URL construction: Check if VITE_API_URL already contains '/api'
+            const envUrl = import.meta.env.VITE_API_URL || '';
+            // If envUrl is defined and ends with /api, don't duplicate it. 
+            // If it's empty (dev proxy) or just domain, append /api.
+            const urlPath = envUrl.endsWith('/api') ? '/sales-orders' : '/api/sales-orders';
+            const url = `${envUrl}${urlPath}?status=fulfilled&limit=100`;
+
             console.log('Fetch URL:', url);
 
             const response = await fetch(url, {
@@ -71,8 +75,8 @@ const CreditNoteForm = () => {
                     'x-company-id': selectedCompany.id
                 }
             });
+
             const data = await response.json();
-            console.log('Fetch Orders Response:', data);
 
             if (data.success) {
                 setOrders(data.orders);
