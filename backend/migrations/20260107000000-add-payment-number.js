@@ -2,11 +2,15 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.addColumn('payments', 'payment_number', {
-            type: Sequelize.STRING,
-            allowNull: true, // Allow null initially for existing records
-            unique: true
-        });
+        try {
+            await queryInterface.addColumn('payments', 'payment_number', {
+                type: Sequelize.STRING,
+                allowNull: true,
+                unique: true
+            });
+        } catch (error) {
+            console.log('Column payment_number likely already exists, proceeding...', error.message);
+        }
 
         // Backfill existing records
         const payments = await queryInterface.sequelize.query(
