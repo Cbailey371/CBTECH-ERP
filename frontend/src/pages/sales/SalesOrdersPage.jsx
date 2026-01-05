@@ -46,20 +46,16 @@ export default function SalesOrdersPage() {
         }
     };
 
-    const getStatusBadge = (status) => {
-        const styles = {
-            draft: 'bg-muted text-muted-foreground',
-            confirmed: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-            fulfilled: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-            cancelled: 'bg-destructive/10 text-destructive border-destructive/20'
-        };
-        const labels = {
-            draft: 'No Fiscalizada',
-            confirmed: 'Confirmada',
-            fulfilled: 'Fiscalizada', // Or fulfilled
-            cancelled: 'Cancelada'
-        };
-        return <Badge variant="outline" className={styles[status]}>{labels[status] || status}</Badge>;
+    const getStatusBadge = (order) => {
+        if (order.status === 'draft') return <Badge variant="outline" className="bg-muted text-muted-foreground border-border">No Fiscalizada</Badge>;
+        if (order.status === 'cancelled') return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">Cancelada</Badge>;
+
+        // Priority to Payment Status
+        if (order.paymentStatus === 'paid') return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Pagada</Badge>;
+        if (order.paymentStatus === 'partial') return <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">Abono</Badge>;
+
+        // Default for confirmed/fulfilled but unpaid
+        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">Fiscalizada</Badge>;
     };
 
     return (
@@ -135,7 +131,7 @@ export default function SalesOrdersPage() {
                                         <TableCell>{order.customer?.name}</TableCell>
                                         <TableCell>{new Date(order.issueDate).toLocaleDateString()}</TableCell>
                                         <TableCell>${parseFloat(order.total).toFixed(2)}</TableCell>
-                                        <TableCell>{getStatusBadge(order.status)}</TableCell>
+                                        <TableCell>{getStatusBadge(order)}</TableCell>
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="icon" onClick={() => navigate(`/sales-orders/${order.id}`)}>
                                                 <Eye className="w-4 h-4" />

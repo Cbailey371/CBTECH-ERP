@@ -21,6 +21,7 @@ const PurchaseOrderItem = require('./PurchaseOrderItem');
 const PacProvider = require('./PacProvider');
 const FE_IssuerConfig = require('./FE_IssuerConfig');
 const CreditNote = require('./CreditNote');
+const Payment = require('./Payment');
 
 // Definir asociaciones
 // Usuarios y Roles (Many-to-Many)
@@ -183,6 +184,17 @@ CreditNote.belongsTo(SalesOrder, { foreignKey: 'salesOrderId', as: 'salesOrder' 
 CreditNote.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
 CreditNote.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 CreditNote.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+// Payments
+Payment.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+Payment.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+Payment.belongsTo(SalesOrder, { foreignKey: 'salesOrderId', as: 'salesOrder' });
+Payment.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
+SalesOrder.hasMany(Payment, { foreignKey: 'salesOrderId', as: 'payments' });
+Customer.hasMany(Payment, { foreignKey: 'customerId', as: 'payments' });
+Company.hasMany(Payment, { foreignKey: 'companyId', as: 'payments' });
+
 const models = {
   User,
   Role,
@@ -206,6 +218,7 @@ const models = {
   PacProvider,
   FE_IssuerConfig,
   CreditNote,
+  Payment,
   sequelize
 };
 

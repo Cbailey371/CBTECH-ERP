@@ -84,7 +84,6 @@ export default function CompanyModal({ isOpen, onClose, onSave, company, loading
                             pacProvider: c.pacProvider || 'WEBPOS',
                             environment: c.environment || 'TEST',
                             pacUser: c.authData?.user || '',
-                            pacUser: c.authData?.user || '',
                             pacPassword: c.authData?.password || '',
                             apiKey: c.authData?.apiKey || '',
                             resolutionNumber: c.authData?.resolutionNumber || ''
@@ -100,7 +99,6 @@ export default function CompanyModal({ isOpen, onClose, onSave, company, loading
                             puntoDeVenta: '01',
                             pacProvider: 'WEBPOS',
                             environment: 'TEST',
-                            pacUser: '',
                             pacUser: '',
                             pacPassword: '',
                             apiKey: '',

@@ -16,6 +16,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '../../components/ui/Dialog';
+import { FileText } from 'lucide-react';
+import paymentService from '../../services/paymentService';
+import { generateStatementPDF } from '../../utils/StatementPDF';
 
 export default function CustomersPage() {
     const { token, selectedCompany } = useAuth();
@@ -133,6 +136,35 @@ export default function CustomersPage() {
         }
     };
 
+    const handleDownloadStatement = async (customer) => {
+        // Prevent multiple clicks if needed, or simple loading toast
+        if (!confirm(`¿Generar Estado de Cuenta para ${customer.name}?`)) return;
+
+        try {
+            console.log('Fetching statement for customer:', customer.id);
+            const data = await paymentService.getStatement(token, selectedCompany.id, customer.id);
+            console.log('Statement API Response:', data);
+
+            if (data.success) {
+                try {
+                    console.log('Generating PDF with data:', data.data);
+                    generateStatementPDF(data.data, selectedCompany);
+                } catch (pdfError) {
+                    console.error('PDF Generation Error:', pdfError);
+                    alert('Error generando el archivo PDF: ' + pdfError.message);
+                }
+            } else {
+                console.warn('API returned success:false', data);
+                alert('No se pudo obtener la información: ' + (data.message || 'Error desconocido'));
+            }
+        } catch (error) {
+            console.error('API Call Error:', error);
+            // Show detailed error if available
+            const msg = error.message || (error.code ? `Error Code: ${error.code}` : 'Error de conexión');
+            alert('Error al generar estado de cuenta: ' + msg);
+        }
+    };
+
     return (
         <div className="space-y-6 animate-fadeIn">
             <div className="flex justify-between items-center">
@@ -219,6 +251,9 @@ export default function CustomersPage() {
                                                 <div className="flex justify-end space-x-2">
                                                     <Button variant="ghost" size="icon" onClick={() => handleEdit(customer)} className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted">
                                                         <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleDownloadStatement(customer)} className="h-8 w-8 text-muted-foreground hover:text-blue-600 hover:bg-blue-50" title="Descargar Estado de Cuenta">
+                                                        <FileText className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"

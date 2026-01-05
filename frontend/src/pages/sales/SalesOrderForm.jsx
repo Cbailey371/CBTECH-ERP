@@ -8,7 +8,8 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Plus, Trash2, Save, ArrowLeft, Send, Printer, Calculator } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Send, Printer, Calculator, CreditCard, X } from 'lucide-react';
+import paymentService from '../../services/paymentService';
 import { Combobox } from '../../components/ui/Combobox';
 import { Textarea } from '../../components/ui/Textarea';
 
@@ -48,6 +49,16 @@ export default function SalesOrderForm() {
         globalDiscount: 0,
         totalSavings: 0
     });
+
+    // Payment State
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [paymentData, setPaymentData] = useState({
+        amount: '',
+        method: 'ach',
+        reference: '',
+        notes: ''
+    });
+    const [submittingPayment, setSubmittingPayment] = useState(false);
 
     const isEditMode = !!id;
 
@@ -117,7 +128,7 @@ export default function SalesOrderForm() {
                     if (firstTaxed) inferredRate = parseFloat(firstTaxed.taxRate) * 100;
                 }
 
-                const newData = {
+                setFormData({
                     ...order,
                     customerId: String(order.customerId || ''),
                     date: order.issueDate,
@@ -134,17 +145,25 @@ export default function SalesOrderForm() {
                         return {
                             ...i,
                             productId: i.productId || '',
-                            description: i.description,
+                            description: i.description || i.product?.name,
                             quantity: i.quantity,
                             unitPrice: i.unitPrice,
                             discountType: 'amount', // Defaulting to amount since specific type isn't stored per item
                             discountValue: parseFloat(i.discount) || 0,
                             total: i.total
                         };
-                    })
-                };
-                console.log('Setting FormData:', newData);
-                setFormData(newData);
+                    }),
+                    // Ensure these are set correct for display
+                    paymentStatus: order.paymentStatus || 'unpaid',
+                    paidAmount: parseFloat(order.paidAmount) || 0,
+                    balance: parseFloat(order.balance) || 0,
+                    payments: order.payments || [] // Store payments list
+                });
+
+                // Recalculate totals based on loaded items to ensure consistency
+                // This call needs to be updated to match the calculateTotals signature if it was changed.
+                // Assuming calculateTotals uses formData state, we just need to ensure formData is set first.
+                // The original code already calls calculateTotals via useEffect after formData is set.
             }
         } catch (error) {
             console.error('Error loading order:', error);
@@ -328,6 +347,23 @@ export default function SalesOrderForm() {
         }
     };
 
+    const handleDownloadStatement = async (customer) => {
+        // Prevent multiple clicks if needed, or simple loading toast
+        if (!confirm(`¿Generar Estado de Cuenta para ${customer.name}?`)) return;
+
+        try {
+            const data = await paymentService.getStatement(token, selectedCompany.id, customer.id);
+            if (data.success) {
+                generateStatementPDF(data.data, selectedCompany);
+            } else {
+                alert('No se pudo obtener la información del estado de cuenta.');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Error al generar estado de cuenta');
+        }
+    };
+
     const handleEmitFiscal = async () => {
         if (!confirm('¿Está seguro de emitir esta factura fiscalmente? Esta acción no se puede deshacer.')) return;
         setLoading(true);
@@ -369,6 +405,43 @@ export default function SalesOrderForm() {
             alert('Error al generar PDF: ' + (error.message || error));
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleRegisterPayment = async (e) => {
+        e.preventDefault();
+        setSubmittingPayment(true);
+        try {
+            await paymentService.createPayment(token, selectedCompany.id, {
+                salesOrderId: id,
+                customerId: formData.customerId,
+                amount: parseFloat(paymentData.amount),
+                method: paymentData.method,
+                reference: paymentData.reference,
+                notes: paymentData.notes
+            });
+            alert('Pago registrado exitosamente');
+            setShowPaymentModal(false);
+            setPaymentData({ amount: '', method: 'ach', reference: '', notes: '' });
+            loadOrder(); // Reload to update balance
+        } catch (error) {
+            console.error('Payment Error:', error);
+            alert('Error al registrar pago: ' + (error.message || 'Error desconocido'));
+        } finally {
+            setSubmittingPayment(false);
+        }
+    };
+
+    const handleDeletePayment = async (payment) => {
+        if (!confirm(`¿Está seguro de anular el pago ${payment.paymentNumber || ''} de $${payment.amount}? El saldo de la factura será actualizado.`)) return;
+
+        try {
+            await paymentService.deletePayment(token, selectedCompany.id, payment.id);
+            alert('Pago eliminado exitosamente');
+            loadOrder();
+        } catch (error) {
+            console.error('Delete Payment Error:', error);
+            alert('Error al eliminar pago: ' + (error.message || 'Error desconocido'));
         }
     };
 
@@ -415,6 +488,11 @@ export default function SalesOrderForm() {
                     </h1>
                 </div>
                 <div className="space-x-2">
+                    {isEditMode && formData.status !== 'draft' && formData.balance > 0 && (
+                        <Button onClick={() => setShowPaymentModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                            <CreditCard className="w-4 h-4 mr-2" /> Registrar Pago
+                        </Button>
+                    )}
                     {isEditMode && (
                         <Button variant="outline" onClick={handleDownloadPdf}>
                             <Printer className="w-4 h-4 mr-2" /> PDF No Fiscal
@@ -650,10 +728,70 @@ export default function SalesOrderForm() {
                                 <span>Total:</span>
                                 <span>${totals.total.toFixed(2)}</span>
                             </div>
+
+                            {isEditMode && (
+                                <div className="mt-4 pt-4 border-t border-border">
+                                    <div className="flex justify-between text-sm text-green-600">
+                                        <span>Pagado:</span>
+                                        <span>${(formData.paidAmount || 0).toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between font-bold text-red-600 mt-1">
+                                        <span>Saldo Pendiente:</span>
+                                        <span>${(formData.balance || 0).toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Payments History Section */}
+            {(isEditMode && formData.payments && formData.payments.length > 0) && (
+                <Card>
+                    <CardHeader><CardTitle>Historial de Pagos</CardTitle></CardHeader>
+                    <CardContent>
+                        <div className="rounded-md border border-border overflow-hidden">
+                            <Table>
+                                <TableHeader className="bg-muted/50">
+                                    <TableRow>
+                                        <TableHead>Código</TableHead>
+                                        <TableHead>Fecha</TableHead>
+                                        <TableHead>Método</TableHead>
+                                        <TableHead>Referencia</TableHead>
+                                        <TableHead>Notas</TableHead>
+                                        <TableHead className="text-right">Monto</TableHead>
+                                        <TableHead className="text-right w-[50px]"></TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {formData.payments.map((payment) => (
+                                        <TableRow key={payment.id}>
+                                            <TableCell className="font-mono text-sm">{payment.paymentNumber || '-'}</TableCell>
+                                            <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
+                                            <TableCell className="capitalize">{payment.method}</TableCell>
+                                            <TableCell>{payment.reference || '-'}</TableCell>
+                                            <TableCell className="text-muted-foreground italic">{payment.notes || '-'}</TableCell>
+                                            <TableCell className="text-right font-medium">${parseFloat(payment.amount).toFixed(2)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-red-600 hover:bg-red-50"
+                                                    onClick={() => handleDeletePayment(payment)}
+                                                    title="Eliminar Pago"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             <Card>
                 <CardHeader><CardTitle>Notas</CardTitle></CardHeader>
@@ -669,6 +807,72 @@ export default function SalesOrderForm() {
             </Card>
 
 
+
+
+            {/* Payment Modal */}
+            {
+                showPaymentModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div className="bg-background border border-border p-6 rounded-lg w-full max-w-md shadow-xl animate-in fade-in zoom-in-95 duration-300">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-bold">Registrar Pago</h3>
+                                <button onClick={() => setShowPaymentModal(false)} className="text-muted-foreground hover:text-foreground">
+                                    <X size={20} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleRegisterPayment} className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium">Monto a Pagar</label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        max={formData.balance}
+                                        required
+                                        value={paymentData.amount}
+                                        onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
+                                    />
+                                    <p className="text-xs text-muted-foreground mt-1">Saldo pendiente: ${parseFloat(formData.balance).toFixed(2)}</p>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Método</label>
+                                    <select
+                                        className="w-full h-10 px-3 rounded-md border border-input bg-background/50"
+                                        value={paymentData.method}
+                                        onChange={(e) => setPaymentData({ ...paymentData, method: e.target.value })}
+                                    >
+                                        <option value="ach">ACH / Transferencia</option>
+                                        <option value="check">Cheque</option>
+                                        <option value="cash">Efectivo</option>
+                                        <option value="credit_card">Tarjeta Crédito</option>
+                                        <option value="other">Otro</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Referencia / Nro. Cheque</label>
+                                    <Input
+                                        value={paymentData.reference}
+                                        onChange={(e) => setPaymentData({ ...paymentData, reference: e.target.value })}
+                                        placeholder="Ej: ACH-12345"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Notas</label>
+                                    <Textarea
+                                        value={paymentData.notes}
+                                        onChange={(e) => setPaymentData({ ...paymentData, notes: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-2 pt-2">
+                                    <Button type="button" variant="ghost" onClick={() => setShowPaymentModal(false)}>Cancelar</Button>
+                                    <Button type="submit" disabled={submittingPayment}>
+                                        {submittingPayment ? 'Registrando...' : 'Confirmar Pago'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
         </div >
     );
 }

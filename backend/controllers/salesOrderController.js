@@ -1,4 +1,4 @@
-const { sequelize, SalesOrder, SalesOrderItem, Customer, Product, Quotation, QuotationItem, Company, FE_IssuerConfig } = require('../models');
+const { sequelize, SalesOrder, SalesOrderItem, Customer, Product, Quotation, QuotationItem, Company, FE_IssuerConfig, Payment } = require('../models');
 const { Op } = require('sequelize');
 const { generateInvoicePdf } = require('../services/pdf/invoicePdfGenerator');
 
@@ -8,7 +8,8 @@ const getOrder = async (id, companyId) => {
         where: { id, companyId },
         include: [
             { model: Customer, as: 'customer' },
-            { model: SalesOrderItem, as: 'items', include: [{ model: Product, as: 'product' }] }
+            { model: SalesOrderItem, as: 'items', include: [{ model: Product, as: 'product' }] },
+            { model: Payment, as: 'payments' }
         ]
     });
 };
@@ -28,8 +29,8 @@ exports.getOrders = async (req, res) => {
         }
         if (search) {
             whereClause[Op.or] = [
-                { orderNumber: { [Op.iLike]: `%${search}%` } },
-                { '$customer.name$': { [Op.iLike]: `%${search}%` } }
+                { orderNumber: { [Op.iLike]: `% ${search}% ` } },
+                { '$customer.name$': { [Op.iLike]: `% ${search}% ` } }
             ];
         }
 
@@ -84,7 +85,7 @@ exports.createOrder = async (req, res) => {
 
         // Generate Number
         const count = await SalesOrder.count({ where: { companyId }, transaction: t });
-        const orderNumber = `F-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+        const orderNumber = `F - ${new Date().getFullYear()} -${String(count + 1).padStart(4, '0')} `;
 
         // Calculate Totals
         let subtotal = 0, taxTotal = 0;
@@ -203,7 +204,7 @@ exports.createFromQuotation = async (req, res) => {
 
         // Generate Number
         const count = await SalesOrder.count({ where: { companyId }, transaction: t });
-        const orderNumber = `F-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+        const orderNumber = `F - ${new Date().getFullYear()} -${String(count + 1).padStart(4, '0')} `;
         console.log('Generated Order Number:', orderNumber);
 
         // Create Order
@@ -221,7 +222,7 @@ exports.createFromQuotation = async (req, res) => {
             subtotal: quotation.subtotal,
             taxTotal: quotation.tax,
             total: quotation.total,
-            notes: `Generado desde Cotización ${quotation.number}. ${quotation.notes || ''}`,
+            notes: `Generado desde Cotización ${quotation.number}. ${quotation.notes || ''} `,
             createdBy: req.user.id
         };
         console.log('Creating Order Header:', orderData);
@@ -279,7 +280,7 @@ exports.downloadPdf = async (req, res) => {
         const pdfBuffer = await generateInvoicePdf(order, company, issuerConfig);
 
         res.contentType('application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="Factura_${order.orderNumber}.pdf"`);
+        res.setHeader('Content-Disposition', `inline; filename = "Factura_${order.orderNumber}.pdf"`);
         res.send(pdfBuffer);
 
     } catch (error) {

@@ -97,6 +97,23 @@ const SalesOrder = sequelize.define('SalesOrder', {
     allowNull: false,
     defaultValue: 0
   },
+  paymentStatus: {
+    type: DataTypes.ENUM('unpaid', 'partial', 'paid'),
+    allowNull: false,
+    defaultValue: 'unpaid',
+    field: 'payment_status'
+  },
+  paidAmount: {
+    type: DataTypes.DECIMAL(18, 2),
+    allowNull: false,
+    defaultValue: 0,
+    field: 'paid_amount'
+  },
+  balance: {
+    type: DataTypes.DECIMAL(18, 2),
+    allowNull: false,
+    defaultValue: 0
+  },
   notes: {
     type: DataTypes.TEXT,
     allowNull: true

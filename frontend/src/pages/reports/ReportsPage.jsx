@@ -8,7 +8,9 @@ const ReportsPage = () => {
     const [selectedEntity, setSelectedEntity] = useState(null);
 
     const reportTypes = [
-        { id: 'sales', label: 'Reporte de Ventas', icon: ShoppingCart, description: 'Cotizaciones y órdenes de venta' },
+        { id: 'invoices', label: 'Reporte de Facturas', icon: FileText, description: 'Listado detallado de facturas emitidas' },
+        { id: 'credit_notes', label: 'Reporte de Notas de Crédito', icon: FileText, description: 'Historial de notas de crédito' },
+        { id: 'sales', label: 'Reporte de Cotizaciones', icon: ShoppingCart, description: 'Cotizaciones y órdenes de venta' },
         { id: 'purchases', label: 'Reporte de Compras', icon: Truck, description: 'Órdenes de compra y pagos' },
         { id: 'contracts', label: 'Reporte de Contratos', icon: FileText, description: 'Contratos, vencimientos y estados' },
         { id: 'products', label: 'Inventario / Productos', icon: Package, description: 'Listado de productos y stock' },
