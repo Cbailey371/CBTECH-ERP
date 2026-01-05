@@ -331,6 +331,15 @@ exports.deleteOrder = async (req, res) => {
             await SalesOrderItem.destroy({ where: { salesOrderId: id } });
         }
 
+        // Check if linked to a Quotation
+        if (order.quotationId) {
+            const quotation = await Quotation.findByPk(order.quotationId);
+            if (quotation) {
+                // Revert quotation status to 'accepted' so it can be invoiced again
+                await quotation.update({ status: 'accepted' });
+            }
+        }
+
         await order.destroy();
         res.json({ success: true, message: 'Factura eliminada correctamente' });
 
