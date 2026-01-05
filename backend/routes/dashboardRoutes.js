@@ -431,22 +431,73 @@ async function generateRealMetrics(companyId, startDate, endDate) {
   });
 
   // Populate Quotations (Accepted)
+  // Populate Quotations (Accepted)
+  let totalRevenue = 0;
+  let totalCost = 0;
+
   try {
     acceptedQuotes = await Quotation.findAll({
       where: {
         companyId,
         status: 'accepted',
         date: { [Op.between]: [startDate, endDate] }
-      }
+      },
+      include: [
+        {
+          model: QuotationItem,
+          as: 'items',
+          include: [
+            {
+              model: Product,
+              as: 'product',
+              attributes: ['cost', 'margin', 'type']
+            }
+          ]
+        }
+      ]
     });
     acceptedQuotesCount = acceptedQuotes.length;
-    acceptedQuotesTotalValue = acceptedQuotes.reduce((sum, q) => sum + Number(q.total || 0), 0);
 
+    // Calculate Totals and Profit
     acceptedQuotes.forEach(q => {
+      const subtotal = parseFloat(q.subtotal || 0);
+      const total = parseFloat(q.total || 0);
+      const discount = parseFloat(q.discount || 0);
+
+      // Revenue Logic
+      let revenue = 0;
+      if (subtotal > 0) {
+        revenue = subtotal - discount;
+      } else {
+        revenue = total; // Fallback
+      }
+      totalRevenue += revenue;
+
+      // Cost Logic
+      if (q.items) {
+        q.items.forEach(item => {
+          const qty = parseFloat(item.quantity || 0);
+          const product = item.product || {};
+          const cost = parseFloat(product.cost || 0);
+          const margin = parseFloat(product.margin || 0);
+
+          // Logic: Margin 0 = Own Service (100% Profit, Cost 0)
+          if (margin === 0) {
+            totalCost += 0;
+          } else {
+            totalCost += (qty * cost);
+          }
+        });
+      }
+
+      // Chart Data
       const d = new Date(q.date);
       const dayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       if (chartMap[dayStr]) chartMap[dayStr].quotations += Number(q.total || 0);
     });
+
+    acceptedQuotesTotalValue = acceptedQuotes.reduce((sum, q) => sum + Number(q.total || 0), 0);
+
   } catch (err) { console.error('Dashboard Error [Quotations]:', err); /* Do not rethrow */ }
 
   const analyticsData = Object.values(chartMap).sort((a, b) => {
@@ -471,13 +522,16 @@ async function generateRealMetrics(companyId, startDate, endDate) {
     }) || 0;
   } catch (err) { console.error('Dashboard Error [ActiveQuotes]:', err); /* Do not rethrow */ }
 
+  // Calculate Profit Final
+  const totalProfit = totalRevenue - totalCost;
+
   return {
     sales: {
       total: parseFloat(acceptedQuotesTotalValue.toFixed(2)),
-      invoicesTotal: parseFloat(currentPeriodInvoicing.toFixed(2)), // NEW
-      creditNotesTotal: parseFloat(currentPeriodCreditNotes.toFixed(2)), // NEW
-      analytics: analyticsData, // NEW
-      profit: 0, // Simplified for now
+      invoicesTotal: parseFloat(currentPeriodInvoicing.toFixed(2)),
+      creditNotesTotal: parseFloat(currentPeriodCreditNotes.toFixed(2)),
+      analytics: analyticsData,
+      profit: parseFloat(totalProfit.toFixed(2)),
       trend: 0,
       activeQuotes: activeQuotesCounts,
       activeQuotesValue: activeQuotesDraftValue,
