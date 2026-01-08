@@ -6,6 +6,7 @@ import RevenueChart from '../../components/Dashboard/RevenueChart';
 import ActionTables from '../../components/Dashboard/ActionTables';
 import InsightsPanel from '../../components/Dashboard/InsightsPanel';
 import TopClientsTable from '../../components/Dashboard/TopClientsTable';
+import QuotationsOverview from '../../components/Dashboard/QuotationsOverview';
 
 const GeneralDashboard = () => {
     const {

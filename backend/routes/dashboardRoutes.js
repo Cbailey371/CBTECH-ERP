@@ -250,7 +250,11 @@ async function calculatePeriodMetrics(companyId, startDate, endDate) {
     cashIn: parseFloat(cashIn),
     invoicing: parseFloat(invoicing),
     customers: { new: newCustomers, total: totalCustomers },
-    funnel
+    funnel,
+    quotations: {
+      totalValue: quotes.reduce((sum, q) => sum + parseFloat(q.value || 0), 0),
+      count: quotes.reduce((sum, q) => sum + parseInt(q.count || 0), 0)
+    }
   };
 }
 
@@ -317,6 +321,16 @@ async function generateChartData(companyId, startDate, endDate) {
     raw: true
   });
 
+  const quotes = await Quotation.findAll({
+    where: {
+      companyId,
+      date: { [Op.between]: [startDate, endDate] }
+    },
+    attributes: ['date', [sequelize.fn('SUM', sequelize.col('total')), 'amount']],
+    group: ['date'],
+    raw: true
+  });
+
   // Create Map of Date -> Data
   const dataMap = {};
 
@@ -324,7 +338,7 @@ async function generateChartData(companyId, startDate, endDate) {
   let loop = new Date(startDate);
   while (loop <= endDate) {
     const dateStr = loop.toISOString().split('T')[0];
-    dataMap[dateStr] = { date: dateStr, cashIn: 0, invoicing: 0 };
+    dataMap[dateStr] = { date: dateStr, cashIn: 0, invoicing: 0, quotations: 0 };
     loop.setDate(loop.getDate() + 1);
   }
 
@@ -336,6 +350,10 @@ async function generateChartData(companyId, startDate, endDate) {
   invoices.forEach(i => {
     const d = i.date; // already YYYY-MM-DD string often from DATEONLY
     if (dataMap[d]) dataMap[d].invoicing = parseFloat(i.amount);
+  });
+
+  quotes.forEach(q => {
+    if (dataMap[q.date]) dataMap[q.date].quotations = parseFloat(q.amount);
   });
 
   return Object.values(dataMap).sort((a, b) => a.date.localeCompare(b.date));
@@ -353,6 +371,7 @@ function calculateVariations(current, previous) {
     cashIn: calc(current.cashIn, previous.cashIn),
     invoicing: calc(current.invoicing, previous.invoicing),
     newCustomers: calc(current.customers.new, previous.customers.new),
+    quotations: calc(current.quotations.totalValue, previous.quotations.totalValue)
     // receivables don't have variations vs "previous period" in the same way usually
   };
 }
