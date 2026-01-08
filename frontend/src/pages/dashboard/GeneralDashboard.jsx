@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useDashboardMetrics } from '../../hooks/useDashboardMetrics';
-import DashboardFilters from '../../components/dashboard/DashboardFilters';
-import KPISection from '../../components/dashboard/KPISection';
-import RevenueChart from '../../components/dashboard/RevenueChart';
-import ActionTables from '../../components/dashboard/ActionTables';
-import InsightsPanel from '../../components/dashboard/InsightsPanel';
-import TopClientsTable from '../../components/dashboard/TopClientsTable';
+import DashboardFilters from '../../components/Dashboard/DashboardFilters';
+import KPISection from '../../components/Dashboard/KPISection';
+import RevenueChart from '../../components/Dashboard/RevenueChart';
+import ActionTables from '../../components/Dashboard/ActionTables';
+import InsightsPanel from '../../components/Dashboard/InsightsPanel';
+import TopClientsTable from '../../components/Dashboard/TopClientsTable';
 
 const GeneralDashboard = () => {
     const {
