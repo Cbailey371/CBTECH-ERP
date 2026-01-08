@@ -42,7 +42,7 @@ const QuotationsOverview = ({ metrics, loading }) => {
                     </p>
                 </div>
                 <button
-                    onClick={() => navigate('/sales/quotations')}
+                    onClick={() => navigate('/quotations')}
                     className="mt-4 md:mt-0 text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1 group"
                 >
                     Ver todas
