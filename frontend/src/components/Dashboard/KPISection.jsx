@@ -8,7 +8,12 @@ const KPISection = ({ metrics, loading }) => {
         </div>;
     }
 
-    const { cashIn, invoicing, customers, receivables, funnel, variations } = metrics;
+    // Safe destructuring with defaults
+    const cashIn = metrics?.cashIn || 0;
+    const invoicing = metrics?.invoicing || 0;
+    const receivables = metrics?.receivables || { totalPending: 0, totalOverdue: 0 };
+    const funnel = metrics?.funnel || { conversionRate: 0, accepted: 0, sent: 0, draft: 0 };
+    const variations = metrics?.variations || {};
 
     const cards = [
         {
@@ -29,9 +34,9 @@ const KPISection = ({ metrics, loading }) => {
         },
         {
             title: 'Cuentas por Cobrar',
-            value: `$${receivables.totalPending.toLocaleString('en-US', { minimumFractionDigits: 0 })}`,
-            subtext: `$${receivables.totalOverdue.toLocaleString()} Vencido`,
-            subtextColor: receivables.totalOverdue > 0 ? 'text-red-500' : 'text-gray-500',
+            value: `$${(receivables.totalPending || 0).toLocaleString('en-US', { minimumFractionDigits: 0 })}`,
+            subtext: `$${(receivables.totalOverdue || 0).toLocaleString()} Vencido`,
+            subtextColor: (receivables.totalOverdue || 0) > 0 ? 'text-red-500' : 'text-gray-500',
             icon: <CreditCard className="w-5 h-5" />,
             color: 'text-amber-600',
             bg: 'bg-amber-100 dark:bg-amber-900/30'
@@ -39,7 +44,7 @@ const KPISection = ({ metrics, loading }) => {
         {
             title: 'Embudo (Conversión)',
             value: `${funnel.conversionRate}%`,
-            subtext: `${funnel.accepted} Aceptadas / ${funnel.sent + funnel.draft} Activas`,
+            subtext: `${funnel.accepted} Aceptadas / ${(funnel.sent || 0) + (funnel.draft || 0)} Activas`,
             trend: null, // Could add if available
             icon: <TrendingUp className="w-5 h-5" />,
             color: 'text-purple-600',
