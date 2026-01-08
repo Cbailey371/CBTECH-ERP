@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import * as salesOrderService from '../../services/salesOrderService';
 import * as customerService from '../../services/customerService';
 import * as productService from '../../services/productService';

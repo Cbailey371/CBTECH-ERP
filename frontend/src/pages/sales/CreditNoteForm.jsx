@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { ArrowLeft, Save, Send, AlertTriangle, FileText, Trash2 } from 'lucide-react'; // Icons
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';

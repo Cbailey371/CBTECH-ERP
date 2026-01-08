@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import * as quotationService from '../../services/quotationService';
 import * as salesOrderService from '../../services/salesOrderService';
 import { Plus, Search, Eye, Trash2, FileText } from 'lucide-react';
@@ -63,7 +63,7 @@ export default function QuotationsPage() {
                 endDate: currentFilters.endDate,
                 status: currentFilters.status
             };
-            const response = await quotationService.getQuotations(token, selectedCompany.id, params);
+            const response = await quotationService.getQuotations(params);
             if (response.success) {
                 setQuotations(response.quotations);
                 setPagination(response.pagination);
@@ -91,7 +91,7 @@ export default function QuotationsPage() {
         setQuotations(updatedQuotations);
 
         try {
-            await quotationService.updateQuotation(token, selectedCompany.id, quotation.id, { ...quotation, status: newStatus });
+            await quotationService.updateQuotation(quotation.id, { ...quotation, status: newStatus });
             fetchQuotations(pagination.current_page, searchTerm);
         } catch (error) {
             console.error('Error updating quotation status:', error);
@@ -133,7 +133,7 @@ export default function QuotationsPage() {
 
         setDeleting(true);
         try {
-            await quotationService.deleteQuotation(token, selectedCompany.id, quotationToDelete.id);
+            await quotationService.deleteQuotation(quotationToDelete.id);
             alert('Cotización eliminada exitosamente');
             setIsDeleteModalOpen(false);
             setQuotationToDelete(null);

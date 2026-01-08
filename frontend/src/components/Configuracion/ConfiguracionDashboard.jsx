@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeProvider';
 import GestionUsuarios from './Usuarios/GestionUsuarios';
 import RolesDashboard from './Roles/RolesDashboard';
 import GestionEmpresas from '../GestionEmpresas';
@@ -7,7 +7,8 @@ import UserCompanyManager from '../UserCompany/UserCompanyManager';
 import ServidorSMTP from './ServidorSMTP';
 
 const ConfiguracionDashboard = () => {
-  const { isDarkMode } = useTheme();
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
   const [selectedCategory, setSelectedCategory] = useState('usuarios');
   const [selectedSection, setSelectedSection] = useState(null);
 
@@ -49,12 +50,12 @@ const ConfiguracionDashboard = () => {
 
   const handleCategorySelect = (categoryId) => {
     setSelectedCategory(categoryId);
-    
+
     // Si es la categoría "empresa" que solo tiene una sección, ir directamente a ella
     if (categoryId === 'empresa') {
       setSelectedSection('Empresas');
       console.log(`Navegando directamente a: Gestión de Empresas`);
-    } 
+    }
     // Si es la categoría "correo" que solo tiene una sección, ir directamente a ella
     else if (categoryId === 'correo') {
       setSelectedSection('Servidor SMTP');
@@ -72,7 +73,7 @@ const ConfiguracionDashboard = () => {
 
   const renderCategoryContent = () => {
     const category = categories.find(cat => cat.id === selectedCategory);
-    
+
     // Si hay una sección específica seleccionada, renderizar ese componente
     if (selectedSection) {
       switch (selectedSection) {
@@ -105,7 +106,7 @@ const ConfiguracionDashboard = () => {
           );
       }
     }
-    
+
     return (
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div className="flex items-center justify-between mb-6">

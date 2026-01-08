@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { supplierService } from '../../services/supplierService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, Building2 } from 'lucide-react';

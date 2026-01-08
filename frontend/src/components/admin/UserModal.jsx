@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import * as companyService from '../../services/companyService';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 
 export default function UserModal({ isOpen, onClose, onSave, user, loading }) {
     const { token } = useAuth();

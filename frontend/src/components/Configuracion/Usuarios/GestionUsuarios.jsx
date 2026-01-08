@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../../../context/ThemeContext';
+import { useTheme } from '../../../context/ThemeProvider';
 import { userService } from '../../../services/userService';
 import UsuarioForm from './UsuarioForm';
 import DeleteUserModal from './DeleteUserModal';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeProvider';
 
 const UserCompanyList = ({ userCompanies = [], viewMode = 'user', loading, onRemove, onUpdate }) => {
   const { isDarkMode } = useTheme();

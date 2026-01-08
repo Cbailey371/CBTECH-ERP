@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, Trash2, Search } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
@@ -9,7 +9,7 @@ import { Combobox } from '../../components/ui/Combobox';
 import { purchaseOrderService } from '../../services/purchaseOrderService';
 import { supplierService } from '../../services/supplierService';
 import * as companyService from '../../services/companyService'; // Import companyService
-import { productService } from '../../services/productService';
+import productService from '../../services/productService';
 import { generatePurchaseOrderPDF } from '../../utils/PurchaseOrderPDF';
 
 export default function PurchaseOrderForm() {

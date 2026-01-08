@@ -73,7 +73,12 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
         doc.text(`Cliente:`, pageWidth - 80, detailsY);
         doc.setFont(undefined, 'bold');
         const clientName = quotation.customer?.name || (quotation.Customer ? quotation.Customer.name : 'Cliente');
-        safeText(clientName, pageWidth - 80, detailsY + 5);
+
+        // Handle long client names by splitting text
+        const maxClientWidth = 65; // Estimated width available on the right side
+        const splitClientName = doc.splitTextToSize(clientName, maxClientWidth);
+        doc.text(splitClientName, pageWidth - 80, detailsY + 5);
+
         doc.setFont(undefined, 'normal');
 
         // --- Items Table ---

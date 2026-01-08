@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { contractService } from '../../services/contractService';
 import * as customerService from '../../services/customerService';
 import { useNavigate } from 'react-router-dom';

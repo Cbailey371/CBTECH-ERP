@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import * as quotationService from '../../services/quotationService';
 import * as customerService from '../../services/customerService';
 import * as companyService from '../../services/companyService';
-import { productService } from '../../services/productService'; // Corrected import
+import productService from '../../services/productService'; // Corrected import
 import { useNavigate, useParams } from 'react-router-dom';
 import { Plus, Trash2, Save, ArrowLeft, Calculator } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
@@ -36,7 +36,7 @@ export default function QuotationForm() {
         const fetchCompanyData = async () => {
             if (selectedCompany?.id && token) {
                 try {
-                    const response = await companyService.getCompanyById(token, selectedCompany.id);
+                    const response = await companyService.getCompanyById(selectedCompany.id);
                     if (response.success) {
                         setCurrentCompany(response.data);
                     }
@@ -131,7 +131,7 @@ export default function QuotationForm() {
     const loadQuotation = async () => {
         try {
             setLoading(true);
-            const response = await quotationService.getQuotationById(token, selectedCompany.id, id);
+            const response = await quotationService.getQuotationById(id);
             if (response.success && response.quotation) {
                 const q = response.quotation;
                 const items = q.items && q.items.length > 0 ? q.items.map(i => {
@@ -188,7 +188,7 @@ export default function QuotationForm() {
 
     const loadCustomers = async () => {
         try {
-            const response = await customerService.getCustomers(token, selectedCompany.id, { limit: 100, is_active: 'true' });
+            const response = await customerService.getCustomers({ limit: 100, is_active: 'true' });
             if (response.success) {
                 setCustomers(response.customers);
             }
@@ -200,7 +200,7 @@ export default function QuotationForm() {
     const loadProducts = async () => {
         try {
             console.log('Loading products...');
-            const response = await productService.getProducts(token, selectedCompany.id, { limit: 100 });
+            const response = await productService.getProducts({ limit: 100 });
             console.log('Products response:', response); // Debug log
 
             if (response.success) {
@@ -369,9 +369,9 @@ export default function QuotationForm() {
 
             let response;
             if (isEditMode) {
-                response = await quotationService.updateQuotation(token, selectedCompany.id, id, payload);
+                response = await quotationService.updateQuotation(id, payload);
             } else {
-                response = await quotationService.createQuotation(token, selectedCompany.id, payload);
+                response = await quotationService.createQuotation(payload);
             }
 
             if (response.success) {

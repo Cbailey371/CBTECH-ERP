@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, UserPlus } from 'lucide-react';
 import { Combobox } from '../ui/Combobox';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { userService } from '../../services/userService';
-import { customerService } from '../../services/customerService';
+import customerService from '../../services/customerService';
 
 export default function ProjectModal({ isOpen, onClose, onSubmit, project, loading }) {
-    const { token, selectedCompany } = useAuth();
+    const { selectedCompany } = useAuth();
     const [formData, setFormData] = useState({
         code: '',
         name: '',
@@ -64,7 +64,7 @@ export default function ProjectModal({ isOpen, onClose, onSubmit, project, loadi
     const loadUsers = async () => {
         try {
             console.log('Loading users...');
-            const response = await userService.getUsers(token, { is_active: 'true' });
+            const response = await userService.getUsers({ is_active: 'true' });
             console.log('Users response:', response);
             if (response.success) {
                 setUsers(response.data || []);
@@ -79,7 +79,7 @@ export default function ProjectModal({ isOpen, onClose, onSubmit, project, loadi
     const loadCustomers = async () => {
         try {
             console.log('Loading customers...');
-            const response = await customerService.getCustomers(token, selectedCompany.id, { is_active: 'true' });
+            const response = await customerService.getCustomers({ is_active: 'true' });
             console.log('Customers response:', response);
             if (response.success) {
                 setCustomers(response.customers || []);

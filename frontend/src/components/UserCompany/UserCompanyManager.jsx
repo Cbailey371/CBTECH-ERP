@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeProvider';
 import userCompanyService from '../../services/userCompanyService';
 import { userService } from '../../services/userService';
 import companyService from '../../services/companyService';

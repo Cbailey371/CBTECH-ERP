@@ -22,7 +22,7 @@ import {
   RotateCcw
 } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from '../context/AuthProvider';
+import { useAuth } from '../context/AuthContext';
 import logo from '../assets/logo.png';
 import { ThemeToggle } from './Layout/ThemeToggle';
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthProvider';
+import { useAuth } from '../context/AuthContext';
 import * as companyService from '../services/companyService';
 import { Button } from '../components/ui/Button';
 import { ThemeToggle } from '../components/Layout/ThemeToggle';

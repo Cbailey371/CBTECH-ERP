@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
@@ -34,7 +34,7 @@ export default function CompaniesPage() {
 
     const fetchCompanies = async () => {
         try {
-            const response = await companyService.getAllCompanies(token, { search });
+            const response = await companyService.getAllCompanies({ search });
             if (response.success) {
                 setCompanies(response.data.companies);
             }
@@ -72,7 +72,7 @@ export default function CompaniesPage() {
 
         setDeleting(true);
         try {
-            await companyService.deleteCompany(token, companyToDelete.id);
+            await companyService.deleteCompany(companyToDelete.id);
             alert('Empresa eliminada exitosamente');
             setIsDeleteModalOpen(false);
             setCompanyToDelete(null);
@@ -94,7 +94,7 @@ export default function CompaniesPage() {
 
         try {
             // Note: Backend expects snake_case 'is_active' for this specific endpoint
-            await companyService.updateCompany(token, company.id, { is_active: newStatus === 'true' });
+            await companyService.updateCompany(company.id, { is_active: newStatus === 'true' });
             fetchCompanies();
         } catch (error) {
             console.error('Error updating company status:', error);
@@ -107,9 +107,9 @@ export default function CompaniesPage() {
         setActionLoading(true);
         try {
             if (currentCompany) {
-                await companyService.updateCompany(token, currentCompany.id, formData);
+                await companyService.updateCompany(currentCompany.id, formData);
             } else {
-                await companyService.createCompany(token, formData);
+                await companyService.createCompany(formData);
             }
             setIsModalOpen(false);
             fetchCompanies();

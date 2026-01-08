@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { projectService } from '../../services/projectService';
 import { taskService } from '../../services/taskService';
 import { Button } from '../../components/ui/Button';

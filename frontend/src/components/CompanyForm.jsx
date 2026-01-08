@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeProvider';
 
 const CompanyForm = ({ company, isEdit = false, onSave, onCancel }) => {
   const { isDarkMode } = useTheme();

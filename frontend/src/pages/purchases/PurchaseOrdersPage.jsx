@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Calendar, FileText, ShoppingBag, Trash2, Edit } from 'lucide-react';
 import { Button } from '../../components/ui/Button';

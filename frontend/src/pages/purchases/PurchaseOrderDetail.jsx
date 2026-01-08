@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Printer, Box, CheckCircle, XCircle, Send, Edit, Play } from 'lucide-react';
 import { Button } from '../../components/ui/Button';

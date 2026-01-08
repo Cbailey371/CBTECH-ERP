@@ -1,40 +1,33 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api') + '/users';
+const USERS_URL = '/users';
 
-const getAuthHeader = (token) => ({
-  headers: { Authorization: `Bearer ${token}` }
-});
-
-export const getUsers = async (token, params = {}) => {
-  const response = await axios.get(API_URL, {
-    ...getAuthHeader(token),
-    params
-  });
+export const getUsers = async (params = {}) => {
+  const response = await api.get(USERS_URL, { params });
   return response.data;
 };
 
-export const createUser = async (token, userData) => {
-  const response = await axios.post(API_URL, userData, getAuthHeader(token));
+export const createUser = async (userData) => {
+  const response = await api.post(USERS_URL, userData);
   return response.data;
 };
 
-export const updateUser = async (token, id, userData) => {
-  const response = await axios.put(`${API_URL}/${id}`, userData, getAuthHeader(token));
+export const updateUser = async (id, userData) => {
+  const response = await api.put(`${USERS_URL}/${id}`, userData);
   return response.data;
 };
 
-export const deleteUser = async (token, id) => {
-  const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader(token));
+export const deleteUser = async (id) => {
+  const response = await api.delete(`${USERS_URL}/${id}`);
   return response.data;
 };
 
-export const assignUserToCompany = async (token, userId, companyId, role = 'user') => {
-  const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/user-companies`, {
+export const assignUserToCompany = async (userId, companyId, role = 'user') => {
+  const response = await api.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/user-companies`, {
     userId,
     companyId,
     role
-  }, getAuthHeader(token));
+  });
   return response.data;
 };
 
@@ -45,3 +38,5 @@ export const userService = {
   deleteUser,
   assignUserToCompany
 };
+
+export default userService;

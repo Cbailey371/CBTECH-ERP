@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { projectService } from '../../services/projectService';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';

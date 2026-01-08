@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../../../context/ThemeContext';
+import { useTheme } from '../../../context/ThemeProvider';
 
 const DeleteRoleModal = ({ role, onConfirm, onCancel, loading }) => {
   const { isDarkMode } = useTheme();

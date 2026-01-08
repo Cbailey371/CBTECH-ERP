@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
@@ -33,7 +33,7 @@ export default function UsersPage() {
 
     const fetchUsers = async () => {
         try {
-            const response = await userService.getUsers(token, { search });
+            const response = await userService.getUsers({ search });
             if (response.success) {
                 setUsers(response.data);
             }
@@ -72,7 +72,7 @@ export default function UsersPage() {
 
         setDeleting(true);
         try {
-            await userService.deleteUser(token, userToDelete.id);
+            await userService.deleteUser(userToDelete.id);
             alert('Usuario eliminado exitosamente');
             setIsDeleteModalOpen(false);
             setUserToDelete(null);
@@ -93,7 +93,7 @@ export default function UsersPage() {
         setUsers(updatedUsers);
 
         try {
-            await userService.updateUser(token, user.id, { ...user, isActive: newStatus === 'true' });
+            await userService.updateUser(user.id, { ...user, isActive: newStatus === 'true' });
             fetchUsers();
         } catch (error) {
             console.error('Error updating user status:', error);
@@ -107,10 +107,10 @@ export default function UsersPage() {
         try {
             let userId;
             if (currentUser) {
-                await userService.updateUser(token, currentUser.id, formData);
+                await userService.updateUser(currentUser.id, formData);
                 userId = currentUser.id;
             } else {
-                const response = await userService.createUser(token, formData);
+                const response = await userService.createUser(formData);
                 if (response.success) {
                     userId = response.data.id;
                 }
@@ -121,7 +121,7 @@ export default function UsersPage() {
                 // Asignar a cada empresa seleccionada
                 // Nota: En una implementación real, deberíamos manejar desasignaciones también
                 const assignmentPromises = formData.selectedCompanies.map(companyId =>
-                    userService.assignUserToCompany(token, userId, companyId, formData.role)
+                    userService.assignUserToCompany(userId, companyId, formData.role)
                 );
                 await Promise.all(assignmentPromises);
             }

@@ -3,11 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Combobox } from '../ui/Combobox';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 
 export default function TaskModal({ isOpen, onClose, onSave, task, projectId, loading, existingTasks = [] }) {
-    const { token } = useAuth();
+    const { } = useAuth(); // token removed
     const [users, setUsers] = useState([]);
     const [formData, setFormData] = useState({
         code: '',
@@ -59,7 +59,7 @@ export default function TaskModal({ isOpen, onClose, onSave, task, projectId, lo
 
     const loadUsers = async () => {
         try {
-            const response = await userService.getUsers(token, { is_active: 'true' });
+            const response = await userService.getUsers({ is_active: 'true' });
             if (response.success) {
                 setUsers(response.data || []);
             }

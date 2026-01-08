@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { contractService } from '../../services/contractService';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Edit, Calendar, Info, DollarSign, Clock, FileText } from 'lucide-react';

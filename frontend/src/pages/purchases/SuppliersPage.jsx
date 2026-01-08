@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import { supplierService } from '../../services/supplierService';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Phone, Mail, MapPin, Building2, User, Trash2, Power, AlertTriangle, Edit } from 'lucide-react';

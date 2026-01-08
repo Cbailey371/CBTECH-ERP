@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Package, Tag } from 'lucide-react';
-import { useAuth } from '../../context/AuthProvider';
-import { productService } from '../../services/productService';
+import { useAuth } from '../../context/AuthContext';
+import productService from '../../services/productService';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
@@ -40,7 +40,7 @@ export default function ProductsPage() {
     const loadProducts = async () => {
         try {
             setLoading(true);
-            const response = await productService.getProducts(token, selectedCompany.id, {
+            const response = await productService.getProducts({
                 search: searchTerm
             });
             if (response.success) {
@@ -73,7 +73,7 @@ export default function ProductsPage() {
 
         setDeleting(true);
         try {
-            await productService.deleteProduct(token, selectedCompany.id, productToDelete.id);
+            await productService.deleteProduct(productToDelete.id);
             alert('Producto eliminado exitosamente');
             setIsDeleteModalOpen(false);
             setProductToDelete(null);
@@ -94,7 +94,7 @@ export default function ProductsPage() {
         setProducts(updatedProducts);
 
         try {
-            await productService.updateProduct(token, selectedCompany.id, product.id, { ...product, isActive: newStatus === 'true' });
+            await productService.updateProduct(product.id, { ...product, isActive: newStatus === 'true' });
             loadProducts();
         } catch (error) {
             console.error('Error updating product status:', error);
@@ -107,9 +107,9 @@ export default function ProductsPage() {
         try {
             setSaving(true);
             if (editingProduct) {
-                await productService.updateProduct(token, selectedCompany.id, editingProduct.id, formData);
+                await productService.updateProduct(editingProduct.id, formData);
             } else {
-                await productService.createProduct(token, selectedCompany.id, formData);
+                await productService.createProduct(formData);
             }
             setIsModalOpen(false);
             loadProducts();

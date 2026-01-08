@@ -1,38 +1,44 @@
-import axios from 'axios';
+import api from './api';
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api') + '/quotations';
-
-const getAuthHeader = (token, companyId) => ({
-  headers: {
-    Authorization: `Bearer ${token}`,
-    'x-company-id': companyId
-  }
-});
-
-export const getQuotations = async (token, companyId, params = {}) => {
-  const response = await axios.get(API_URL, {
-    ...getAuthHeader(token, companyId),
-    params
-  });
+const getQuotations = async (params = {}) => {
+  const response = await api.get('/quotations', { params });
   return response.data;
 };
 
-export const getQuotationById = async (token, companyId, id) => {
-  const response = await axios.get(`${API_URL}/${id}`, getAuthHeader(token, companyId));
+const getQuotationById = async (id) => {
+  const response = await api.get(`/quotations/${id}`);
   return response.data;
 };
 
-export const createQuotation = async (token, companyId, quotationData) => {
-  const response = await axios.post(API_URL, quotationData, getAuthHeader(token, companyId));
+const createQuotation = async (quotationData) => {
+  const response = await api.post('/quotations', quotationData);
   return response.data;
 };
 
-export const updateQuotation = async (token, companyId, id, quotationData) => {
-  const response = await axios.put(`${API_URL}/${id}`, quotationData, getAuthHeader(token, companyId));
+const updateQuotation = async (id, quotationData) => {
+  const response = await api.put(`/quotations/${id}`, quotationData);
   return response.data;
 };
 
-export const deleteQuotation = async (token, companyId, id) => {
-  const response = await axios.delete(`${API_URL}/${id}`, getAuthHeader(token, companyId));
+const deleteQuotation = async (id) => {
+  const response = await api.delete(`/quotations/${id}`);
   return response.data;
+};
+
+const quotationService = {
+  getQuotations,
+  getQuotationById,
+  createQuotation,
+  updateQuotation,
+  deleteQuotation
+};
+
+export default quotationService;
+
+export {
+  getQuotations,
+  getQuotationById,
+  createQuotation,
+  updateQuotation,
+  deleteQuotation
 };

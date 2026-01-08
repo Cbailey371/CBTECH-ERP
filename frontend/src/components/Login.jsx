@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/authService';
 import ThemeToggle from './ThemeToggle';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/ThemeProvider';
 
 const Login = () => {
   const [formData, setFormData] = useState({

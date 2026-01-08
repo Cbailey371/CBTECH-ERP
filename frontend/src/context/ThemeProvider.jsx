@@ -39,6 +39,12 @@ export function ThemeProvider({
             localStorage.setItem(storageKey, theme);
             setTheme(theme);
         },
+        isDarkMode: theme === "dark",
+        toggleTheme: () => {
+            const newTheme = theme === "dark" ? "light" : "dark";
+            localStorage.setItem(storageKey, newTheme);
+            setTheme(newTheme);
+        }
     };
 
     return (

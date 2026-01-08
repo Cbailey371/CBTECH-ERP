@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
-import { useAuth } from '../../context/AuthProvider';
+import { useAuth } from '../../context/AuthContext';
 import * as customerService from '../../services/customerService';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -43,7 +43,7 @@ export default function CustomersPage() {
         if (!selectedCompany) return;
         setLoading(true);
         try {
-            const response = await customerService.getCustomers(token, selectedCompany.id, { page, search });
+            const response = await customerService.getCustomers({ page, search });
             if (response.success) {
                 setCustomers(response.customers);
                 setPagination(response.pagination);
@@ -83,7 +83,7 @@ export default function CustomersPage() {
 
         setDeleting(true);
         try {
-            await customerService.deleteCustomer(token, selectedCompany.id, customerToDelete.id);
+            await customerService.deleteCustomer(customerToDelete.id);
             alert('Cliente eliminado exitosamente');
             setIsDeleteModalOpen(false);
             setCustomerToDelete(null);
@@ -106,9 +106,9 @@ export default function CustomersPage() {
         try {
             // Check if updateCustomerStatus exists, otherwise use updateCustomer
             if (customerService.updateCustomerStatus) {
-                await customerService.updateCustomerStatus(token, selectedCompany.id, customer.id, newStatus === 'true');
+                await customerService.updateCustomerStatus(customer.id, newStatus === 'true');
             } else {
-                await customerService.updateCustomer(token, selectedCompany.id, customer.id, { ...customer, isActive: newStatus === 'true' });
+                await customerService.updateCustomer(customer.id, { ...customer, isActive: newStatus === 'true' });
             }
             fetchCustomers(pagination.current_page, searchTerm);
         } catch (error) {
@@ -122,9 +122,9 @@ export default function CustomersPage() {
         setActionLoading(true);
         try {
             if (currentCustomer) {
-                await customerService.updateCustomer(token, selectedCompany.id, currentCustomer.id, formData);
+                await customerService.updateCustomer(currentCustomer.id, formData);
             } else {
-                await customerService.createCustomer(token, selectedCompany.id, formData);
+                await customerService.createCustomer(formData);
             }
             setIsModalOpen(false);
             fetchCustomers(pagination.current_page, searchTerm);
