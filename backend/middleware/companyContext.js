@@ -18,9 +18,12 @@ const companyContext = async (req, res, next) => {
 
     if (!companyId) {
       // Si no se especifica empresa, continuar sin contexto de empresa
+      console.log('🌐 No se especificó X-Company-Id, continuando sin contexto global para el usuario:', req.user.id);
       req.companyContext = null;
       return next();
     }
+
+    console.log('🔍 Validando acceso a empresa:', companyId, 'para usuario:', req.user.id);
 
     // Validar que el usuario tenga acceso a la empresa
     const userCompany = await UserCompany.findOne({

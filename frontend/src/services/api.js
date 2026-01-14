@@ -20,9 +20,11 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     // Añadir contexto de empresa, a menos que se indique lo contrario
-    if (!config.headers['X-No-Company-Context']) {
+    const noContext = config.headers['X-No-Company-Context'] || config.headers['x-no-company-context'];
+
+    if (!noContext) {
       const currentCompany = getCurrentCompany();
       const headerCompanyId = currentCompany?.companyId
         || currentCompany?.company_id
@@ -33,10 +35,9 @@ api.interceptors.request.use(
     }
 
     // Limpiar la cabecera de control para que no llegue al backend
-    if (config.headers['X-No-Company-Context']) {
-      delete config.headers['X-No-Company-Context'];
-    }
-    
+    delete config.headers['X-No-Company-Context'];
+    delete config.headers['x-no-company-context'];
+
     return config;
   },
   (error) => {
@@ -55,7 +56,7 @@ api.interceptors.response.use(
       // Token expirado o inválido
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      
+
       // Redirigir al login si no estamos ya ahí
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
@@ -66,7 +67,7 @@ api.interceptors.response.use(
     if (error.response?.status === 403 && error.response?.data?.code === 'COMPANY_ACCESS_DENIED') {
       // Usuario no tiene acceso a la empresa
       console.error('Acceso denegado a la empresa:', error.response.data.message);
-      
+
       // Notificar al contexto de empresa para cambiar a una empresa válida
       notifyCompanyAccessDenied(error.response.data);
     }
@@ -94,7 +95,7 @@ const getCurrentCompany = () => {
   if (companyContextCallbacks.getCurrentCompany) {
     return companyContextCallbacks.getCurrentCompany();
   }
-  
+
   // Fallback: intentar obtener desde localStorage si está disponible
   try {
     const stored = localStorage.getItem('currentCompany');
@@ -129,7 +130,7 @@ export const registerCompanyCallbacks = (callbacks) => {
  */
 export const apiWithCompany = (companyId) => {
   const companyApi = axios.create(api.defaults);
-  
+
   // Registrar interceptores explícitamente (sin depender de internals)
   companyApi.interceptors.request.use(
     (config) => {
@@ -164,7 +165,7 @@ export const apiWithCompany = (companyId) => {
       return Promise.reject(error);
     }
   );
-  
+
   return companyApi;
 };
 

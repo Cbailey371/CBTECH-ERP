@@ -1,7 +1,7 @@
 import api from './api';
 
-const getCompanies = async (params = {}) => {
-  const response = await api.get('/companies', { params });
+const getCompanies = async (params = {}, headers = {}) => {
+  const response = await api.get('/companies', { params, headers });
   return response.data;
 };
 

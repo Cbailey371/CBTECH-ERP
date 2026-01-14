@@ -32,12 +32,13 @@ router.get('/', authenticateToken, async (req, res) => {
     const whereClause = {};
 
     if (search) {
+      console.log('🔍 Aplicando filtro de búsqueda:', search);
       whereClause[Op.or] = [
-        { name: { [Op.iLike]: `% ${search}% ` } },
-        { legalName: { [Op.iLike]: `% ${search}% ` } },
-        { tradeName: { [Op.iLike]: `% ${search}% ` } },
-        { taxId: { [Op.iLike]: `% ${search}% ` } },
-        { email: { [Op.iLike]: `% ${search}% ` } }
+        { name: { [Op.iLike]: `%${search}%` } },
+        { legalName: { [Op.iLike]: `%${search}%` } },
+        { tradeName: { [Op.iLike]: `%${search}%` } },
+        { taxId: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } }
       ];
     }
 
@@ -67,6 +68,8 @@ router.get('/', authenticateToken, async (req, res) => {
       order: [[orderField, orderDirection]],
       attributes: { exclude: ['notes'] } // Excluir notas en el listado
     });
+
+    console.log(`📊 Devueltas ${rows.length} empresas de un total de ${count}`);
 
     res.json({
       success: true,

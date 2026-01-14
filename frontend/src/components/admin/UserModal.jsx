@@ -21,9 +21,18 @@ export default function UserModal({ isOpen, onClose, onSave, user, loading }) {
     useEffect(() => {
         const loadCompanies = async () => {
             try {
-                const response = await companyService.getAllCompanies(token);
+                // Pedimos un límite alto para asegurar que salgan todas en el modal de selección
+                const response = await companyService.getAllCompanies(
+                    { limit: 100 },
+                    { 'X-No-Company-Context': 'true' }
+                );
+
+                console.log('🏢 Respuesta de empresas:', response);
+
                 if (response.success) {
-                    setAvailableCompanies(response.data.companies);
+                    // Robusto: manejar tanto data.companies como data directamente
+                    const companiesList = response.data.companies || response.data || [];
+                    setAvailableCompanies(companiesList);
                 }
             } catch (error) {
                 console.error('Error loading companies:', error);
