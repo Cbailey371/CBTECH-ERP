@@ -76,8 +76,8 @@ export default function SalesOrderForm() {
             console.log('Loading dependencies for company:', selectedCompany.id);
             // Limit reduced to 100 to be safe, though 1000 should work. Adding explicit error handling.
             const [custRes, prodRes] = await Promise.all([
-                customerService.getCustomers(token, selectedCompany.id, { limit: 100 }),
-                productService.getProducts(token, selectedCompany.id, { limit: 100 })
+                customerService.getCustomers({ limit: 100 }),
+                productService.getProducts({ limit: 100 })
             ]);
 
             setDebugLog(prev => [...prev, 'CustRes Success: ' + custRes.success, 'Cust Count: ' + (custRes.customers?.length || 0)]);
