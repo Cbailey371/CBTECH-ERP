@@ -46,22 +46,6 @@ export default function PurchaseOrderForm() {
 
     // Fetch fresh company data ensuring latest RUC/Phone
     useEffect(() => {
-        const fetchCompanyData = async () => {
-            if (selectedCompany?.id && token) {
-                try {
-                    // We need to import companyService if not already, or use axios directly? 
-                    // Better to import companyService. It is not imported yet.
-                    // Wait, I need to check imports first.
-                } catch (error) {
-                    console.error('Error fetching fresh company data:', error);
-                    setCurrentCompany(selectedCompany); // Fallback
-                }
-            }
-        };
-        // fetchCompanyData(); // Will implement properly in next step after verifying imports
-    }, [selectedCompany?.id, token]);
-
-    useEffect(() => {
         if (selectedCompany) {
             loadMasterData();
             if (isEditMode) {
@@ -82,7 +66,7 @@ export default function PurchaseOrderForm() {
             };
             fetchCompany();
         }
-    }, [selectedCompany, id]);
+    }, [selectedCompany, id, token]); // Fixed dependency array
 
     // Recalculate totals whenever items change
     useEffect(() => {
@@ -93,7 +77,7 @@ export default function PurchaseOrderForm() {
         try {
             const [suppliersRes, productsRes] = await Promise.all([
                 supplierService.getSuppliers(token, selectedCompany.id, { is_active: 'true' }),
-                productService.getProducts(token, selectedCompany.id, { type: 'product' }) // Only products, not services usually? Or both.
+                productService.getProducts({ type: 'product', is_active: 'true' }) // Only passing filter object as expected by service
             ]);
 
             if (suppliersRes.success) setSuppliers(suppliersRes.suppliers || []);
