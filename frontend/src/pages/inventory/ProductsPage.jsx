@@ -175,6 +175,7 @@ export default function ProductsPage() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+                    </div>
                 </CardContent>
             </Card>
 
