@@ -21,6 +21,7 @@ export default function PacProvidersPage() {
 
     // Search and Sort state
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
     const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' });
 
     // Form state
@@ -103,10 +104,16 @@ export default function PacProvidersPage() {
     };
 
     const filteredProviders = providers
-        .filter(p =>
-            p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.code.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        .filter(p => {
+            const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                p.code.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const matchesStatus = filterStatus === 'all'
+                ? true
+                : filterStatus === 'active' ? p.isActive : !p.isActive;
+
+            return matchesSearch && matchesStatus;
+        })
         .sort((a, b) => {
             if (a[sortConfig.key] < b[sortConfig.key]) {
                 return sortConfig.direction === 'asc' ? -1 : 1;
@@ -153,14 +160,25 @@ export default function PacProvidersPage() {
                     <CardTitle className="text-foreground">Listado</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Buscar por nombre o código..."
-                            className="pl-8 max-w-sm bg-background border-input"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full sm:w-auto"
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                        >
+                            <option value="all">Todos los Estados</option>
+                            <option value="active">Activos</option>
+                            <option value="inactive">Inactivos</option>
+                        </select>
+                        <div className="relative flex-1 max-w-sm">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Buscar por nombre o código..."
+                                className="pl-8 bg-background border-input"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <Table>

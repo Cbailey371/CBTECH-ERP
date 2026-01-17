@@ -22,6 +22,8 @@ export default function ProductsPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('all');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -35,14 +37,18 @@ export default function ProductsPage() {
         if (selectedCompany) {
             loadProducts();
         }
-    }, [selectedCompany, searchTerm]);
+    }, [selectedCompany, searchTerm, filterType, filterStatus]);
 
     const loadProducts = async () => {
         try {
             setLoading(true);
-            const response = await productService.getProducts({
+            const params = {
                 search: searchTerm
-            });
+            };
+            if (filterType && filterType !== 'all') params.type = filterType;
+            if (filterStatus && filterStatus !== 'all') params.is_active = filterStatus === 'active';
+
+            const response = await productService.getProducts(params);
             if (response.success) {
                 setProducts(response.data.products);
             }
@@ -140,15 +146,35 @@ export default function ProductsPage() {
 
             <Card className="bg-card border-border">
                 <CardContent className="p-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
-                        <Input
-                            className="pl-10 bg-background border-input text-foreground w-full md:w-96"
-                            placeholder="Buscar por nombre, código o SKU..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full md:w-auto"
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                        >
+                            <option value="all">Todos los Tipos</option>
+                            <option value="product">Producto</option>
+                            <option value="service">Servicio</option>
+                        </select>
+                        <select
+                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full md:w-auto"
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                        >
+                            <option value="all">Todos los Estados</option>
+                            <option value="active">Activos</option>
+                            <option value="inactive">Inactivos</option>
+                        </select>
+                        <div className="relative flex-1">
+
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={20} />
+                            <Input
+                                className="pl-10 bg-background border-input text-foreground w-full md:w-96"
+                                placeholder="Buscar por nombre, código o SKU..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                 </CardContent>
             </Card>
 

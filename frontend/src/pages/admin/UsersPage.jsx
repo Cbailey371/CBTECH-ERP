@@ -24,6 +24,8 @@ export default function UsersPage() {
     const [currentUser, setCurrentUser] = useState(null);
     const [actionLoading, setActionLoading] = useState(false);
     const [search, setSearch] = useState('');
+    const [filterRole, setFilterRole] = useState('all');
+    const [filterStatus, setFilterStatus] = useState('all');
 
     // Delete state
     const [userToDelete, setUserToDelete] = useState(null);
@@ -33,7 +35,11 @@ export default function UsersPage() {
 
     const fetchUsers = async () => {
         try {
-            const response = await userService.getUsers({ search });
+            const params = { search };
+            if (filterRole && filterRole !== 'all') params.role = filterRole;
+            if (filterStatus && filterStatus !== 'all') params.is_active = filterStatus === 'active';
+
+            const response = await userService.getUsers(params);
             if (response.success) {
                 setUsers(response.data);
             }
@@ -50,7 +56,7 @@ export default function UsersPage() {
         }, 300); // 300ms debounce
 
         return () => clearTimeout(timer);
-    }, [search]);
+    }, [search, filterRole, filterStatus]);
 
     const handleCreate = () => {
         setCurrentUser(null);
@@ -150,16 +156,36 @@ export default function UsersPage() {
 
             <Card className="bg-card border-border">
                 <CardHeader>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <CardTitle className="text-foreground">Listado de Usuarios</CardTitle>
-                        <div className="relative w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500" />
-                            <Input
-                                placeholder="Buscar usuario..."
-                                className="pl-8 bg-background border-border"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
+                        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                            <select
+                                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                value={filterRole}
+                                onChange={(e) => setFilterRole(e.target.value)}
+                            >
+                                <option value="all">Todos los Roles</option>
+                                <option value="admin">Administrador</option>
+                                <option value="user">Usuario</option>
+                            </select>
+                            <select
+                                className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                            >
+                                <option value="all">Todos los Estados</option>
+                                <option value="active">Activos</option>
+                                <option value="inactive">Inactivos</option>
+                            </select>
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500" />
+                                <Input
+                                    placeholder="Buscar usuario..."
+                                    className="pl-8 bg-background border-border"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </div>
                         </div>
                     </div>
                 </CardHeader>

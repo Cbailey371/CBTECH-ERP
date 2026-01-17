@@ -38,6 +38,10 @@ router.get('/', authenticateToken, async (req, res) => {
         { lastName: { [Op.iLike]: `% ${search}% ` } }
       ];
     }
+
+    if (req.query.role) {
+      whereClause.role = req.query.role;
+    }
     console.log('GET /users whereClause:', whereClause);
 
     const users = await User.findAll({
