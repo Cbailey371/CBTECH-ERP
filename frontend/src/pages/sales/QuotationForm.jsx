@@ -477,7 +477,7 @@ export default function QuotationForm() {
                                                 <Combobox
                                                     options={products.map(p => ({
                                                         value: p.id,
-                                                        label: `${p.code || ''} - ${p.name || p.description}`.trim()
+                                                        label: `${p.code || ''} - ${p.description}`.trim()
                                                     }))}
                                                     value={item.productId}
                                                     onChange={(value) => handleProductSelect(index, value)}

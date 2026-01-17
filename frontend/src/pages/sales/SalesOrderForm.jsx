@@ -579,7 +579,7 @@ export default function SalesOrderForm() {
                                                 <Combobox
                                                     options={products.map(p => ({
                                                         value: String(p.id),
-                                                        label: `${p.code || ''} - ${p.name || p.description}`.trim()
+                                                        label: `${p.code || ''} - ${p.description}`.trim()
                                                     }))}
                                                     value={item.productId}
                                                     onChange={(value) => handleProductSelect(index, value)}

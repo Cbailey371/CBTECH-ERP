@@ -1,7 +1,9 @@
 import api from './api';
 
 const getProducts = async (params = {}) => {
-  const response = await api.get('/products', { params });
+  // Add timestamp to prevent browser caching
+  const paramsWithCacheBuster = { ...params, _t: new Date().getTime() };
+  const response = await api.get('/products', { params: paramsWithCacheBuster });
   return response.data;
 };
 

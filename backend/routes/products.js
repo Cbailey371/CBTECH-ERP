@@ -201,6 +201,7 @@ router.put('/:id', async (req, res) => {
       code,
       sku,
       description,
+      name: description, // Sync name with description
       cost,
       margin,
       isActive
