@@ -500,7 +500,7 @@ export default function QuotationForm() {
                                                 <Input
                                                     type="number"
                                                     min="1"
-                                                    step="0.01"
+                                                    step="1"
                                                     className="bg-background border-border text-foreground text-right"
                                                     value={item.quantity}
                                                     onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}

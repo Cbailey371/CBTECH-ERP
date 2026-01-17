@@ -339,8 +339,8 @@ export default function PurchaseOrderForm() {
                                             <td className="px-4 py-2">
                                                 <Input
                                                     type="number"
-                                                    min="0.01"
-                                                    step="0.01"
+                                                    min="1"
+                                                    step="1"
                                                     value={item.quantity}
                                                     onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
                                                     className="bg-background border-border text-right"
