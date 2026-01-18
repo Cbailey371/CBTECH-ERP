@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as deliveryNoteService from '../../services/deliveryNoteService';
-import { Plus, Search, Eye, FileText, Download, Trash2, CheckCircle } from 'lucide-react';
+import { Plus, Search, Eye, FileText, Download, Trash2, CheckCircle, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -69,9 +69,9 @@ export default function DeliveryNotesPage() {
         }
     };
 
-    const handleMarkAsDelivered = async (id) => {
+    const handleUpdateStatus = async (id, status) => {
         try {
-            const response = await deliveryNoteService.updateDeliveryNoteStatus(token, selectedCompany.id, id, 'delivered');
+            const response = await deliveryNoteService.updateDeliveryNoteStatus(token, selectedCompany.id, id, status);
             if (response.success) {
                 fetchNotes(pagination.page);
             }
@@ -148,8 +148,13 @@ export default function DeliveryNotesPage() {
                                         <TableCell>{getStatusBadge(note.status)}</TableCell>
                                         <TableCell className="text-right flex justify-end gap-2">
                                             {note.status === 'draft' && (
-                                                <Button variant="ghost" size="icon" onClick={() => handleMarkAsDelivered(note.id)} title="Marcar como Entregado">
+                                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(note.id, 'delivered')} title="Marcar como Entregado">
                                                     <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                                </Button>
+                                            )}
+                                            {note.status === 'delivered' && (
+                                                <Button variant="ghost" size="icon" onClick={() => handleUpdateStatus(note.id, 'draft')} title="Revertir a Borrador">
+                                                    <RotateCcw className="w-4 h-4 text-amber-500" />
                                                 </Button>
                                             )}
                                             <Button variant="ghost" size="icon" onClick={() => navigate(`/delivery-notes/${note.id}`)} title="Ver/Editar">
