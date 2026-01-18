@@ -2,7 +2,7 @@ const PdfPrinter = require('pdfmake');
 const path = require('path');
 
 const fonts = {
-    Roboto: {
+    Helvetica: {
         normal: 'Helvetica',
         bold: 'Helvetica-Bold',
         italics: 'Helvetica-Oblique',
@@ -160,6 +160,10 @@ const generateInvoicePdf = async (order, company, issuerConfig = null) => {
                     label: { bold: true, fontSize: 9 },
                     tableHeader: { bold: true, fontSize: 9, color: '#333333' },
                     value: { fontSize: 9 }
+                },
+                defaultStyle: {
+                    font: 'Helvetica',
+                    fontSize: 10
                 }
             };
 

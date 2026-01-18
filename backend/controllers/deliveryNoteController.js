@@ -173,6 +173,8 @@ exports.downloadPdf = async (req, res) => {
 
         const company = await Company.findByPk(companyId);
 
+        if (!note.items) note.items = [];
+
         const pdfBuffer = await generateDeliveryNotePdf(note, company);
 
         res.contentType('application/pdf');

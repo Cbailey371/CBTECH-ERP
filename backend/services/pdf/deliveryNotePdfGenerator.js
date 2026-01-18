@@ -3,11 +3,17 @@ const path = require('path');
 const fs = require('fs');
 
 const fonts = {
-    Roboto: {
+    Helvetica: {
         normal: 'Helvetica',
         bold: 'Helvetica-Bold',
         italics: 'Helvetica-Oblique',
         bolditalics: 'Helvetica-BoldOblique'
+    },
+    Courier: {
+        normal: 'Courier',
+        bold: 'Courier-Bold',
+        italics: 'Courier-Oblique',
+        bolditalics: 'Courier-BoldOblique'
     }
 };
 
@@ -22,6 +28,29 @@ const printer = new PdfPrinter(fonts);
 const generateDeliveryNotePdf = async (note, company) => {
     return new Promise((resolve, reject) => {
         try {
+            // Defensive data mapping
+            const safeCompany = {
+                name: (company?.name || 'EMPRESA').toUpperCase(),
+                taxId: company?.taxId || '',
+                dv: company?.dv || '',
+                address: company?.getFullAddress ? company.getFullAddress() : (company?.addressLine1 || ''),
+                phone: company?.phone || '',
+                email: company?.email || '',
+                logo: company?.documentLogo || null
+            };
+
+            const safeNote = {
+                number: note?.number || 'N/A',
+                date: note?.date || '',
+                customerName: note?.customer?.name || 'N/A',
+                customerTaxId: note?.customer?.taxId || 'N/A',
+                items: (note?.items || []).map(item => ({
+                    description: item?.description || '',
+                    quantity: Number(item?.quantity || 0).toFixed(0)
+                })),
+                notes: note?.notes || ''
+            };
+
             const content = [];
 
             // Header Section
@@ -29,8 +58,8 @@ const generateDeliveryNotePdf = async (note, company) => {
 
             // Logo column
             let logoImage = null;
-            if (company.documentLogo) {
-                const logoPath = path.join(__dirname, '../../', company.documentLogo);
+            if (safeCompany.logo) {
+                const logoPath = path.join(__dirname, '../../', safeCompany.logo);
                 if (fs.existsSync(logoPath)) {
                     logoImage = {
                         image: logoPath,
@@ -51,10 +80,10 @@ const generateDeliveryNotePdf = async (note, company) => {
             headerColumns.push({
                 width: '*',
                 stack: [
-                    { text: (company.name || 'EMPRESA').toUpperCase(), style: 'header' },
-                    { text: `RUC: ${company.taxId || ''}  DV: ${company.dv || ''}`, style: 'subHeader' },
-                    { text: company.getFullAddress ? company.getFullAddress() : (company.addressLine1 || ''), style: 'subHeader' },
-                    { text: `Tel: ${company.phone || ''} | Email: ${company.email || ''}`, style: 'subHeader' }
+                    { text: safeCompany.name, style: 'header' },
+                    { text: `RUC: ${safeCompany.taxId}  DV: ${safeCompany.dv}`, style: 'subHeader' },
+                    { text: safeCompany.address, style: 'subHeader' },
+                    { text: `Tel: ${safeCompany.phone} | Email: ${safeCompany.email}`, style: 'subHeader' }
                 ]
             });
 
@@ -63,8 +92,8 @@ const generateDeliveryNotePdf = async (note, company) => {
                 width: 150,
                 stack: [
                     { text: 'NOTA DE ENTREGA', style: 'docTitle', alignment: 'right' },
-                    { text: `Número: ${note.number}`, style: 'docSubtitle', alignment: 'right' },
-                    { text: `Fecha: ${note.date}`, style: 'docSubtitle', alignment: 'right' }
+                    { text: `Número: ${safeNote.number}`, style: 'docSubtitle', alignment: 'right' },
+                    { text: `Fecha: ${safeNote.date}`, style: 'docSubtitle', alignment: 'right' }
                 ]
             });
 
@@ -80,8 +109,8 @@ const generateDeliveryNotePdf = async (note, company) => {
                         [{ text: 'DATOS DEL CLIENTE', style: 'sectionHeader', fillColor: '#f9f9f9' }],
                         [{
                             stack: [
-                                { text: `Cliente: ${note.customer?.name || 'N/A'}`, style: 'infoLine' },
-                                { text: `RUC/Cédula: ${note.customer?.taxId || 'N/A'}`, style: 'infoLine' }
+                                { text: `Cliente: ${safeNote.customerName}`, style: 'infoLine' },
+                                { text: `RUC/Cédula: ${safeNote.customerTaxId}`, style: 'infoLine' }
                             ],
                             margin: [5, 5, 5, 5]
                         }]
@@ -101,19 +130,19 @@ const generateDeliveryNotePdf = async (note, company) => {
                             { text: 'DESCRIPCIÓN', style: 'tableHeader', fillColor: '#eeeeee' },
                             { text: 'CANT.', style: 'tableHeader', fillColor: '#eeeeee', alignment: 'center' }
                         ],
-                        ...note.items.map(item => [
+                        ...safeNote.items.map(item => [
                             { text: item.description, style: 'tableCell' },
-                            { text: Number(item.quantity).toFixed(0), style: 'tableCell', alignment: 'center' }
+                            { text: item.quantity, style: 'tableCell', alignment: 'center' }
                         ])
                     ]
                 },
                 layout: 'lightHorizontalLines'
             });
 
-            if (note.notes) {
+            if (safeNote.notes) {
                 content.push({ text: '\n' });
                 content.push({ text: 'Notas:', style: 'label' });
-                content.push({ text: note.notes, style: 'small' });
+                content.push({ text: safeNote.notes, style: 'small' });
             }
 
             content.push({ text: '\n\n\n\n' });
@@ -157,7 +186,8 @@ const generateDeliveryNotePdf = async (note, company) => {
                     small: { fontSize: 8, color: '#666666' }
                 },
                 defaultStyle: {
-                    font: 'Roboto'
+                    font: 'Helvetica',
+                    fontSize: 10
                 }
             };
 
