@@ -4,10 +4,10 @@ const fs = require('fs');
 
 const fonts = {
     Roboto: {
-        normal: path.join(__dirname, '../../node_modules/roboto-font/fonts/Roboto/roboto-regular.woff'),
-        bold: path.join(__dirname, '../../node_modules/roboto-font/fonts/Roboto/roboto-medium.woff'),
-        italics: path.join(__dirname, '../../node_modules/roboto-font/fonts/Roboto/roboto-italic.woff'),
-        bolditalics: path.join(__dirname, '../../node_modules/roboto-font/fonts/Roboto/roboto-mediumitalic.woff')
+        normal: 'Helvetica',
+        bold: 'Helvetica-Bold',
+        italics: 'Helvetica-Oblique',
+        bolditalics: 'Helvetica-BoldOblique'
     }
 };
 
