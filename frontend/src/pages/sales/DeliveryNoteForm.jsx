@@ -71,7 +71,7 @@ export default function DeliveryNoteForm() {
                     date: note.date,
                     items: note.items.map(i => ({
                         productId: i.productId || '',
-                        description: i.description,
+                        description: i.description || i.product?.name || '',
                         quantity: i.quantity
                     })),
                     notes: note.notes || ''
@@ -96,7 +96,7 @@ export default function DeliveryNoteForm() {
                     salesOrderId: String(order.id),
                     items: order.items.map(i => ({
                         productId: i.productId || '',
-                        description: i.description,
+                        description: i.description || i.product?.name || '',
                         quantity: i.quantity
                     })),
                     notes: `Generado desde Factura ${order.orderNumber}`

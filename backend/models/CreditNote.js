@@ -3,10 +3,10 @@ const { sequelize } = require('../config/database');
 
 class CreditNote extends Model {
     static associate(models) {
-        CreditNote.belongsTo(models.Company, { foreignKey: 'company_id', as: 'company' });
-        CreditNote.belongsTo(models.Customer, { foreignKey: 'customer_id', as: 'customer' });
-        CreditNote.belongsTo(models.SalesOrder, { foreignKey: 'sales_order_id', as: 'salesOrder' });
-        CreditNote.belongsTo(models.User, { foreignKey: 'created_by', as: 'creator' });
+        CreditNote.belongsTo(models.Company, { foreignKey: 'companyId', as: 'company' });
+        CreditNote.belongsTo(models.Customer, { foreignKey: 'customerId', as: 'customer' });
+        CreditNote.belongsTo(models.SalesOrder, { foreignKey: 'salesOrderId', as: 'salesOrder' });
+        CreditNote.belongsTo(models.User, { foreignKey: 'createdBy', as: 'creator' });
     }
 }
 
@@ -16,17 +16,20 @@ CreditNote.init({
         primaryKey: true,
         autoIncrement: true
     },
-    company_id: {
+    companyId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        field: 'company_id'
     },
-    customer_id: {
+    customerId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        field: 'customer_id'
     },
-    sales_order_id: {
+    salesOrderId: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        field: 'sales_order_id'
     },
     number: {
         type: DataTypes.STRING(50),
@@ -56,21 +59,24 @@ CreditNote.init({
         type: DataTypes.ENUM('draft', 'authorized', 'cancelled'),
         defaultValue: 'draft'
     },
-    fiscal_cufe: {
+    fiscalCufe: {
         type: DataTypes.STRING(255),
-        allowNull: true
+        allowNull: true,
+        field: 'fiscal_cufe'
     },
-    fiscal_number: {
+    fiscalNumber: {
         type: DataTypes.STRING(100),
-        allowNull: true
+        allowNull: true,
+        field: 'fiscal_number'
     },
     items: {
         type: DataTypes.JSONB,
         defaultValue: []
     },
-    created_by: {
+    createdBy: {
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        field: 'created_by'
     }
 }, {
     sequelize,

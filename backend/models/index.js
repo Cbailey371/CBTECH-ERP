@@ -24,6 +24,7 @@ const CreditNote = require('./CreditNote');
 const Payment = require('./Payment');
 const DeliveryNote = require('./DeliveryNote');
 const DeliveryNoteItem = require('./DeliveryNoteItem');
+const FE_Document = require('./FE_Document');
 
 // Definir asociaciones
 // Usuarios y Roles (Many-to-Many)
@@ -178,6 +179,9 @@ SalesOrderItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 Quotation.hasOne(SalesOrder, { foreignKey: 'quotationId', as: 'salesOrder' });
 SalesOrder.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
 
+SalesOrder.hasOne(FE_Document, { foreignKey: 'sales_order_id', as: 'feDocument' });
+FE_Document.belongsTo(SalesOrder, { foreignKey: 'sales_order_id', as: 'salesOrder' });
+
 
 // Sales Orders & Credit Notes
 SalesOrder.hasMany(CreditNote, { foreignKey: 'salesOrderId', as: 'creditNotes' });
@@ -241,6 +245,7 @@ const models = {
   Payment,
   DeliveryNote,
   DeliveryNoteItem,
+  FE_Document,
   sequelize
 };
 

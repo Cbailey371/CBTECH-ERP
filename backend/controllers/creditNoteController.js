@@ -11,7 +11,7 @@ const creditNoteController = {
             const { page = 1, limit = 10, search = '', status, startDate, endDate } = req.query;
             const offset = (page - 1) * limit;
 
-            const where = { company_id: companyId };
+            const where = { companyId: companyId };
 
             // Filters
             if (status && status !== 'all') {
@@ -25,7 +25,7 @@ const creditNoteController = {
                 where[Op.or] = [
                     { number: { [Op.iLike]: `%${search}%` } },
                     { '$customer.name$': { [Op.iLike]: `%${search}%` } },
-                    { '$salesOrder.order_number$': { [Op.iLike]: `%${search}%` } }
+                    { '$salesOrder.orderNumber$': { [Op.iLike]: `%${search}%` } }
                 ];
             }
 
@@ -63,7 +63,7 @@ const creditNoteController = {
             const { id } = req.params;
             const companyId = req.user.companyId;
             const note = await CreditNote.findOne({
-                where: { id, company_id: companyId },
+                where: { id, companyId: companyId },
                 include: [
                     { model: Customer, as: 'customer' },
                     { model: SalesOrder, as: 'salesOrder' },
@@ -90,7 +90,7 @@ const creditNoteController = {
 
             // 1. Validate Sales Order
             const salesOrder = await SalesOrder.findOne({
-                where: { id: salesOrderId, company_id: companyId },
+                where: { id: salesOrderId, companyId: companyId },
                 include: [{ model: SalesOrderItem, as: 'items' }, { model: Customer, as: 'customer' }]
             });
 
@@ -161,9 +161,9 @@ const creditNoteController = {
 
             // 5. Create Record
             const creditNote = await CreditNote.create({
-                company_id: companyId,
-                customer_id: salesOrder.customer.id,
-                sales_order_id: salesOrder.id,
+                companyId: companyId,
+                customerId: salesOrder.customerId,
+                salesOrderId: salesOrder.id,
                 number,
                 date: new Date(),
                 reason: reason || 'Devolución',
@@ -172,7 +172,7 @@ const creditNoteController = {
                 total,
                 status: 'draft',
                 items: finalItems,
-                created_by: userId
+                createdBy: userId
             }, { transaction });
 
             await transaction.commit();
@@ -210,7 +210,7 @@ const creditNoteController = {
 
             // 2. Fetch Original Invoice Fiscal Data
             const originalInvoiceDoc = await FE_Document.findOne({
-                where: { salesOrderId: creditNote.sales_order_id, status: 'AUTHORIZED' }
+                where: { salesOrderId: creditNote.salesOrderId, status: 'AUTHORIZED' }
             });
 
             // Note: If original invoice is not electronic, we might use system ref? 
@@ -255,8 +255,8 @@ const creditNoteController = {
             if (result.success) {
                 // 5. Update Credit Note
                 creditNote.status = 'authorized';
-                creditNote.fiscal_cufe = result.cufe;
-                creditNote.fiscal_number = result.feNumber || creditNote.number;
+                creditNote.fiscalCufe = result.cufe;
+                creditNote.fiscalNumber = result.feNumber || creditNote.number;
                 await creditNote.save();
 
                 // 6. Save FE_Document Record (Optional but good for tracking history)
@@ -282,7 +282,7 @@ const creditNoteController = {
 
         try {
             const creditNote = await CreditNote.findOne({
-                where: { id, company_id: companyId }
+                where: { id, companyId: companyId }
             });
 
             if (!creditNote) return res.status(404).json({ error: 'Nota de crédito no encontrada' });
