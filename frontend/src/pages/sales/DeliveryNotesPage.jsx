@@ -152,6 +152,9 @@ export default function DeliveryNotesPage() {
                                                     <CheckCircle className="w-4 h-4 text-emerald-500" />
                                                 </Button>
                                             )}
+                                            <Button variant="ghost" size="icon" onClick={() => navigate(`/delivery-notes/${note.id}`)} title="Ver/Editar">
+                                                <Eye className="w-4 h-4" />
+                                            </Button>
                                             <Button variant="ghost" size="icon" onClick={() => handleDownload(note.id, note.number)} title="Descargar PDF">
                                                 <Download className="w-4 h-4" />
                                             </Button>

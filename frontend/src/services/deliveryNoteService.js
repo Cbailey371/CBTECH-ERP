@@ -27,6 +27,11 @@ export const createDeliveryNote = async (token, companyId, noteData) => {
     return response.data;
 };
 
+export const updateDeliveryNote = async (token, companyId, id, noteData) => {
+    const response = await axios.put(`${API_URL}/${id}`, noteData, getAuthHeader(token, companyId));
+    return response.data;
+};
+
 export const updateDeliveryNoteStatus = async (token, companyId, id, status) => {
     const response = await axios.patch(`${API_URL}/${id}/status`, { status }, getAuthHeader(token, companyId));
     return response.data;

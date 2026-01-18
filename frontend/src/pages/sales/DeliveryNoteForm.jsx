@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Plus, Trash2, Save, ArrowLeft } from 'lucide-react';
+import { Save, ArrowLeft } from 'lucide-react';
 import { Combobox } from '../../components/ui/Combobox';
 import { Textarea } from '../../components/ui/Textarea';
 
@@ -109,20 +109,6 @@ export default function DeliveryNoteForm() {
         }
     };
 
-    const handleAddItem = () => {
-        setFormData(prev => ({
-            ...prev,
-            items: [...prev.items, { productId: '', description: '', quantity: 1 }]
-        }));
-    };
-
-    const handleRemoveItem = (index) => {
-        setFormData(prev => ({
-            ...prev,
-            items: prev.items.filter((_, i) => i !== index)
-        }));
-    };
-
     const handleItemChange = (index, field, value) => {
         const newItems = [...formData.items];
         newItems[index][field] = value;
@@ -132,17 +118,21 @@ export default function DeliveryNoteForm() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.customerId) return alert('Seleccione un cliente');
-        if (formData.items.length === 0) return alert('Agregue al menos un ítem');
+        if (formData.items.length === 0) return alert('Importe ítems desde una factura o seleccione un cliente con factura');
 
         setLoading(true);
         try {
             if (isEditMode) {
-                alert('La edición no está disponible en este modo. Por favor cree una nueva nota si necesita cambios.');
+                await deliveryNoteService.updateDeliveryNote(token, selectedCompany.id, id, {
+                    date: formData.date,
+                    notes: formData.notes
+                });
+                alert('Nota de entrega actualizada exitosamente');
             } else {
                 await deliveryNoteService.createDeliveryNote(token, selectedCompany.id, formData);
                 alert('Nota de entrega creada exitosamente');
-                navigate('/delivery-notes');
             }
+            navigate('/delivery-notes');
         } catch (error) {
             console.error(error);
             alert('Error al guardar la nota de entrega');
@@ -167,15 +157,13 @@ export default function DeliveryNoteForm() {
                         <ArrowLeft className="w-5 h-5 mr-2" /> Volver
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
-                        {isEditMode ? 'Detalle de Nota de Entrega' : 'Nueva Nota de Entrega'}
+                        {isEditMode ? 'Editar Nota de Entrega' : 'Nueva Nota de Entrega'}
                     </h1>
                 </div>
                 <div className="space-x-2">
-                    {!isEditMode && (
-                        <Button onClick={handleSubmit} disabled={loading} className="bg-primary hover:bg-primary/90 text-white font-semibold">
-                            <Save className="w-4 h-4 mr-2" /> Guardar Nota
-                        </Button>
-                    )}
+                    <Button onClick={handleSubmit} disabled={loading} className="bg-primary hover:bg-primary/90 text-white font-semibold">
+                        <Save className="w-4 h-4 mr-2" /> {isEditMode ? 'Actualizar Nota' : 'Guardar Nota'}
+                    </Button>
                 </div>
             </div>
 
@@ -200,7 +188,6 @@ export default function DeliveryNoteForm() {
                                     type="date"
                                     value={formData.date}
                                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                    disabled={isEditMode}
                                 />
                             </div>
                         </div>
@@ -227,7 +214,6 @@ export default function DeliveryNoteForm() {
                             className="min-h-[120px] resize-none"
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                            disabled={isEditMode}
                         />
                     </CardContent>
                 </Card>
@@ -236,11 +222,6 @@ export default function DeliveryNoteForm() {
             <Card className="shadow-sm">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-xl">Ítems a Entregar</CardTitle>
-                    {!isEditMode && (
-                        <Button variant="outline" size="sm" onClick={handleAddItem} className="border-primary text-primary hover:bg-primary/10">
-                            <Plus className="w-4 h-4 mr-2" /> Agregar Línea
-                        </Button>
-                    )}
                 </CardHeader>
                 <CardContent>
                     <Table>
@@ -248,14 +229,13 @@ export default function DeliveryNoteForm() {
                             <TableRow>
                                 <TableHead className="font-bold">Descripción del Producto</TableHead>
                                 <TableHead className="w-[150px] text-center font-bold">Cantidad</TableHead>
-                                {!isEditMode && <TableHead className="w-[50px]"></TableHead>}
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {formData.items.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center py-10 text-muted-foreground italic">
-                                        No hay productos en esta entrega. Use el botón superior para agregar o importe desde una factura.
+                                    <TableCell colSpan={2} className="text-center py-10 text-muted-foreground italic">
+                                        No hay productos en esta entrega. Seleccione una factura para importar los ítems.
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -266,7 +246,7 @@ export default function DeliveryNoteForm() {
                                                 placeholder="Nombre o descripción del item..."
                                                 value={item.description}
                                                 onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                                                disabled={isEditMode}
+                                                disabled={true}
                                                 className="border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                                             />
                                         </TableCell>
@@ -276,16 +256,9 @@ export default function DeliveryNoteForm() {
                                                 className="text-center border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
                                                 value={item.quantity}
                                                 onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                                                disabled={isEditMode}
+                                                disabled={true}
                                             />
                                         </TableCell>
-                                        {!isEditMode && (
-                                            <TableCell>
-                                                <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)} className="text-muted-foreground hover:text-destructive">
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
-                                            </TableCell>
-                                        )}
                                     </TableRow>
                                 ))
                             )}

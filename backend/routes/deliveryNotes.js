@@ -9,6 +9,7 @@ router.get('/', deliveryNoteController.getDeliveryNotes);
 router.get('/:id', deliveryNoteController.getDeliveryNoteById);
 router.get('/:id/download', deliveryNoteController.downloadPdf);
 router.post('/', deliveryNoteController.createDeliveryNote);
+router.put('/:id', deliveryNoteController.updateDeliveryNote);
 router.patch('/:id/status', deliveryNoteController.updateDeliveryNoteStatus);
 router.delete('/:id', deliveryNoteController.deleteDeliveryNote);
 

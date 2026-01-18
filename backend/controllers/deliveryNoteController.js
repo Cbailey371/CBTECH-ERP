@@ -10,7 +10,7 @@ const getDeliveryNote = async (id, companyId) => {
             { model: Customer, as: 'customer' },
             { model: SalesOrder, as: 'salesOrder' },
             { model: DeliveryNoteItem, as: 'items', include: [{ model: Product, as: 'product' }] },
-            { model: User, as: 'creator', attributes: ['name', 'email'] }
+            { model: User, as: 'creator', attributes: ['username', 'email'] }
         ]
     });
 };
@@ -109,6 +109,28 @@ exports.createDeliveryNote = async (req, res) => {
     } catch (error) {
         await t.rollback();
         console.error('Error creating delivery note:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.updateDeliveryNote = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = req.user.companyId;
+        const { date, notes } = req.body;
+
+        const note = await DeliveryNote.findOne({ where: { id, companyId } });
+        if (!note) return res.status(404).json({ error: 'Nota de entrega no encontrada' });
+
+        await note.update({
+            date: date || note.date,
+            notes: notes !== undefined ? notes : note.notes
+        });
+
+        const updatedNote = await getDeliveryNote(id, companyId);
+        res.json({ success: true, deliveryNote: updatedNote });
+    } catch (error) {
+        console.error('Error updating delivery note:', error);
         res.status(500).json({ error: error.message });
     }
 };
