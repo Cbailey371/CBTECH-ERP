@@ -103,7 +103,8 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
                     const parts = [];
                     if (item.productCode) parts.push(item.productCode);
                     if (item.productName) parts.push(item.productName);
-                    const productLabel = parts.join(' - ');
+                    let productLabel = parts.join(' - ');
+                    if (item.productSku) productLabel += ` (${item.productSku})`;
 
                     // Avoid duplicating if description is identical or empty
                     if (productLabel && description !== productLabel) {

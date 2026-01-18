@@ -91,7 +91,8 @@ router.get('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
         },
         {
           model: QuotationItem,
-          as: 'items'
+          as: 'items',
+          include: ['product']
         }
       ]
     });
@@ -213,7 +214,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
 
     // Retornar cotización completa
     const createdQuotation = await Quotation.findByPk(quotation.id, {
-      include: ['customer', 'items']
+      include: ['customer', { model: QuotationItem, as: 'items', include: ['product'] }]
     });
 
     res.status(201).json({
@@ -363,7 +364,7 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
     await t.commit();
 
     const updatedQuotation = await Quotation.findByPk(id, {
-      include: ['customer', 'items']
+      include: ['customer', { model: QuotationItem, as: 'items', include: ['product'] }]
     });
 
     res.json({

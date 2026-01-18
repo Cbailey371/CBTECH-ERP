@@ -93,6 +93,7 @@ export default function QuotationForm() {
                 unitPrice: 0,
                 discountType: 'amount',
                 discountValue: 0,
+                sku: '',
                 total: 0
             }
         ],
@@ -150,6 +151,7 @@ export default function QuotationForm() {
                         unitPrice: i.unitPrice,
                         discountType: i.discountType || 'amount',
                         discountValue: i.discountValue || 0,
+                        sku: i.product?.sku || '',
                         total: (qty * price) - discount
                     };
                 }) : [{
@@ -299,6 +301,7 @@ export default function QuotationForm() {
         newItems[index].description = ''; // Leave empty to avoid duplication (PDF auto-adds product name)
         newItems[index].unitPrice = parseFloat(product.price) || 0;
         newItems[index].quantity = 1;
+        newItems[index].sku = product.sku || ''; // Store SKU in item context
 
         // Recalculate total
         const qty = 1;
@@ -477,12 +480,12 @@ export default function QuotationForm() {
                                                 <Combobox
                                                     options={products.map(p => ({
                                                         value: p.id,
-                                                        label: `${p.code || ''} - ${p.description}`.trim()
+                                                        label: `${p.code || ''} - ${p.sku ? '[' + p.sku + '] - ' : ''}${p.description}`.trim()
                                                     }))}
                                                     value={item.productId}
                                                     onChange={(value) => handleProductSelect(index, value)}
                                                     placeholder="Buscar producto..."
-                                                    searchPlaceholder="Buscar por nombre o código..."
+                                                    searchPlaceholder="Buscar por nombre, código o SKU..."
                                                     className="w-full"
                                                 />
                                                 {/* Hidden description input for submission or if we allow editing later */}
@@ -698,7 +701,8 @@ export default function QuotationForm() {
                                             return {
                                                 ...item,
                                                 productName: product ? product.description : '',
-                                                productCode: product ? product.code : ''
+                                                productCode: product ? product.code : '',
+                                                productSku: product ? product.sku : ''
                                             };
                                         }),
                                         customer: customers.find(c => c.id == formData.customerId)
