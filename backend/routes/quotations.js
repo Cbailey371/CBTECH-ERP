@@ -47,6 +47,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
 
     const { count, rows } = await Quotation.findAndCountAll({
       where: whereClause,
+      attributes: ['id', 'number', 'date', 'status', 'total', 'currency', 'customerId'],
       include: [
         {
           model: Customer,

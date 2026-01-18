@@ -36,6 +36,7 @@ router.get('/', async (req, res) => {
 
     const { count, rows } = await Product.findAndCountAll({
       where,
+      attributes: ['id', 'type', 'code', 'sku', 'description', 'price', 'isActive'],
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [['description', 'ASC']]

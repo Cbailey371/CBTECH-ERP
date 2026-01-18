@@ -48,6 +48,7 @@ router.get('/', requireCompanyContext, async (req, res) => {
 
     const { count, rows } = await Customer.findAndCountAll({
       where: whereClause,
+      attributes: ['id', 'name', 'tradeName', 'taxId', 'dv', 'email', 'phone', 'isActive'],
       limit: parseInt(limit),
       offset: offset,
       order: [['created_at', 'DESC']]

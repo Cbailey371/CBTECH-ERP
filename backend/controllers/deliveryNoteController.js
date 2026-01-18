@@ -35,6 +35,7 @@ exports.getDeliveryNotes = async (req, res) => {
         const offset = (page - 1) * limit;
         const { count, rows } = await DeliveryNote.findAndCountAll({
             where: whereClause,
+            attributes: ['id', 'number', 'date', 'status', 'notes', 'customerId'],
             include: [{ model: Customer, as: 'customer', attributes: ['name', 'id'] }],
             limit: parseInt(limit),
             offset: parseInt(offset),

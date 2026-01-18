@@ -37,6 +37,7 @@ exports.getOrders = async (req, res) => {
         const offset = (page - 1) * limit;
         const { count, rows } = await SalesOrder.findAndCountAll({
             where: whereClause,
+            attributes: ['id', 'orderNumber', 'issueDate', 'status', 'total', 'currency', 'customerId'],
             include: [{ model: Customer, as: 'customer', attributes: ['name', 'id'] }],
             limit: parseInt(limit),
             offset: parseInt(offset),
