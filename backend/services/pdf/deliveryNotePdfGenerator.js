@@ -3,17 +3,11 @@ const path = require('path');
 const fs = require('fs');
 
 const fonts = {
-    Helvetica: {
+    Roboto: {
         normal: 'Helvetica',
         bold: 'Helvetica-Bold',
         italics: 'Helvetica-Oblique',
         bolditalics: 'Helvetica-BoldOblique'
-    },
-    Courier: {
-        normal: 'Courier',
-        bold: 'Courier-Bold',
-        italics: 'Courier-Oblique',
-        bolditalics: 'Courier-BoldOblique'
     }
 };
 
@@ -186,7 +180,7 @@ const generateDeliveryNotePdf = async (note, company) => {
                     small: { fontSize: 8, color: '#666666' }
                 },
                 defaultStyle: {
-                    font: 'Helvetica',
+                    font: 'Roboto',
                     fontSize: 10
                 }
             };

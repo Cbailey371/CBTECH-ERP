@@ -20,7 +20,7 @@ const getDeliveryNote = async (id, companyId) => {
 exports.getDeliveryNotes = async (req, res) => {
     try {
         const { page = 1, limit = 10, search = '', status } = req.query;
-        const companyId = req.user.companyId;
+        const companyId = req.companyContext?.companyId || req.user.companyId;
 
         const whereClause = { companyId };
 
@@ -59,7 +59,8 @@ exports.getDeliveryNotes = async (req, res) => {
 
 exports.getDeliveryNoteById = async (req, res) => {
     try {
-        const note = await getDeliveryNote(req.params.id, req.user.companyId);
+        const companyId = req.companyContext?.companyId || req.user.companyId;
+        const note = await getDeliveryNote(req.params.id, companyId);
         if (!note) return res.status(404).json({ error: 'Nota de entrega no encontrada' });
         res.json({ success: true, deliveryNote: note });
     } catch (error) {
@@ -166,7 +167,7 @@ exports.deleteDeliveryNote = async (req, res) => {
 exports.downloadPdf = async (req, res) => {
     try {
         const { id } = req.params;
-        const companyId = req.user.companyId;
+        const companyId = req.companyContext?.companyId || req.user.companyId;
 
         const note = await getDeliveryNote(id, companyId);
         if (!note) return res.status(404).json({ error: 'Nota de entrega no encontrada' });
@@ -175,6 +176,7 @@ exports.downloadPdf = async (req, res) => {
 
         if (!note.items) note.items = [];
 
+        console.log(`[DEBUG] Generando PDF para Nota #${id} (Compañía ${companyId})`);
         const pdfBuffer = await generateDeliveryNotePdf(note, company);
 
         res.contentType('application/pdf');
@@ -183,6 +185,10 @@ exports.downloadPdf = async (req, res) => {
 
     } catch (error) {
         console.error('Error generating PDF:', error);
-        res.status(500).json({ error: 'Error al generar el PDF', details: error.message });
+        res.status(500).json({
+            error: 'Error al generar el PDF',
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
