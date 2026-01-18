@@ -1,5 +1,6 @@
 const PdfPrinter = require('pdfmake');
 const path = require('path');
+const fs = require('fs');
 
 const fonts = {
     Roboto: {
@@ -15,44 +16,72 @@ const printer = new PdfPrinter(fonts);
 const generateInvoicePdf = async (order, company, issuerConfig = null) => {
     return new Promise(async (resolve, reject) => {
         try {
+            // Prepare Header Columns
+            const headerColumns = [];
+
+            // Logo logic
+            let logoImage = null;
+            if (company.documentLogo) {
+                const logoPath = path.join(__dirname, '../../../', company.documentLogo);
+                if (fs.existsSync(logoPath)) {
+                    logoImage = {
+                        image: logoPath,
+                        width: 150,
+                        margin: [0, 0, 0, 10]
+                    };
+                }
+            }
+
+            if (logoImage) {
+                headerColumns.push({
+                    width: 170,
+                    stack: [logoImage],
+                    alignment: 'left'
+                });
+            }
+
+            // Company Info logic
+            headerColumns.push({
+                width: '*',
+                stack: [
+                    { text: (company.name || 'EMPRESA DEMO').toUpperCase(), style: 'header' },
+                    { text: (issuerConfig?.address || company.address || 'Ciudad de Panamá'), style: 'subHeader' },
+                    { text: 'RUC: ' + (issuerConfig?.ruc || company.ruc || '000-000-000') + ' DV: ' + (issuerConfig?.dv || company.dv || '00'), style: 'subHeader' },
+                    { text: 'Tel: ' + (company.phone || '0000-0000'), style: 'subHeader' },
+                    { text: (company.email || 'info@empresa.com'), style: 'subHeader' }
+                ],
+                margin: logoImage ? [10, 5, 0, 0] : [0, 0, 0, 0]
+            });
+
+            // Doc Info logic
+            headerColumns.push({
+                width: 150,
+                stack: [
+                    { text: 'FACTURA DE VENTA', style: 'docTitle', alignment: 'right' },
+                    { text: 'NO FISCAL', style: 'docSubtitle', alignment: 'right', color: 'red' },
+                    { text: '\n' },
+                    {
+                        table: {
+                            widths: ['auto', 'auto'],
+                            body: [
+                                [{ text: 'N° FACTURA:', style: 'label' }, { text: order.orderNumber, style: 'value', bold: true }],
+                                [{ text: 'FECHA:', style: 'label' }, { text: new Date(order.issueDate).toLocaleDateString(), style: 'value' }],
+                            ]
+                        },
+                        layout: 'noBorders',
+                        alignment: 'right'
+                    }
+                ],
+                margin: [0, 5, 0, 0]
+            });
+
             const docDefinition = {
                 pageSize: 'LETTER',
                 pageMargins: [40, 40, 40, 40],
                 content: [
                     // Header
-                    {
-                        columns: [
-                            {
-                                width: '*',
-                                text: [
-                                    { text: (company.name || 'EMPRESA DEMO').toUpperCase() + '\n', style: 'header' },
-                                    { text: (issuerConfig?.address || company.address || 'Ciudad de Panamá') + '\n', style: 'subHeader' },
-                                    { text: 'RUC: ' + (issuerConfig?.ruc || company.ruc || '000-000-000') + ' DV: ' + (issuerConfig?.dv || company.dv || '00') + '\n', style: 'subHeader' },
-                                    { text: 'Tel: ' + (company.phone || '0000-0000') + '\n', style: 'subHeader' },
-                                    { text: (company.email || 'info@empresa.com'), style: 'subHeader' }
-                                ]
-                            },
-                            {
-                                width: 150,
-                                stack: [
-                                    { text: 'FACTURA DE VENTA', style: 'docTitle', alignment: 'right' },
-                                    { text: 'NO FISCAL', style: 'docSubtitle', alignment: 'right', color: 'red' },
-                                    { text: '\n' },
-                                    {
-                                        table: {
-                                            widths: ['auto', 'auto'],
-                                            body: [
-                                                [{ text: 'N° FACTURA:', style: 'label' }, { text: order.orderNumber, style: 'value', bold: true }],
-                                                [{ text: 'FECHA:', style: 'label' }, { text: new Date(order.issueDate).toLocaleDateString(), style: 'value' }],
-                                            ]
-                                        },
-                                        layout: 'noBorders',
-                                        alignment: 'right'
-                                    }
-                                ]
-                            }
-                        ]
-                    },
+                    { columns: headerColumns },
+                    { canvas: [{ type: 'line', x1: 0, y1: 15, x2: 515, y2: 15, lineWidth: 1.5, lineColor: '#333333' }] },
                     { text: '\n\n' },
 
                     // Customer

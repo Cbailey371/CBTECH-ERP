@@ -53,11 +53,12 @@ const generateDeliveryNotePdf = async (note, company) => {
             // Logo column
             let logoImage = null;
             if (safeCompany.logo) {
-                const logoPath = path.join(__dirname, '../../', safeCompany.logo);
+                // Adjust path to project root: backend/services/pdf/ -> backend/ -> ERP/
+                const logoPath = path.join(__dirname, '../../../', safeCompany.logo);
                 if (fs.existsSync(logoPath)) {
                     logoImage = {
                         image: logoPath,
-                        width: 100,
+                        width: 150, // Increased width for better visibility
                         margin: [0, 0, 0, 10]
                     };
                 }
@@ -65,8 +66,9 @@ const generateDeliveryNotePdf = async (note, company) => {
 
             if (logoImage) {
                 headerColumns.push({
-                    width: 120,
-                    stack: [logoImage]
+                    width: 170, // Slightly wider to accommodate larger logo
+                    stack: [logoImage],
+                    alignment: 'left'
                 });
             }
 
@@ -78,7 +80,8 @@ const generateDeliveryNotePdf = async (note, company) => {
                     { text: `RUC: ${safeCompany.taxId}  DV: ${safeCompany.dv}`, style: 'subHeader' },
                     { text: safeCompany.address, style: 'subHeader' },
                     { text: `Tel: ${safeCompany.phone} | Email: ${safeCompany.email}`, style: 'subHeader' }
-                ]
+                ],
+                margin: logoImage ? [10, 5, 0, 0] : [0, 0, 0, 0]
             });
 
             // Document info column
@@ -88,11 +91,12 @@ const generateDeliveryNotePdf = async (note, company) => {
                     { text: 'NOTA DE ENTREGA', style: 'docTitle', alignment: 'right' },
                     { text: `Número: ${safeNote.number}`, style: 'docSubtitle', alignment: 'right' },
                     { text: `Fecha: ${safeNote.date}`, style: 'docSubtitle', alignment: 'right' }
-                ]
+                ],
+                margin: [0, 5, 0, 0]
             });
 
             content.push({ columns: headerColumns });
-            content.push({ canvas: [{ type: 'line', x1: 0, y1: 10, x2: 515, y2: 10, lineWidth: 1, lineColor: '#eeeeee' }] });
+            content.push({ canvas: [{ type: 'line', x1: 0, y1: 15, x2: 515, y2: 15, lineWidth: 1.5, lineColor: '#333333' }] });
             content.push({ text: '\n' });
 
             // Customer Section
