@@ -173,10 +173,8 @@ exports.downloadPdf = async (req, res) => {
         if (!note) return res.status(404).json({ error: 'Nota de entrega no encontrada' });
 
         const company = await Company.findByPk(companyId);
-
-        if (!note.items) note.items = [];
-
         console.log(`[DEBUG] Generando PDF para Nota #${id} (Compañía ${companyId})`);
+        console.log(`[DEBUG] Document Logo en DB: ${company?.documentLogo}`);
         const pdfBuffer = await generateDeliveryNotePdf(note, company);
 
         res.contentType('application/pdf');

@@ -55,12 +55,16 @@ const generateDeliveryNotePdf = async (note, company) => {
             if (safeCompany.logo) {
                 // Adjust path to project root: backend/services/pdf/ -> backend/ -> ERP/
                 const logoPath = path.join(__dirname, '../../../', safeCompany.logo);
+                console.log(`[DEBUG] Intentando cargar logo desde: ${logoPath}`);
                 if (fs.existsSync(logoPath)) {
+                    console.log(`[DEBUG] Logo encontrado en el sistema de archivos.`);
                     logoImage = {
                         image: logoPath,
                         width: 150, // Increased width for better visibility
                         margin: [0, 0, 0, 10]
                     };
+                } else {
+                    console.error(`[DEBUG] ERROR: El logo no existe en la ruta: ${logoPath}`);
                 }
             }
 

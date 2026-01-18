@@ -23,12 +23,16 @@ const generateInvoicePdf = async (order, company, issuerConfig = null) => {
             let logoImage = null;
             if (company.documentLogo) {
                 const logoPath = path.join(__dirname, '../../../', company.documentLogo);
+                console.log(`[DEBUG] Invoice PDF - Intentando cargar logo desde: ${logoPath}`);
                 if (fs.existsSync(logoPath)) {
+                    console.log(`[DEBUG] Invoice PDF - Logo encontrado.`);
                     logoImage = {
                         image: logoPath,
                         width: 150,
                         margin: [0, 0, 0, 10]
                     };
+                } else {
+                    console.error(`[DEBUG] Invoice PDF - ERROR: Logo no encontrado en ${logoPath}`);
                 }
             }
 
