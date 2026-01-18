@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as salesOrderService from '../../services/salesOrderService';
-import { Plus, Search, Eye, FileText } from 'lucide-react';
+import { Plus, Search, Eye, FileText, Truck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -135,6 +135,14 @@ export default function SalesOrdersPage() {
                                         <TableCell className="text-right">
                                             <Button variant="ghost" size="icon" onClick={() => navigate(`/sales-orders/${order.id}`)}>
                                                 <Eye className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => navigate(`/delivery-notes/new?sourceOrderId=${order.id}`)}
+                                                title="Generar Nota de Entrega"
+                                            >
+                                                <Truck className="w-4 h-4 text-primary" />
                                             </Button>
                                         </TableCell>
                                     </TableRow>

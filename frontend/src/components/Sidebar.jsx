@@ -38,6 +38,7 @@ export default function Sidebar() {
         { icon: FileText, label: 'Cotizaciones', path: '/quotations' },
         { icon: Banknote, label: 'Facturas', path: '/sales-orders' },
         { icon: RotateCcw, label: 'Notas de Crédito', path: '/credit-notes' },
+        { icon: Truck, label: 'Notas de Entrega', path: '/delivery-notes' },
         { icon: Users, label: 'Clientes', path: '/customers' },
         { icon: ClipboardList, label: 'Contratos', path: '/contracts' }
       ]

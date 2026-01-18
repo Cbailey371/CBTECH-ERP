@@ -105,6 +105,7 @@ app.use('/api/sales-orders', require('./routes/salesOrderRoutes'));
 app.use('/api/pac-providers', require('./routes/pacProviders'));
 app.use('/api/credit-notes', require('./routes/creditNotes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/delivery-notes', require('./routes/deliveryNotes'));
 
 // Ruta de prueba
 app.get('/', (req, res) => {

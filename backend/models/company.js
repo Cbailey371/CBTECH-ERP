@@ -207,6 +207,16 @@ const Company = sequelize.define('Company', {
   },
 
   // Metadatos
+  loginLogo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'login_logo'
+  },
+  documentLogo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'document_logo'
+  },
   notes: {
     type: DataTypes.TEXT,
     allowNull: true

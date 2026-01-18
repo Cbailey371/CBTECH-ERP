@@ -22,6 +22,8 @@ const PacProvider = require('./PacProvider');
 const FE_IssuerConfig = require('./FE_IssuerConfig');
 const CreditNote = require('./CreditNote');
 const Payment = require('./Payment');
+const DeliveryNote = require('./DeliveryNote');
+const DeliveryNoteItem = require('./DeliveryNoteItem');
 
 // Definir asociaciones
 // Usuarios y Roles (Many-to-Many)
@@ -195,6 +197,24 @@ SalesOrder.hasMany(Payment, { foreignKey: 'salesOrderId', as: 'payments' });
 Customer.hasMany(Payment, { foreignKey: 'customerId', as: 'payments' });
 Company.hasMany(Payment, { foreignKey: 'companyId', as: 'payments' });
 
+// Delivery Notes
+Company.hasMany(DeliveryNote, { foreignKey: 'companyId', as: 'deliveryNotes' });
+DeliveryNote.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+
+Customer.hasMany(DeliveryNote, { foreignKey: 'customerId', as: 'deliveryNotes' });
+DeliveryNote.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+
+SalesOrder.hasMany(DeliveryNote, { foreignKey: 'salesOrderId', as: 'deliveryNotes' });
+DeliveryNote.belongsTo(SalesOrder, { foreignKey: 'salesOrderId', as: 'salesOrder' });
+
+DeliveryNote.hasMany(DeliveryNoteItem, { foreignKey: 'deliveryNoteId', as: 'items' });
+DeliveryNoteItem.belongsTo(DeliveryNote, { foreignKey: 'deliveryNoteId', as: 'deliveryNote' });
+
+Product.hasMany(DeliveryNoteItem, { foreignKey: 'productId', as: 'deliveryNoteItems' });
+DeliveryNoteItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
+
+DeliveryNote.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
+
 const models = {
   User,
   Role,
@@ -219,6 +239,8 @@ const models = {
   FE_IssuerConfig,
   CreditNote,
   Payment,
+  DeliveryNote,
+  DeliveryNoteItem,
   sequelize
 };
 

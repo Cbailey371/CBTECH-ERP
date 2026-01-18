@@ -17,6 +17,8 @@ import SalesOrdersPage from './pages/sales/SalesOrdersPage';
 import SalesOrderForm from './pages/sales/SalesOrderForm';
 import CreditNotesPage from './pages/sales/CreditNotesPage';
 import CreditNoteForm from './pages/sales/CreditNoteForm';
+import DeliveryNotesPage from './pages/sales/DeliveryNotesPage';
+import DeliveryNoteForm from './pages/sales/DeliveryNoteForm';
 import ProductsPage from './pages/inventory/ProductsPage';
 import ProjectsPage from './pages/projects/ProjectsPage';
 import ProjectDetailPage from './pages/projects/ProjectDetailPage';
@@ -75,6 +77,9 @@ function App() {
                   <Route path="/credit-notes" element={<CreditNotesPage />} />
                   <Route path="/credit-notes/new" element={<CreditNoteForm />} />
                   <Route path="/credit-notes/:id" element={<CreditNoteForm />} />
+                  <Route path="/delivery-notes" element={<DeliveryNotesPage />} />
+                  <Route path="/delivery-notes/new" element={<DeliveryNoteForm />} />
+                  <Route path="/delivery-notes/:id" element={<DeliveryNoteForm />} />
                   <Route path="/products" element={<ProductsPage />} />
                   <Route path="/projects" element={<ProjectsPage />} />
                   <Route path="/projects/:id" element={<ProjectDetailPage />} />
