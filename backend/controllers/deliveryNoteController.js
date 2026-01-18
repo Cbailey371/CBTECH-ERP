@@ -175,6 +175,11 @@ exports.downloadPdf = async (req, res) => {
         const company = await Company.findByPk(companyId);
         console.log(`[DEBUG] Generando PDF para Nota #${id} (Compañía ${companyId})`);
         console.log(`[DEBUG] Document Logo en DB: ${company?.documentLogo}`);
+
+        // Items defensive check moved here to be extra safe
+        if (!note.items) note.items = [];
+        console.log(`[DEBUG] Cantidad de ítems en nota: ${note.items.length}`);
+
         const pdfBuffer = await generateDeliveryNotePdf(note, company);
 
         res.contentType('application/pdf');

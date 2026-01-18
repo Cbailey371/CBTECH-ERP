@@ -7,7 +7,9 @@ const fonts = {
         normal: 'Helvetica',
         bold: 'Helvetica-Bold',
         italics: 'Helvetica-Oblique',
-        bolditalics: 'Helvetica-BoldOblique'
+        bolditalics: 'Helvetica-BoldOblique',
+        medium: 'Helvetica-Bold',
+        light: 'Helvetica'
     }
 };
 
