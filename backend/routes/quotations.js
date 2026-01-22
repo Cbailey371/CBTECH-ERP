@@ -215,9 +215,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       );
     }
 
-    await t.commit();
-
-    // Retornar cotización completa
+    // Retornar cotización completa (DENTRO de la transacción para ser consistente)
     const createdQuotation = await Quotation.findByPk(quotation.id, {
       include: ['customer', {
         model: QuotationItem,
@@ -226,8 +224,11 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       }],
       order: [
         [{ model: QuotationItem, as: 'items' }, 'position', 'ASC']
-      ]
+      ],
+      transaction: t
     });
+
+    await t.commit();
 
     res.status(201).json({
       success: true,
@@ -236,7 +237,9 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
     });
 
   } catch (error) {
-    await t.rollback();
+    if (t && !t.finished) {
+      try { await t.rollback(); } catch (rollbackError) { /* ignore */ }
+    }
     console.error('Error al crear cotización:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
   }
@@ -374,8 +377,7 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       }
     }
 
-    await t.commit();
-
+    // Obtener actualizada DENTRO de la transacción para ser consistente
     const updatedQuotation = await Quotation.findByPk(id, {
       include: ['customer', {
         model: QuotationItem,
@@ -384,8 +386,11 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       }],
       order: [
         [{ model: QuotationItem, as: 'items' }, 'position', 'ASC']
-      ]
+      ],
+      transaction: t
     });
+
+    await t.commit();
 
     res.json({
       success: true,
@@ -394,9 +399,11 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
     });
 
   } catch (error) {
-    await t.rollback();
+    if (t && !t.finished) {
+      try { await t.rollback(); } catch (rollbackError) { /* ignore */ }
+    }
     console.error('Error al actualizar cotización:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
   }
 });
 
