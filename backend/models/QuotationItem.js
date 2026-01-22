@@ -58,6 +58,11 @@ const QuotationItem = sequelize.define('QuotationItem', {
         defaultValue: 0,
         field: 'discount_value'
     },
+    position: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+    },
     total: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false

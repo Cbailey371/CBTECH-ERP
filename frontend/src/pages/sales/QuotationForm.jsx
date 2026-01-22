@@ -360,9 +360,13 @@ export default function QuotationForm() {
 
         setLoading(true);
         try {
-            // Preparar datos para el backend (incluyendo campos de descuento)
+            // Preparar datos para el backend (incluyendo campos de descuento y posición)
             const payload = {
                 ...formData,
+                items: formData.items.map((item, index) => ({
+                    ...item,
+                    position: index
+                })),
                 discount: totals.discount, // Monto calculado del descuento global
                 subtotal: totals.subtotal,
                 tax: totals.tax,
