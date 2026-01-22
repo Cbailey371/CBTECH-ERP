@@ -49,7 +49,7 @@ router.get('/', async (req, res) => {
                 {
                     model: Customer,
                     as: 'customer',
-                    attributes: ['id', 'name', 'email']
+                    attributes: ['id', 'code', 'name', 'email']
                 },
                 {
                     model: Task,

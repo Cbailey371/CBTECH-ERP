@@ -26,7 +26,7 @@ async function checkCustomers() {
         const customers = await Customer.findAll({
             where: { companyId: 1 },
             limit: 5,
-            attributes: ['id', 'name', 'isActive']
+            attributes: ['id', 'code', 'name', 'isActive']
         });
 
         console.log('Sample Customers:', JSON.stringify(customers, null, 2));
