@@ -72,14 +72,26 @@ exports.getDeliveryNoteById = async (req, res) => {
 exports.createDeliveryNote = async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        const companyId = req.user.companyId;
+        const companyId = req.companyContext?.companyId || req.user.companyId;
         const { customerId, salesOrderId, date, notes, items } = req.body;
 
         if (!items || items.length === 0) throw new Error("La nota de entrega debe tener al menos un ítem.");
 
-        // Generate Number
-        const count = await DeliveryNote.count({ where: { companyId }, transaction: t });
-        const number = `NE-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+        // Generate Number robustly
+        const lastNote = await DeliveryNote.findOne({
+            where: { companyId },
+            order: [['id', 'DESC']],
+            transaction: t
+        });
+
+        let nextNum = 1;
+        if (lastNote && lastNote.number) {
+            const parts = lastNote.number.split('-');
+            const lastSeq = parseInt(parts[parts.length - 1]);
+            if (!isNaN(lastSeq)) nextNum = lastSeq + 1;
+        }
+
+        const number = `NE-${new Date().getFullYear()}-${String(nextNum).padStart(4, '0')}`;
 
         // Create Header
         const note = await DeliveryNote.create({
@@ -116,22 +128,41 @@ exports.createDeliveryNote = async (req, res) => {
 };
 
 exports.updateDeliveryNote = async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const companyId = req.user.companyId;
-        const { date, notes } = req.body;
+        const companyId = req.companyContext?.companyId || req.user.companyId;
+        const { date, notes, items } = req.body;
 
-        const note = await DeliveryNote.findOne({ where: { id, companyId } });
+        const note = await DeliveryNote.findOne({ where: { id, companyId }, transaction: t });
         if (!note) return res.status(404).json({ error: 'Nota de entrega no encontrada' });
 
         await note.update({
             date: date || note.date,
             notes: notes !== undefined ? notes : note.notes
-        });
+        }, { transaction: t });
 
+        // Update items if provided
+        if (items && Array.isArray(items)) {
+            // Very simple approach: delete and recreate if it's draft or for simplicity
+            // In a more complex ERP we might want to track changes, but here bulk overwrite is common for drafts
+            await DeliveryNoteItem.destroy({ where: { deliveryNoteId: id }, transaction: t });
+            await DeliveryNoteItem.bulkCreate(
+                items.map(item => ({
+                    deliveryNoteId: id,
+                    productId: item.productId || null,
+                    description: item.description,
+                    quantity: parseFloat(item.quantity) || 0
+                })),
+                { transaction: t }
+            );
+        }
+
+        await t.commit();
         const updatedNote = await getDeliveryNote(id, companyId);
         res.json({ success: true, deliveryNote: updatedNote });
     } catch (error) {
+        await t.rollback();
         console.error('Error updating delivery note:', error);
         res.status(500).json({ error: error.message });
     }

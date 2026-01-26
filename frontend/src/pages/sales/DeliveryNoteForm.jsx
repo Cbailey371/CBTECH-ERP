@@ -125,7 +125,8 @@ export default function DeliveryNoteForm() {
             if (isEditMode) {
                 await deliveryNoteService.updateDeliveryNote(token, selectedCompany.id, id, {
                     date: formData.date,
-                    notes: formData.notes
+                    notes: formData.notes,
+                    items: formData.items
                 });
                 alert('Nota de entrega actualizada exitosamente');
             } else {

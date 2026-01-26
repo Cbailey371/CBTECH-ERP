@@ -42,7 +42,7 @@ const generateDeliveryNotePdf = async (note, company) => {
                 customerTaxId: note?.customer?.taxId || 'N/A',
                 items: (note?.items || []).map(item => ({
                     description: item?.description || item?.product?.name || '',
-                    quantity: Number(item?.quantity || 0).toFixed(0)
+                    quantity: Number(item?.quantity || 0).toFixed(2)
                 })),
                 notes: note?.notes || ''
             };
