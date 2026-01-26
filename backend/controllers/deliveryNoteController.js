@@ -78,9 +78,16 @@ exports.createDeliveryNote = async (req, res) => {
         if (!items || items.length === 0) throw new Error("La nota de entrega debe tener al menos un ítem.");
 
         // Generate Number robustly
+        const year = new Date().getFullYear();
+        const prefix = `NE-${year}-`;
+
+        // Find the maximum number for this company and year using string comparison
         const lastNote = await DeliveryNote.findOne({
-            where: { companyId },
-            order: [['id', 'DESC']],
+            where: {
+                companyId,
+                number: { [Op.like]: `${prefix}%` }
+            },
+            order: [['number', 'DESC']],
             transaction: t
         });
 
@@ -91,7 +98,26 @@ exports.createDeliveryNote = async (req, res) => {
             if (!isNaN(lastSeq)) nextNum = lastSeq + 1;
         }
 
-        const number = `NE-${new Date().getFullYear()}-${String(nextNum).padStart(4, '0')}`;
+        // Self-healing loop in case numbers are skipped or manually entered
+        let number;
+        let isUnique = false;
+        let attempts = 0;
+
+        while (!isUnique && attempts < 10) {
+            number = `${prefix}${String(nextNum).padStart(4, '0')}`;
+            const existing = await DeliveryNote.findOne({
+                where: { companyId, number },
+                transaction: t
+            });
+            if (!existing) {
+                isUnique = true;
+            } else {
+                nextNum++;
+                attempts++;
+            }
+        }
+
+        console.log(`[DEBUG] Generando número final: ${number} para compañía ${companyId}`);
 
         // Create Header
         const note = await DeliveryNote.create({

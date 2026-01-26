@@ -50,6 +50,8 @@ const generateDeliveryNotePdf = async (note, company) => {
                 notes: note?.notes || ''
             };
 
+            console.log(`[DEBUG] Datos finales para PDF (Nota ${safeNote.number}):`, JSON.stringify(safeNote));
+
             const content = [];
 
             // Header Section
