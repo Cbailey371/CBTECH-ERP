@@ -123,7 +123,10 @@ exports.createDeliveryNote = async (req, res) => {
     } catch (error) {
         await t.rollback();
         console.error('Error creating delivery note:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            error: error.message,
+            details: error.errors ? error.errors.map(e => ({ message: e.message, field: e.path })) : undefined
+        });
     }
 };
 
@@ -164,7 +167,10 @@ exports.updateDeliveryNote = async (req, res) => {
     } catch (error) {
         await t.rollback();
         console.error('Error updating delivery note:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({
+            error: error.message,
+            details: error.errors ? error.errors.map(e => ({ message: e.message, field: e.path })) : undefined
+        });
     }
 };
 
