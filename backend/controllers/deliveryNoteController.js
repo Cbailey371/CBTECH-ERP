@@ -122,7 +122,10 @@ exports.createDeliveryNote = async (req, res) => {
 
     } catch (error) {
         await t.rollback();
-        console.error('Error creating delivery note:', error);
+        console.error('[CRITICAL] Error creating delivery note:', error);
+        if (error.errors) {
+            error.errors.forEach(e => console.error(`[VALIDATION] Field: ${e.path}, Message: ${e.message}, Value: ${e.value}`));
+        }
         res.status(500).json({
             error: error.message || 'Error al crear la nota de entrega',
             details: error.errors ? error.errors.map(e => ({ message: e.message, field: e.path })) : error.message
@@ -166,7 +169,10 @@ exports.updateDeliveryNote = async (req, res) => {
         res.json({ success: true, deliveryNote: updatedNote });
     } catch (error) {
         await t.rollback();
-        console.error('Error updating delivery note:', error);
+        console.error('[CRITICAL] Error updating delivery note:', error);
+        if (error.errors) {
+            error.errors.forEach(e => console.error(`[VALIDATION] Field: ${e.path}, Message: ${e.message}, Value: ${e.value}`));
+        }
         res.status(500).json({
             error: error.message || 'Error al actualizar la nota de entrega',
             details: error.errors ? error.errors.map(e => ({ message: e.message, field: e.path })) : error.message

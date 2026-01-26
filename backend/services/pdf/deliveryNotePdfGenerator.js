@@ -40,10 +40,13 @@ const generateDeliveryNotePdf = async (note, company) => {
                 date: note?.date || '',
                 customerName: note?.customer?.name || 'N/A',
                 customerTaxId: note?.customer?.taxId || 'N/A',
-                items: (note?.items || []).map(item => ({
-                    description: item?.description || item?.product?.name || '',
-                    quantity: Number(item?.quantity || 0).toFixed(2)
-                })),
+                items: (note?.items || []).map(item => {
+                    const qty = parseFloat(item?.quantity);
+                    return {
+                        description: item?.description || item?.product?.name || '',
+                        quantity: isNaN(qty) ? '0.00' : qty.toFixed(2)
+                    };
+                }),
                 notes: note?.notes || ''
             };
 

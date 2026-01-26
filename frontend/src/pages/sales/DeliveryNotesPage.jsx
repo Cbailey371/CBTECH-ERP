@@ -45,7 +45,8 @@ export default function DeliveryNotesPage() {
     const handleDownload = async (id, number) => {
         try {
             const blob = await deliveryNoteService.downloadDeliveryNotePdf(token, selectedCompany.id, id);
-            const url = window.URL.createObjectURL(new Blob([blob]));
+            // downloadDeliveryNotePdf already returns the blob from axios response.data
+            const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
             link.setAttribute('download', `NotaEntrega_${number}.pdf`);
