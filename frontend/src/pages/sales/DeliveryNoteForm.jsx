@@ -70,7 +70,7 @@ export default function DeliveryNoteForm() {
                     salesOrderId: String(note.salesOrderId || ''),
                     date: note.date,
                     items: note.items.map(i => ({
-                        productId: i.productId || '',
+                        productId: i.productId || (i.product?.id) || '',
                         description: i.description || i.product?.name || '',
                         quantity: i.quantity
                     })),
@@ -95,7 +95,7 @@ export default function DeliveryNoteForm() {
                     customerId: String(order.customerId || ''),
                     salesOrderId: String(order.id),
                     items: order.items.map(i => ({
-                        productId: i.productId || '',
+                        productId: i.productId || (i.product?.id) || '',
                         description: i.description || i.product?.name || '',
                         quantity: i.quantity
                     })),

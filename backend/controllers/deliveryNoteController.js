@@ -124,8 +124,8 @@ exports.createDeliveryNote = async (req, res) => {
         await t.rollback();
         console.error('Error creating delivery note:', error);
         res.status(500).json({
-            error: error.message,
-            details: error.errors ? error.errors.map(e => ({ message: e.message, field: e.path })) : undefined
+            error: error.message || 'Error al crear la nota de entrega',
+            details: error.errors ? error.errors.map(e => ({ message: e.message, field: e.path })) : error.message
         });
     }
 };
@@ -168,8 +168,8 @@ exports.updateDeliveryNote = async (req, res) => {
         await t.rollback();
         console.error('Error updating delivery note:', error);
         res.status(500).json({
-            error: error.message,
-            details: error.errors ? error.errors.map(e => ({ message: e.message, field: e.path })) : undefined
+            error: error.message || 'Error al actualizar la nota de entrega',
+            details: error.errors ? error.errors.map(e => ({ message: e.message, field: e.path })) : error.message
         });
     }
 };
