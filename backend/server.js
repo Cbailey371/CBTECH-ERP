@@ -41,10 +41,35 @@ const projectRoutes = require('./routes/projects');
 const taskRoutes = require('./routes/tasks');
 const { companyContext } = require('./middleware/companyContext');
 
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middlewares
+// Middlewares de seguridad
+app.use(helmet()); // Añade cabeceras de seguridad HTTP
+
+// Rate Limiting para prevenir fuerza bruta y DoS
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // Máximo 100 peticiones por ventana
+  message: { message: 'Demasiadas peticiones desde esta IP, por favor intente más tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplicar rate limit general
+app.use('/api/', limiter);
+
+// Rate limit más estricto para login y autenticación
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // Solo 20 intentos por 15 minutos
+  message: { message: 'Demasiados intentos de acceso, por favor intente más tarde.' }
+});
+app.use('/api/auth/login', authLimiter);
+
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -55,30 +80,16 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-company-id', 'X-Company-Id'],
-  optionsSuccessStatus: 200 // Para soportar navegadores legacy
-}));
-
-// Middleware adicional para manejar preflight requests
-app.options('*', cors({
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:5173',
-    process.env.FRONTEND_URL || ''
-  ].filter(Boolean),
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-company-id', 'X-Company-Id']
+  optionsSuccessStatus: 200
 }));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/uploads', express.static('uploads'));
 
-// Middleware de contexto de empresa (aplicar después de auth en rutas específicas)
-// Se aplicará automáticamente a todas las rutas que lo necesiten
+// ELIMINADO: app.use('/uploads', express.static('uploads')); 
+// Ahora los archivos se sirven mediante una ruta protegida
 
-// Rutas
+// Rutas protegidas (Añadir contexto de empresa preventivo a rutas críticas si no lo tienen)
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/roles', roleRoutes);
@@ -88,7 +99,7 @@ app.use('/api/companies', companyContext, companyRoutes);
 app.use('/api/user-companies', userCompanyRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/advanced-permissions', advancedPermissionsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/dashboard', companyContext, dashboardRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/config', configRoutes);
@@ -107,21 +118,35 @@ app.use('/api/credit-notes', require('./routes/creditNotes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/delivery-notes', require('./routes/deliveryNotes'));
 
+// Nueva ruta protegida para archivos
+app.use('/api/files', require('./routes/fileRoutes'));
+
 // Ruta de prueba
 app.get('/', (req, res) => {
   res.json({
-    message: 'API del sistema ERP funcionando correctamente',
-    version: '1.0.0',
+    message: 'API del sistema ERP securizada',
+    version: '1.1.0',
     timestamp: new Date().toISOString()
   });
 });
 
-// Middleware de manejo de errores
+// Middleware de manejo de errores mejorado
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    message: 'Error interno del servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : {}
+  // En producción, nunca mostrar err.stack o detalles técnicos
+  const isDev = process.env.NODE_ENV === 'development';
+
+  if (isDev) {
+    console.error('🔴 Error:', err);
+  } else {
+    // Loguear solo lo esencial para auditoría interna
+    console.error(`[${new Date().toISOString()}] Error en ${req.method} ${req.originalUrl}: ${err.message}`);
+  }
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: isDev ? err.message : 'Ha ocurrido un error interno en el servidor.',
+    // En producción, error está vacío o es un código genérico
+    code: err.code || 'INTERNAL_SERVER_ERROR'
   });
 });
 

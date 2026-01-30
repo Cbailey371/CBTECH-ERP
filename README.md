@@ -135,21 +135,10 @@ El frontend se ejecutará en: http://localhost:3000
 ## 🔧 Configuración
 
 ### Variables de entorno (Backend)
-El archivo `.env` en el backend contiene:
-```env
-NODE_ENV=development
-PORT=5000
-JWT_SECRET=tu_clave_secreta_muy_segura_aqui_cambiar_en_produccion
-JWT_EXPIRATION=24h
+Copie el archivo `.env.example` a `.env` y configure sus propias claves secretas.
 
-# Base de datos PostgreSQL
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=erp_db
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_DIALECT=postgres
-```
+> [!CAUTION]
+> NUNCA comparta su `JWT_SECRET` ni use las contraseñas por defecto en entornos de producción.
 
 ### Base de datos
 La aplicación usa PostgreSQL con Sequelize ORM. Los datos se almacenan de forma persistente y incluyen:

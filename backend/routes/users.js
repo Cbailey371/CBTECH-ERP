@@ -18,13 +18,15 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// GET /api/users - Obtener todos los usuarios
-router.get('/', authenticateToken, async (req, res) => {
+// GET /api/users - Obtener todos los usuarios de la empresa actual
+router.get('/', authenticateToken, companyContext, requireCompanyContext, async (req, res) => {
   try {
     const { is_active, search } = req.query;
-    console.log('GET /users query:', req.query);
+    const { companyId } = req.companyContext;
 
-    const whereClause = {};
+    const whereClause = {
+      // [VULN-008 Mitigation] Filtrar SIEMPRE por empresa en el include o a través de la relación
+    };
 
     if (is_active !== undefined) {
       whereClause.isActive = is_active === 'true';
@@ -32,17 +34,10 @@ router.get('/', authenticateToken, async (req, res) => {
 
     if (search) {
       whereClause[Op.or] = [
-        { username: { [Op.iLike]: `% ${search}% ` } },
-        { email: { [Op.iLike]: `% ${search}% ` } },
-        { firstName: { [Op.iLike]: `% ${search}% ` } },
-        { lastName: { [Op.iLike]: `% ${search}% ` } }
+        { username: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } }
       ];
     }
-
-    if (req.query.role) {
-      whereClause.role = req.query.role;
-    }
-    console.log('GET /users whereClause:', whereClause);
 
     const users = await User.findAll({
       where: whereClause,
@@ -50,50 +45,46 @@ router.get('/', authenticateToken, async (req, res) => {
         {
           model: Company,
           as: 'companies',
+          where: { id: companyId }, // Forzar que pertenezca a la empresa del contexto
           through: {
             model: UserCompany,
             as: 'userCompany',
             where: { isActive: true },
-            attributes: ['role', 'isDefault', 'assignedAt']
+            attributes: ['role', 'permissions']
           },
-          attributes: ['id', 'name', 'legalName', 'tradeName'],
-          required: false
+          attributes: ['id', 'name'],
+          required: true // Solo usuarios vinculados a ESTA empresa
         }
       ],
-      order: [['created_at', 'DESC']]
+      order: [['username', 'ASC']]
     });
 
-    res.json({
-      success: true,
-      data: users
-    });
+    res.json({ success: true, data: users });
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor'
-    });
+    res.status(500).json({ success: false, message: 'Error al listar usuarios de la empresa' });
   }
 });
 
-// GET /api/users/:id - Obtener un usuario específico
-router.get('/:id', authenticateToken, async (req, res) => {
+// GET /api/users/:id - Obtener un usuario específico (Validando pertenencia)
+router.get('/:id', authenticateToken, companyContext, requireCompanyContext, async (req, res) => {
   try {
     const { id } = req.params;
+    const { companyId } = req.companyContext;
 
-    const user = await User.findByPk(id, {
+    const user = await User.findOne({
+      where: { id },
       include: [
         {
           model: Company,
           as: 'companies',
+          where: { id: companyId }, // [IDOR Protection] Validar que el usuario buscado esté en la empresa del consultante
           through: {
             model: UserCompany,
             as: 'userCompany',
-            where: { isActive: true },
-            attributes: ['role', 'isDefault', 'permissions', 'assignedAt', 'notes']
+            where: { isActive: true }
           },
-          attributes: ['id', 'name', 'legalName', 'tradeName', 'taxId', 'email', 'city', 'country'],
-          required: false
+          required: true
         }
       ]
     });
@@ -101,20 +92,14 @@ router.get('/:id', authenticateToken, async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Usuario no encontrado'
+        message: 'Usuario no encontrado en el contexto de esta empresa.'
       });
     }
 
-    res.json({
-      success: true,
-      data: user
-    });
+    res.json({ success: true, data: user });
   } catch (error) {
     console.error('Error al obtener usuario:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error interno del servidor'
-    });
+    res.status(500).json({ success: false, message: 'Error interno de validación de usuario' });
   }
 });
 

@@ -12,24 +12,23 @@ const companyContext = async (req, res, next) => {
       return next();
     }
 
-    // Obtener company_id del query param (prioridad alta) o header (prioridad baja/global)
-    // Frontend envía companyId (camelCase), otros pueden enviar company_id (snake_case)
+    // Obtener company_id del query param o header
     const companyId = req.query.companyId || req.query.company_id || req.headers['x-company-id'];
 
-    if (!companyId) {
-      // Si no se especifica empresa, continuar sin contexto de empresa
-      console.log('🌐 No se especificó X-Company-Id, continuando sin contexto global para el usuario:', req.user.id);
+    if (!companyId || isNaN(parseInt(companyId))) {
+      // Si no se especifica empresa válida, continuar sin contexto 
+      // Las rutas que lo requieran fallarán en requireCompanyContext
       req.companyContext = null;
       return next();
     }
 
-    console.log('🔍 Validando acceso a empresa:', companyId, 'para usuario:', req.user.id);
+    const requestedId = parseInt(companyId);
 
-    // Validar que el usuario tenga acceso a la empresa
+    // [VULN-001 Mitigation] Validar SIEMPRE contra la base de datos la relación User-Company
     const userCompany = await UserCompany.findOne({
       where: {
         userId: req.user.id,
-        companyId: parseInt(companyId),
+        companyId: requestedId,
         isActive: true
       },
       include: [
@@ -42,24 +41,26 @@ const companyContext = async (req, res, next) => {
     });
 
     if (!userCompany) {
+      // Intento de acceso a empresa no autorizada o ID falso
+      console.warn(`🚨 ACCESO DENEGADO: Usuario ${req.user.id} intentó acceder a Empresa ${requestedId} sin permisos.`);
       return res.status(403).json({
         success: false,
-        message: 'No tienes acceso a esta empresa',
+        message: 'No tienes permisos para acceder a esta empresa o la empresa no existe dentro de tu cuenta.',
         code: 'COMPANY_ACCESS_DENIED'
       });
     }
 
-    if (!userCompany.company.isActive) {
+    if (!userCompany.company || !userCompany.company.isActive) {
       return res.status(403).json({
         success: false,
-        message: 'La empresa está inactiva',
+        message: 'La empresa está inactiva o no es válida.',
         code: 'COMPANY_INACTIVE'
       });
     }
 
-    // Establecer el contexto de empresa en el request
+    // Establecer el contexto de empresa verificado y seguro
     req.companyContext = {
-      companyId: parseInt(companyId),
+      companyId: requestedId,
       userCompany: userCompany,
       company: userCompany.company,
       role: userCompany.role,
@@ -70,10 +71,10 @@ const companyContext = async (req, res, next) => {
     next();
 
   } catch (error) {
-    console.error('Error en middleware de contexto de empresa:', error);
+    console.error('Error crítico en middleware de contexto de empresa:', error);
     res.status(500).json({
       success: false,
-      message: 'Error interno del servidor',
+      message: 'Error interno de validación de contexto.',
       code: 'COMPANY_CONTEXT_ERROR'
     });
   }

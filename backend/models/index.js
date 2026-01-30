@@ -25,6 +25,7 @@ const Payment = require('./Payment');
 const DeliveryNote = require('./DeliveryNote');
 const DeliveryNoteItem = require('./DeliveryNoteItem');
 const FE_Document = require('./FE_Document');
+const AuditLog = require('./AuditLog');
 
 // Definir asociaciones
 // Usuarios y Roles (Many-to-Many)
@@ -219,6 +220,12 @@ DeliveryNoteItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 
 DeliveryNote.belongsTo(User, { foreignKey: 'createdBy', as: 'creator' });
 
+// Auditoría
+AuditLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+AuditLog.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
+User.hasMany(AuditLog, { foreignKey: 'userId', as: 'auditLogs' });
+Company.hasMany(AuditLog, { foreignKey: 'userId', as: 'auditLogs' });
+
 const models = {
   User,
   Role,
@@ -246,6 +253,7 @@ const models = {
   DeliveryNote,
   DeliveryNoteItem,
   FE_Document,
+  AuditLog,
   sequelize
 };
 
