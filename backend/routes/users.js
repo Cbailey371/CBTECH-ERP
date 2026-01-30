@@ -3,6 +3,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const { authenticateToken, authorize } = require('../middleware/auth');
+const { companyContext, requireCompanyContext } = require('../middleware/companyContext');
 const { generateCode } = require('../utils/codeGenerator');
 const { User, Company, UserCompany } = require('../models');
 const router = express.Router();
