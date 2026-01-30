@@ -1,5 +1,9 @@
-const { AuditLog, User, Company } = require('../models');
+const express = require('express');
+const router = express.Router();
+const { User, Company, AuditLog, sequelize } = require('../models');
 const { Op } = require('sequelize');
+const { requireAuth } = require('../middleware/auth');
+const { companyContext, requireCompanyContext } = require('../middleware/companyContext');
 
 // Middleware para auditoría automática
 const auditLogger = (action, resource) => {
