@@ -201,8 +201,17 @@ router.put('/:id', authenticateToken, async (req, res) => {
             return res.status(400).json({ message: 'Cannot edit PO unless it is in Draft status' });
         }
 
-        // Recalculate if items provided
-        let updateData = { supplierId, issueDate, deliveryDate, paymentTerms, notes };
+        // Sanitize dates to avoid database errors with empty strings
+        const validIssueDate = issueDate || po.issueDate;
+        const validDeliveryDate = deliveryDate ? deliveryDate : null;
+
+        let updateData = {
+            supplierId: supplierId || po.supplierId,
+            issueDate: validIssueDate,
+            deliveryDate: validDeliveryDate,
+            paymentTerms: paymentTerms !== undefined ? paymentTerms : po.paymentTerms,
+            notes: notes !== undefined ? notes : po.notes
+        };
 
         if (items) {
             // Replace items
@@ -243,8 +252,11 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
     } catch (error) {
         await transaction.rollback();
-        console.error('Error updating PO:', error);
-        res.status(500).json({ message: 'Server Error' });
+        res.status(500).json({
+            message: 'Server Error',
+            error: error.message,
+            stack: error.stack
+        });
     }
 });
 
