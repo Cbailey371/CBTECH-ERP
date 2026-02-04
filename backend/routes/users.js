@@ -247,12 +247,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
     if (firstName !== undefined) updateData.firstName = firstName;
     if (lastName !== undefined) updateData.lastName = lastName;
 
-    // Solo admin puede cambiar rol y estado
+    // Solo admin puede cambiar rol, estado y empresas asignadas
     if (isAdmin) {
       if (role !== undefined) {
         updateData.role = role;
 
-        // Actualizar asociación de rol
+        // Actualizar asociación de rol (UserRole)
         if (Role) {
           const roleName = mapRoleName(role);
           const roleRecord = await Role.findOne({ where: { name: roleName } });
@@ -264,6 +264,33 @@ router.put('/:id', authenticateToken, async (req, res) => {
         }
       }
       if (isActive !== undefined) updateData.isActive = isActive;
+
+      // Actualizar empresas asignadas
+      const { companies } = req.body;
+      if (companies && Array.isArray(companies)) {
+        console.log(`Updating companies for user ${user.id}:`, JSON.stringify(companies));
+        const { UserCompany } = require('../models');
+
+        // Iterar sobre las empresas enviadas para actualizar/crear la relación
+        for (const companyItem of companies) {
+          // Soportar tanto formato objeto { id: 1, isActive: true } como solo ID
+          const companyId = typeof companyItem === 'object' ? companyItem.id : companyItem;
+          const isCompanyActive = typeof companyItem === 'object' && companyItem.isActive !== undefined
+            ? companyItem.isActive
+            : true; // Si mandan solo ID, asumimos que es para activar
+
+          if (companyId) {
+            const [userCompany, created] = await UserCompany.findOrCreate({
+              where: { userId: user.id, companyId },
+              defaults: { isActive: isCompanyActive }
+            });
+
+            if (!created) {
+              await userCompany.update({ isActive: isCompanyActive });
+            }
+          }
+        }
+      }
     }
 
     // Actualizar password si se proporciona (admin o propio usuario)
