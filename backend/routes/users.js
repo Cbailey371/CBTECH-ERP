@@ -358,6 +358,14 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
+    // PROTECTION: No permitir eliminar al Administrador Principal (ID 1)
+    if (parseInt(id) === 1) {
+      return res.status(403).json({
+        success: false,
+        message: 'No se puede eliminar al Administrador Principal del sistema (ID 1). Esta cuenta es crítica para la operación.'
+      });
+    }
+
     // No permitir que el admin se elimine a sí mismo
     if (req.user.id === parseInt(id)) {
       return res.status(400).json({
@@ -383,6 +391,15 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req, res) => {
     });
   } catch (error) {
     console.error('Error al eliminar usuario:', error);
+
+    // Manejo específico para errores de llave foránea (Integridad Referencial)
+    if (error.name === 'SequelizeForeignKeyConstraintError') {
+      return res.status(409).json({
+        success: false,
+        message: 'No se puede eliminar este usuario porque tiene registros asociados (Tareas, Ventas, Empresas, etc.). Se recomienda desactivarlo en su lugar.'
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
