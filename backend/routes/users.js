@@ -25,9 +25,7 @@ router.get('/', authenticateToken, companyContext, requireCompanyContext, async 
     const { is_active, search } = req.query;
     const { companyId } = req.companyContext;
 
-    const whereClause = {
-      // [VULN-008 Mitigation] Filtrar SIEMPRE por empresa en el include o a través de la relación
-    };
+    const whereClause = {};
 
     if (is_active !== undefined) {
       whereClause.isActive = is_active === 'true';
@@ -40,21 +38,38 @@ router.get('/', authenticateToken, companyContext, requireCompanyContext, async 
       ];
     }
 
+    // 1. Obtener IDs de usuarios que pertenecen a esta empresa
+    const companyUserRelations = await UserCompany.findAll({
+      where: {
+        companyId: companyId,
+        isActive: true
+      },
+      attributes: ['userId']
+    });
+
+    const userIds = companyUserRelations.map(rel => rel.userId);
+
+    if (userIds.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    // 2. Filtrar la consulta principal por estos IDs
+    whereClause.id = { [Op.in]: userIds };
+
     const users = await User.findAll({
       where: whereClause,
       include: [
         {
           model: Company,
           as: 'companies',
-          where: { id: companyId }, // Forzar que pertenezca a la empresa del contexto
           through: {
             model: UserCompany,
             as: 'userCompany',
             where: { isActive: true },
-            attributes: ['role', 'permissions']
+            attributes: ['role', 'permissions', 'isActive']
           },
           attributes: ['id', 'name'],
-          required: true // Solo usuarios vinculados a ESTA empresa
+          required: false // IMPORTANTE: Traer todas las empresas, no restringir por el ID context
         }
       ],
       order: [['username', 'ASC']]
@@ -73,19 +88,37 @@ router.get('/:id', authenticateToken, companyContext, requireCompanyContext, asy
     const { id } = req.params;
     const { companyId } = req.companyContext;
 
+    // 1. Validar primero que el usuario pertenezca a la empresa actual (Seguridad)
+    const belongsToCompany = await UserCompany.findOne({
+      where: {
+        userId: id,
+        companyId: companyId,
+        isActive: true
+      }
+    });
+
+    if (!belongsToCompany) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado en el contexto de esta empresa.'
+      });
+    }
+
+    // 2. Buscar al usuario con TODAS sus empresas
     const user = await User.findOne({
       where: { id },
       include: [
         {
           model: Company,
           as: 'companies',
-          where: { id: companyId }, // [IDOR Protection] Validar que el usuario buscado esté en la empresa del consultante
           through: {
             model: UserCompany,
             as: 'userCompany',
-            where: { isActive: true }
+            where: { isActive: true },
+            attributes: ['role', 'permissions', 'isActive']
           },
-          required: true
+          attributes: ['id', 'name'],
+          required: false
         }
       ]
     });
@@ -93,7 +126,7 @@ router.get('/:id', authenticateToken, companyContext, requireCompanyContext, asy
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'Usuario no encontrado en el contexto de esta empresa.'
+        message: 'Usuario no encontrado'
       });
     }
 
