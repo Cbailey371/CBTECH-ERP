@@ -265,28 +265,52 @@ router.put('/:id', authenticateToken, async (req, res) => {
       }
       if (isActive !== undefined) updateData.isActive = isActive;
 
-      // Actualizar empresas asignadas
-      const { companies } = req.body;
-      if (companies && Array.isArray(companies)) {
-        console.log(`Updating companies for user ${user.id}:`, JSON.stringify(companies));
-        const { UserCompany } = require('../models');
+      // Actualizar empresas asignadas (Sincronización Completa)
+      // Aceptamos 'selectedCompanies' (frontend actual) o 'companies' (standard)
+      const companiesPayload = req.body.selectedCompanies || req.body.companies;
 
-        // Iterar sobre las empresas enviadas para actualizar/crear la relación
-        for (const companyItem of companies) {
-          // Soportar tanto formato objeto { id: 1, isActive: true } como solo ID
-          const companyId = typeof companyItem === 'object' ? companyItem.id : companyItem;
-          const isCompanyActive = typeof companyItem === 'object' && companyItem.isActive !== undefined
-            ? companyItem.isActive
-            : true; // Si mandan solo ID, asumimos que es para activar
+      if (companiesPayload && Array.isArray(companiesPayload)) {
+        console.log(`Syncing companies for user ${user.id}:`, JSON.stringify(companiesPayload));
+        const { UserCompany, sequelize } = require('../models');
+        const { Op } = require('sequelize');
 
-          if (companyId) {
-            const [userCompany, created] = await UserCompany.findOrCreate({
-              where: { userId: user.id, companyId },
-              defaults: { isActive: isCompanyActive }
+        // 1. Normalizar lista de IDs a activar
+        const companiesToActivate = companiesPayload.map(item => {
+          return typeof item === 'object' ? item.id : item; // Manejar objetos o IDs directos
+        }).filter(id => id); // Filtrar nulos/undefined
+
+        // 2. Obtener todas las asociaciones existentes
+        const existingAssociations = await UserCompany.findAll({
+          where: { userId: user.id }
+        });
+
+        const existingMap = new Map();
+        existingAssociations.forEach(uc => existingMap.set(uc.companyId, uc));
+
+        // 3. Procesar activaciones (Upsert logic)
+        for (const companyId of companiesToActivate) {
+          const existing = existingMap.get(companyId);
+          if (existing) {
+            if (!existing.isActive) {
+              await existing.update({ isActive: true });
+            }
+          } else {
+            await UserCompany.create({
+              userId: user.id,
+              companyId: companyId,
+              isActive: true,
+              role: 'user' // Default role
             });
+          }
+        }
 
-            if (!created) {
-              await userCompany.update({ isActive: isCompanyActive });
+        // 4. Procesar desactivaciones (Lo que está en BD pero NO en el payload)
+        // Solo si se envió un payload explícito
+        if (req.body.selectedCompanies !== undefined || req.body.companies !== undefined) {
+          for (const [companyId, association] of existingMap) {
+            if (!companiesToActivate.includes(companyId) && association.isActive) {
+              await association.update({ isActive: false });
+              console.log(`Deactivated company ${companyId} for user ${user.id}`);
             }
           }
         }

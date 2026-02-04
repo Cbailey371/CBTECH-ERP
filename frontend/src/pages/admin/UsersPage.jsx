@@ -123,6 +123,10 @@ export default function UsersPage() {
             }
 
             // Procesar asignación de empresas
+            // La asignación se maneja ahora íntegramente en el backend dentro de createUser/updateUser
+            // gracias a que enviamos 'selectedCompanies' en el formData.
+            // Esto asegura consistencia y permite desasignar empresas también.
+            /*
             if (userId && formData.selectedCompanies && formData.selectedCompanies.length > 0) {
                 // Asignar a cada empresa seleccionada
                 // Nota: En una implementación real, deberíamos manejar desasignaciones también
@@ -131,6 +135,7 @@ export default function UsersPage() {
                 );
                 await Promise.all(assignmentPromises);
             }
+            */
 
             setIsModalOpen(false);
             fetchUsers();
