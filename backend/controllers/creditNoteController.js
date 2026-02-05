@@ -155,9 +155,30 @@ const creditNoteController = {
 
             const total = subtotal + tax; // ignoring discounts for simplicity in this draft
 
-            // 4. Generate Number (Simple sequence)
-            const count = await CreditNote.count({ where: { company_id: companyId } });
-            const number = `NC-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+
+
+            // 4. Generate Number (Safe Sequence)
+            // Function defined inline or helper (better upstream)
+            // Let's implement robust logic inline for now or consistency
+            const year = new Date().getFullYear();
+            const lastCN = await CreditNote.findOne({
+                where: {
+                    companyId: companyId,
+                    number: { [Op.like]: `NC-${year}-%` }
+                },
+                order: [['id', 'DESC']],
+                transaction
+            });
+
+            let nextSeq = 1;
+            if (lastCN && lastCN.number) {
+                const parts = lastCN.number.split('-');
+                if (parts.length === 3) {
+                    nextSeq = parseInt(parts[2], 10) + 1;
+                }
+            }
+
+            const number = `NC-${year}-${String(nextSeq).padStart(4, '0')}`;
 
             // 5. Create Record
             const creditNote = await CreditNote.create({

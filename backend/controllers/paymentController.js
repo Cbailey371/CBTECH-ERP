@@ -44,10 +44,27 @@ exports.createPayment = async (req, res) => {
             });
         }
 
-        // Generate Payment Number
-        const count = await Payment.count({ where: { company_id: companyId }, transaction: t });
+        // Generate Payment Number (Safe Sequence)
         const year = new Date().getFullYear();
-        const paymentNumber = `AB-${year}-${String(count + 1).padStart(4, '0')}`;
+        // Check for last payment number to avoid duplicates
+        const lastPayment = await Payment.findOne({
+            where: {
+                company_id: companyId,
+                paymentNumber: { [Op.like]: `AB-${year}-%` }
+            },
+            order: [['id', 'DESC']],
+            transaction: t
+        });
+
+        let nextSeq = 1;
+        if (lastPayment && lastPayment.paymentNumber) {
+            const parts = lastPayment.paymentNumber.split('-');
+            if (parts.length === 3) {
+                nextSeq = parseInt(parts[2], 10) + 1;
+            }
+        }
+
+        const paymentNumber = `AB-${year}-${String(nextSeq).padStart(4, '0')}`;
 
         // 1. Create Payment Record
         const payment = await Payment.create({
