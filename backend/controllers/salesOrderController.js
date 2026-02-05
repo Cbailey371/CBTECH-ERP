@@ -14,6 +14,28 @@ const getOrder = async (id, companyId) => {
     });
 };
 
+const getNextOrderNumber = async (companyId, transaction) => {
+    const lastOrder = await SalesOrder.findOne({
+        where: { companyId },
+        order: [['id', 'DESC']],
+        attributes: ['orderNumber'],
+        transaction
+    });
+
+    let sequence = 1;
+    if (lastOrder && lastOrder.orderNumber) {
+        // Extract sequence from "F - YYYY - SSSS" or similar
+        const matches = lastOrder.orderNumber.match(/(\d+)\s*$/);
+        if (matches) {
+            sequence = parseInt(matches[1], 10) + 1;
+        }
+    }
+
+    const year = new Date().getFullYear();
+    // Format: F - YYYY - SSSS
+    return `F - ${year} - ${String(sequence).padStart(4, '0')}`;
+};
+
 // --- CRUD ---
 
 exports.getOrders = async (req, res) => {
@@ -84,9 +106,8 @@ exports.createOrder = async (req, res) => {
         // Validations
         if (!items || items.length === 0) throw new Error("La orden debe tener al menos un ítem.");
 
-        // Generate Number
-        const count = await SalesOrder.count({ where: { companyId }, transaction: t });
-        const orderNumber = `F - ${new Date().getFullYear()} -${String(count + 1).padStart(4, '0')} `;
+        // Generate Number (Safe Sequence)
+        const orderNumber = await getNextOrderNumber(companyId, t);
 
         // Calculate Totals
         let subtotal = 0, taxTotal = 0;
@@ -203,9 +224,8 @@ exports.createFromQuotation = async (req, res) => {
         }
         console.log('Quotation found:', quotation.id);
 
-        // Generate Number
-        const count = await SalesOrder.count({ where: { companyId }, transaction: t });
-        const orderNumber = `F - ${new Date().getFullYear()} -${String(count + 1).padStart(4, '0')} `;
+        // Generate Number (Safe Sequence)
+        const orderNumber = await getNextOrderNumber(companyId, t);
         console.log('Generated Order Number:', orderNumber);
 
         // Create Order
@@ -217,12 +237,12 @@ exports.createFromQuotation = async (req, res) => {
             issueDate: new Date(),
             status: 'draft',
             currency: 'USD',
-            discount: quotation.discount,
+            discount: parseFloat(quotation.discount || 0),
             discountType: quotation.discountType,
-            discountValue: quotation.discountValue,
-            subtotal: quotation.subtotal,
-            taxTotal: quotation.tax,
-            total: quotation.total,
+            discountValue: parseFloat(quotation.discountValue || 0),
+            subtotal: parseFloat(quotation.subtotal),
+            taxTotal: parseFloat(quotation.tax),
+            total: parseFloat(quotation.total),
             notes: `Generado desde Cotización ${quotation.number}. ${quotation.notes || ''} `,
             createdBy: req.user.id
         };
