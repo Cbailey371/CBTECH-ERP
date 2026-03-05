@@ -1,6 +1,6 @@
-require('dotenv').config();
-const { PacProvider } = require('./models');
-const { sequelize } = require('./config/database');
+require('dotenv').config({ path: __dirname + '/../.env' });
+const { PacProvider } = require('../models');
+const { sequelize } = require('../config/database');
 
 async function run() {
     try {
