@@ -132,7 +132,7 @@ class DigifactAdapter extends PACAdapter {
                 "IssuedDateTime": new Date().toISOString(),
                 "AdditionalIssueType": "01",
                 "AdditionalIssueDocInfo": [{}],
-
+                
                 // DGI original A block
                 "A02": "1", // Versión del formato
                 "A03": "PA", // Código del país
@@ -150,7 +150,7 @@ class DigifactAdapter extends PACAdapter {
                     "AddressInfo": { "Address": this.config.direccion || "Ciudad de Panama", "Country": "PA", "City": "Panama", "District": "08", "State": "8" },
                     "AdditionalBranchInfo": [{}]
                 },
-
+                
                 // DGI original B block
                 "B01": authRuc,
                 "B02": this.dvEmisor,
@@ -165,7 +165,7 @@ class DigifactAdapter extends PACAdapter {
                 "AdditionlInfo": [{}],
 
                 // DGI original C block
-                "C01": isConsumidorFinal ? "02" : "01",
+                "C01": isConsumidorFinal ? "02" : "01", 
                 "C02": receptorRuc,
                 "C03": receptorDv,
                 "C05": docData.customer.name,
@@ -177,7 +177,7 @@ class DigifactAdapter extends PACAdapter {
                 "Description": item.description,
                 "Qty": Number(item.quantity),
                 "Taxes": { "Code": "01", "Rate": Number(item.taxRate * 100), "Amount": Number(item.total * item.taxRate) },
-
+                
                 // DGI original E block items
                 "E011": (index + 1).toString(), // Secuencia
                 "E012": item.description,
@@ -192,9 +192,9 @@ class DigifactAdapter extends PACAdapter {
             })),
             "Totals": {
                 "GrandTotal": { "Amount": Number(totalAmount.toFixed(2)), "InvoiceTotal": Number(totalAmount.toFixed(2)) },
-
+                
                 // DGI original F block
-                "F01": "1",
+                "F01": "1", 
                 "F03": totalTaxable.toFixed(2),
                 "F04": totalTax.toFixed(2),
                 "F05": totalAmount.toFixed(2) // Total Neto
@@ -207,9 +207,9 @@ class DigifactAdapter extends PACAdapter {
         if (docData.docType === 'C') {
             nucJson.G = {
                 "G01": {
-                    "G011": "1",
-                    "G012": docData.invoiceNumber,
-                    "G014": docData.invoiceNumberRefDate
+                    "G011": "1", 
+                    "G012": docData.invoiceNumber, 
+                    "G014": docData.invoiceNumberRefDate 
                 }
             };
         }
