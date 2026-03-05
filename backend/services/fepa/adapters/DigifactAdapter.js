@@ -125,60 +125,91 @@ class DigifactAdapter extends PACAdapter {
         const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
 
         const nucJson = {
-            "A": {
+            "Version": "1.0",
+            "CountryCode": "PA",
+            "Header": {
+                "DocType": docData.docType === 'C' ? "04" : "01",
+                "IssuedDateTime": new Date().toISOString(),
+                "AdditionalIssueType": "01",
+                "AdditionalIssueDocInfo": [{}],
+
+                // DGI original A block
                 "A02": "1", // Versión del formato
                 "A03": "PA", // Código del país
-                "A04": docData.docType === 'C' ? "04" : "01", // DocType: 01=Factura, 04=Nota Crédito
+                "A04": this.environment === 'TEST' ? "1" : "2", // 1=Pruebas, 2=Prod
                 "A05": tipoEmision, // Tipo de Emisión (01 Previa, 03 Posterior)
                 "A06": docData.documentNumber // Número interno
             },
-            "B": {
+            "Seller": {
+                "TaxID": authRuc,
+                "Name": this.config.razonSocial,
+                "TaxIDType": "01",
+                "TaxIDAdditionalInfo": [{ "Value": this.dvEmisor || "00" }],
+                "BranchInfo": {
+                    "Code": this.sucursal || "0000",
+                    "AddressInfo": { "Address": this.config.direccion || "Ciudad de Panama", "Country": "PA", "City": "Panama", "District": "08", "State": "8" },
+                    "AdditionalBranchInfo": [{}]
+                },
+
+                // DGI original B block
                 "B01": authRuc,
                 "B02": this.dvEmisor,
                 "B03": this.config.razonSocial,
-                "B07": this.sucursal, // Casa Matriz etc, ej 0000
-                "B08": this.config.direccion
+                "B07": this.sucursal || "0000",
+                "B08": this.config.direccion || "Ciudad de Panama"
             },
-            "C": {
-                "C01": isConsumidorFinal ? "02" : "01", // Tipo de Contribuyente Receptor
+            "Buyer": {
+                "TaxID": receptorRuc,
+                "TaxIDType": "01",
+                "TaxIDAdditionalInfo": [{ "Value": receptorDv || "00" }],
+                "AdditionlInfo": [{}],
+
+                // DGI original C block
+                "C01": isConsumidorFinal ? "02" : "01",
                 "C02": receptorRuc,
                 "C03": receptorDv,
                 "C05": docData.customer.name,
                 "C08": docData.customer.address || "Ciudad de Panamá"
             },
-            "E": {
-                // Mapear items. E01 es el array de ítems
-                "E01": docData.items.map((item, index) => ({
-                    "E011": (index + 1).toString(), // Secuencia
-                    "E012": item.description,
-                    "E014": Number(item.quantity).toFixed(2),
-                    "E015": Number(item.price || item.unitPrice).toFixed(4),
-                    "E019": Number(item.total).toFixed(2),
-                    "E09": {
-                        // ITBMS Node
-                        "E091": {
-                            "E0911": this.mapItbmsCode(item.taxRate)
-                            // The API calculcates the tax amount automatically based on code and totals,
-                            // but if custom calculations are needed, add them here based on E09 spec.
-                        }
+            "Items": docData.items.map((item, index) => ({
+                "Price": Number(item.price || item.unitPrice),
+                "Totals": { "Amount": Number(item.total), "Tax": Number(item.total * item.taxRate), "TotalItem": Number(item.total * (1 + item.taxRate)) },
+                "Description": item.description,
+                "Qty": Number(item.quantity),
+                "Taxes": { "Code": "01", "Rate": Number(item.taxRate * 100), "Amount": Number(item.total * item.taxRate) },
+
+                // DGI original E block items
+                "E011": (index + 1).toString(), // Secuencia
+                "E012": item.description,
+                "E014": Number(item.quantity).toFixed(2),
+                "E015": Number(item.price || item.unitPrice).toFixed(4),
+                "E019": Number(item.total).toFixed(2),
+                "E09": {
+                    "E091": {
+                        "E0911": this.mapItbmsCode(item.taxRate)
                     }
-                }))
-            },
-            "F": {
-                "F01": "1", // Subtotales y Totales (depende de NUC-JSON)
+                }
+            })),
+            "Totals": {
+                "GrandTotal": { "Amount": Number(totalAmount.toFixed(2)), "InvoiceTotal": Number(totalAmount.toFixed(2)) },
+
+                // DGI original F block
+                "F01": "1",
                 "F03": totalTaxable.toFixed(2),
                 "F04": totalTax.toFixed(2),
                 "F05": totalAmount.toFixed(2) // Total Neto
-            }
+            },
+            "Payments": [{ "Type": "01", "Amount": Number(totalAmount.toFixed(2)) }],
+            "AdditionalDocumentInfo": { "AdditionalInfo": [{ "AditionalInfo": [{}] }] }
         };
 
         // If it's a Credit Note, add References (G)
         if (docData.docType === 'C') {
             nucJson.G = {
                 "G01": {
-                    "G011": "1", // 1=Referencia a factura electrónica
-                    "G012": docData.invoiceNumber, // CUFE original
-                    "G014": docData.invoiceNumberRefDate // Fecha de emisión original
+                    "G011": "1",
+                    "G012": docData.invoiceNumber,
+                    "G014": docData.invoiceNumberRefDate
                 }
             };
         }
