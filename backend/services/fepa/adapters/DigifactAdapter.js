@@ -11,9 +11,11 @@ class DigifactAdapter extends PACAdapter {
             ? 'https://nucpa.digifact.com'
             : 'https://testnucpa.digifact.com';
 
-        // Extract credentials from config or use defaults provided for testing
-        this.pacUsername = config.authData?.user || 'CBAILEY';
-        this.pacPassword = config.authData?.password || 'Digifact*25';
+        // Ensure we only have the base username (e.g. CBAILEY) for query params, in case the user saved the prefix PA.RUC.USER
+        let rawUser = (config.authData?.user || 'CBAILEY').trim();
+        this.shortUsername = rawUser.includes('PA.') ? rawUser.split('.').pop() : rawUser;
+        this.pacUsername = this.shortUsername;
+        this.pacPassword = (config.authData?.password || 'Digifact*25').trim();
 
         // Emisor data
         this.rucEmisor = config.ruc || '155704849-2-2021';
@@ -21,11 +23,11 @@ class DigifactAdapter extends PACAdapter {
         this.sucursal = config.sucursal || '0000';
 
         // The Digifact Username format is usually PA.<RUC>.<USERNAME>
-        if (this.pacUsername.includes('PA.')) {
-            this.loginUsername = this.pacUsername;
+        if (rawUser.includes('PA.')) {
+            this.loginUsername = rawUser;
         } else {
             const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
-            this.loginUsername = `PA.${authRuc}.${this.pacUsername}`;
+            this.loginUsername = `PA.${authRuc}.${this.shortUsername}`;
         }
 
         // Token Cache
@@ -193,7 +195,11 @@ class DigifactAdapter extends PACAdapter {
         let queryString = new URLSearchParams(queryParams).toString();
         let fullUrl = queryString ? `${url}?${queryString}` : url;
 
+        console.log(`[DEBUG-DIGIFACT] Executing: ${method} ${fullUrl}`);
+        if (body) console.log(`[DEBUG-DIGIFACT] Payload (Length: ${JSON.stringify(body).length}):`, JSON.stringify(body).substring(0, 200) + '...');
+
         const makeCall = async (authToken) => {
+            console.log(`[DEBUG-DIGIFACT] Auth Token starts with: ${authToken.substring(0, 15)}...`);
             return await fetch(fullUrl, {
                 method: method,
                 headers: {
@@ -208,9 +214,18 @@ class DigifactAdapter extends PACAdapter {
 
         // If 401 Unauthorized, token might have expired or been revoked
         if (response.status === 401) {
-            console.log('🔄 Token expirado (401), solicitando uno nuevo...');
+            console.log(`🔄 Token expirado (401). Headers recibidos:`, Object.fromEntries(response.headers.entries()));
+            console.log(`🔄 Full URL que falló: ${fullUrl}`);
+            const errorBody = await response.text();
+            console.log(`🔄 Body error: ${errorBody}`);
+
+            console.log('🔄 Solicitando uno nuevo...');
             token = await this.getToken(true); // Force refresh
             response = await makeCall(token);  // Retry
+            if (response.status === 401) {
+                const err2 = await response.text();
+                console.log(`❌ Segundo intento falló 401 con: ${err2}`);
+            }
         }
 
         return response;
