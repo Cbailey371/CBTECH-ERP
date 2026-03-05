@@ -21,7 +21,12 @@ class DigifactAdapter extends PACAdapter {
         this.sucursal = config.sucursal || '0000';
 
         // The Digifact Username format is usually PA.<RUC>.<USERNAME>
-        this.loginUsername = `PA.${this.rucEmisor}.${this.pacUsername}`;
+        if (this.pacUsername.includes('PA.')) {
+            this.loginUsername = this.pacUsername;
+        } else {
+            const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
+            this.loginUsername = `PA.${authRuc}.${this.pacUsername}`;
+        }
 
         // Token Cache
         this.token = null;
