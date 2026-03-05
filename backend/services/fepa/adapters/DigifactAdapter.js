@@ -97,7 +97,7 @@ class DigifactAdapter extends PACAdapter {
      * Maps internal ERP document data to Digifact NUC-JSON v2.0.8 format
      */
     mapToNucJson(docData) {
-        const { totals } = calculateTaxes(docData.items);
+        const { totalTaxable, totalTax, totalAmount } = calculateTaxes(docData.items);
 
         // Determine Receiver Type and Document Authorization Type
         const isConsumidorFinal = docData.customer.taxType === '02';
@@ -156,9 +156,9 @@ class DigifactAdapter extends PACAdapter {
             },
             "F": {
                 "F01": "1", // Subtotales y Totales (depende de NUC-JSON)
-                "F03": totals.totalTaxable.toFixed(2),
-                "F04": totals.totalTax.toFixed(2),
-                "F05": totals.totalAmount.toFixed(2) // Total Neto
+                "F03": totalTaxable.toFixed(2),
+                "F04": totalTax.toFixed(2),
+                "F05": totalAmount.toFixed(2) // Total Neto
             }
         };
 
