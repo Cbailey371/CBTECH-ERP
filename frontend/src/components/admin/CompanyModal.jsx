@@ -71,7 +71,7 @@ export default function CompanyModal({ isOpen, onClose, onSave, company, loading
                 });
 
                 // Fetch Fiscal Config
-                companyService.getFiscalConfig(token, company.id).then(res => {
+                companyService.getFiscalConfig(company.id).then(res => {
                     if (res.success && res.config) {
                         const c = res.config;
                         setFiscalData({
@@ -149,7 +149,7 @@ export default function CompanyModal({ isOpen, onClose, onSave, company, loading
         // For now, assuming editing existing companies for fiscal config is the primary use case.
         if (company) {
             try {
-                await companyService.updateFiscalConfig(token, company.id, fiscalData);
+                await companyService.updateFiscalConfig(company.id, fiscalData);
                 // Feedback is handled by parent refresh or silent success
             } catch (err) {
                 console.error('Error saving fiscal data', err);
