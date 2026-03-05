@@ -194,13 +194,11 @@ class DigifactAdapter extends PACAdapter {
         let fullUrl = queryString ? `${url}?${queryString}` : url;
 
         const makeCall = async (authToken) => {
-            const authHeader = authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`;
-
             return await fetch(fullUrl, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': authHeader
+                    'Authorization': authToken
                 },
                 body: body ? JSON.stringify(body) : undefined
             });
