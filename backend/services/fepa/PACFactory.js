@@ -1,4 +1,5 @@
 const WebPOSAdapter = require('./adapters/WebPOSAdapter');
+const DigifactAdapter = require('./adapters/DigifactAdapter');
 // const TheFactoryAdapter = require('./adapters/TheFactoryAdapter'); // Future implementation
 
 class PACFactory {
@@ -17,6 +18,9 @@ class PACFactory {
         switch (providerName) {
             case 'WEBPOS':
                 return new WebPOSAdapter(issuerConfig);
+
+            case 'DIGIFACT':
+                return new DigifactAdapter(issuerConfig);
 
             // Future providers:
             // case 'THEFACTORY':
