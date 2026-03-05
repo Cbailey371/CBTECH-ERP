@@ -119,6 +119,9 @@ class DigifactAdapter extends PACAdapter {
             receptorDv = ''; // CF doesn't use DV
         }
 
+        // En ambiente de pruebas, Digifact exige usar su RUC de Sandbox
+        const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
+
         const nucJson = {
             "A": {
                 "A02": "1", // Versión del formato
@@ -128,7 +131,7 @@ class DigifactAdapter extends PACAdapter {
                 "A06": docData.documentNumber // Número interno
             },
             "B": {
-                "B01": this.rucEmisor,
+                "B01": authRuc,
                 "B02": this.dvEmisor,
                 "B03": this.config.razonSocial,
                 "B07": this.sucursal, // Casa Matriz etc, ej 0000
@@ -191,11 +194,13 @@ class DigifactAdapter extends PACAdapter {
         let fullUrl = queryString ? `${url}?${queryString}` : url;
 
         const makeCall = async (authToken) => {
+            const authHeader = authToken.startsWith('Bearer ') ? authToken : `Bearer ${authToken}`;
+
             return await fetch(fullUrl, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': authToken
+                    'Authorization': authHeader
                 },
                 body: body ? JSON.stringify(body) : undefined
             });
@@ -222,8 +227,9 @@ class DigifactAdapter extends PACAdapter {
 
             // Endpoint: /api/v2/transform/nuc_json
             const transformUrl = `${this.baseUrl}/api/v2/transform/nuc_json`;
+            const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
             const queryParams = {
-                "TAXID": this.rucEmisor,
+                "TAXID": authRuc,
                 "FORMAT": "XML|HTML|PDF",
                 "USERNAME": this.pacUsername
             };
