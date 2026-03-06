@@ -45,3 +45,73 @@ Thumbs.db
 
 # Optional: Ignore verifying scripts if you consider them junk
 backend/scripts/verify_*.js
+Panamá/Documentacion Tecnica API Digifact Panama V2.0.4.pdf
+Panamá/Documentacion Tecnica NUC-JSON Panama V2.0.8.pdf
+Panamá/Documentacion Tecnica NUC-XML Panama V2.0.8.pdf
+Panamá/Ficha Técnica de Factura Electrónica para los Proveedores de Autorización Calificados V1.00-Abril2025..pdf
+Panamá/JSON_EJEMPLOS/Correo.json
+Panamá/JSON_EJEMPLOS/Json con Referencia interna.txt
+Panamá/JSON_EJEMPLOS/Json Corregido..txt
+Panamá/JSON_EJEMPLOS/NUC 1 - Con Adenda.json
+Panamá/JSON_EJEMPLOS/NUC 1 - Factura Operacion Interna.json
+Panamá/JSON_EJEMPLOS/NUC 12 - descuento mixto.json
+Panamá/JSON_EJEMPLOS/NUC 13 - acarreo item.json
+Panamá/JSON_EJEMPLOS/NUC 13 - acarreo total.json
+Panamá/JSON_EJEMPLOS/NUC 15 - CF con cedula.json
+Panamá/JSON_EJEMPLOS/NUC 15 - CF con nombre.json
+Panamá/JSON_EJEMPLOS/NUC 15 - CF.json
+Panamá/JSON_EJEMPLOS/NUC 16 - gobierno.json
+Panamá/JSON_EJEMPLOS/NUC 17 - a extranjero con nombre_direccion.json
+Panamá/JSON_EJEMPLOS/NUC 19 - Pedido comercial item.json
+Panamá/JSON_EJEMPLOS/NUC 2 - Nota de credito.json
+Panamá/JSON_EJEMPLOS/NUC 20 - pago a plazos 60.json
+Panamá/JSON_EJEMPLOS/NUC 26 - operacion en contingencia 1.json
+Panamá/JSON_EJEMPLOS/NUC 3 - Nota de debito.json
+Panamá/JSON_EJEMPLOS/NUC 4 - Tasa ITBMS 0%.json
+Panamá/JSON_EJEMPLOS/NUC 4 - Tasa ITBMS 10%.json
+Panamá/JSON_EJEMPLOS/NUC 4 - Tasa ITBMS 15%.json
+Panamá/JSON_EJEMPLOS/NUC 4 - Tasa ITBMS 7%.json
+Panamá/JSON_EJEMPLOS/NUC 5 - ISC.json
+Panamá/JSON_EJEMPLOS/NUC 6 - OTI_impuesto sobre seguro.json
+Panamá/JSON_EJEMPLOS/NUC 6 - OTI_SUME 911.json
+Panamá/JSON_EJEMPLOS/NUC 8 - exportacion.json
+Panamá/JSON_EJEMPLOS/NUC 9 - Tercero.json
+Panamá/PDF AUTORIZACIÓN (3).pdf
+Panamá/XML_EJEMPLOS/Adendas.xml
+Panamá/XML_EJEMPLOS/NUC 1 - Con Adenda
+Panamá/XML_EJEMPLOS/NUC 1 - Factura Operacion Interna.xml
+Panamá/XML_EJEMPLOS/NUC 10 - Medicamento.xml
+Panamá/XML_EJEMPLOS/NUC 12 - Descuento mixto.xml
+Panamá/XML_EJEMPLOS/NUC 12 - Descuento total factura.xml
+Panamá/XML_EJEMPLOS/NUC 12 - Descuento unitario.xml
+Panamá/XML_EJEMPLOS/NUC 13 - Acarreo item.xml
+Panamá/XML_EJEMPLOS/NUC 13 - Acarreo total.xml
+Panamá/XML_EJEMPLOS/NUC 14 - Contribuyente.xml
+Panamá/XML_EJEMPLOS/NUC 15 - CF con cedula.xml
+Panamá/XML_EJEMPLOS/NUC 15 - CF con nombre.xml
+Panamá/XML_EJEMPLOS/NUC 15 - CF.xml
+Panamá/XML_EJEMPLOS/NUC 16 - gobierno.xml
+Panamá/XML_EJEMPLOS/NUC 17 - a extranjero con nombre_direccion.xml
+Panamá/XML_EJEMPLOS/NUC 17 - a extranjero.xml
+Panamá/XML_EJEMPLOS/NUC 18 - 2 digitos.xml
+Panamá/XML_EJEMPLOS/NUC 19 - Pedido comercial item.xml
+Panamá/XML_EJEMPLOS/NUC 2 - Notas de credito.xml
+Panamá/XML_EJEMPLOS/NUC 20 - pago a plazos 30.xml
+Panamá/XML_EJEMPLOS/NUC 20 - pago a plazos 60.xml
+Panamá/XML_EJEMPLOS/NUC 20 - pago a plazos 90.xml
+Panamá/XML_EJEMPLOS/NUC 20 - pedido comercial factura.xml
+Panamá/XML_EJEMPLOS/NUC 21 - logistica.xml
+Panamá/XML_EJEMPLOS/NUC 22 - local entrega.xml
+Panamá/XML_EJEMPLOS/NUC 22 - mas de 100 items.xml
+Panamá/XML_EJEMPLOS/NUC 28 - vehiculo.xml
+Panamá/XML_EJEMPLOS/NUC 3 - Notas de debito.xml
+Panamá/XML_EJEMPLOS/NUC 4 - Tasa ITBMS 0%.xml
+Panamá/XML_EJEMPLOS/NUC 4 - Tasa ITBMS 10%.xml
+Panamá/XML_EJEMPLOS/NUC 4 - Tasa ITBMS 15%.xml
+Panamá/XML_EJEMPLOS/NUC 4 - Tasa ITBMS 7%.xml
+Panamá/XML_EJEMPLOS/NUC 5 - ISC.xml
+Panamá/XML_EJEMPLOS/NUC 6 - OTI_impuesto sobre seguro.xml
+Panamá/XML_EJEMPLOS/NUC 8 - exportacion.xml
+Panamá/XML_EJEMPLOS/NUC 9 - Tercero.xml
+Panamá/XML_EJEMPLOS/otros cargos.xml
+Panamá/XML_EJEMPLOS/XML TEST Otros Cargos 1.xml

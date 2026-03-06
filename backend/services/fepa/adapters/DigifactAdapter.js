@@ -89,133 +89,194 @@ class DigifactAdapter extends PACAdapter {
      */
     mapItbmsCode(taxRate) {
         const rate = parseFloat(taxRate) || 0;
-        // Standard mapping for PA:
-        // 00 - No Gravado / Exento
-        // 01 - 7%
-        // 02 - 10%
-        // 03 - 15%
-        if (rate === 0.07 || rate === 7) return '01';
-        if (rate === 0.10 || rate === 10) return '02';
-        if (rate === 0.15 || rate === 15) return '03';
-        return '00'; // Default Exento
+        if (rate === 0.07 || rate === 7) return '01';  // 7% - ITBMS estándar
+        if (rate === 0.10 || rate === 10) return '02';  // 10%
+        if (rate === 0.15 || rate === 15) return '03';  // 15%
+        return '00'; // Exento o no aplica
     }
 
     /**
-     * Maps internal ERP document data to Digifact NUC-JSON v2.0.8 format
+     * Maps internal ERP document data to Digifact NUC-JSON v2.0.8 format.
+     *
+     * KEY MAPPINGS (NUC ref -> JSON field):
+     *   A04 = Header.AdditionalIssueType  ("2"=pruebas, "1"=producción)
+     *   AI01 = AdditionalIssueDocInfo[{Name:"TipoEmision", Value}]
+     *   BI02 = AdditionalBranchInfo[{Name:"CoordEm", Value}]
+     *   BI03 = AdditionalBranchInfo[{Name:"CodUbi", Value}]
+     *   F02  = Totals.QtyItems
      */
     mapToNucJson(docData) {
         const { totalTaxable, totalTax, totalAmount } = calculateTaxes(docData.items);
 
-        // Determine Receiver Type and Document Authorization Type
-        const isConsumidorFinal = docData.customer.taxType === '02';
+        const isConsumidorFinal = !docData.customer.ruc || docData.customer.taxType === '02';
 
-        // Contribuyente (01) -> Previa (01). Consumidor Final (02) -> Posterior (03)
+        // TipoEmision: Contribuyente Previo (01) | Consumidor Final Posterior (03)
         const tipoEmision = isConsumidorFinal ? '03' : '01';
 
-        // Receiver mapping
-        let receptorRuc = docData.customer.ruc;
-        let receptorDv = docData.customer.dv || '';
+        // Receptor
+        const receptorRuc = isConsumidorFinal ? 'CF' : docData.customer.ruc;
+        const receptorDv = isConsumidorFinal ? '' : (docData.customer.dv || '');
 
-        if (isConsumidorFinal) {
-            receptorRuc = 'CF';
-            receptorDv = ''; // CF doesn't use DV
+        // En ambiente TEST Digifact requiere usar su propio RUC de sandbox
+        const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
+        const authDv = this.environment === 'TEST' ? '32' : (this.dvEmisor || '00');
+
+        // En ambiente TEST Digifact exige este nombre específico para el emisor
+        const emisorName = this.environment === 'TEST'
+            ? 'FE generada en ambiente de pruebas - sin valor comercial ni fiscal'
+            : (this.config.razonSocial || 'Emisor');
+
+        // Generar código de seguridad aleatorio de 9 dígitos (AI06)
+        const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
+
+        // Número correlativo de la FE (AI04) - derivado del número de documento
+        const numeroDF = String(docData.documentNumber || '1').padStart(10, '0');
+
+        // DocType: 01=Factura, 04=Nota de Crédito
+        const docType = docData.docType === 'C' ? '04' : '01';
+
+        // Construir arreglo base de ID adicionales para comprador
+        let buyerTaxIDAdditionalInfo = [
+            { "Name": "TipoReceptor", "Data": null, "Value": isConsumidorFinal ? "02" : "01" } // CI01
+        ];
+
+        if (!isConsumidorFinal && receptorDv) {
+            buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
         }
 
-        // En ambiente de pruebas, Digifact exige usar su RUC de Sandbox
-        const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
+        // Tipo de ID del receptor: 01=Natural, 02=Jurídico, 03=Pasaporte, 04=Extranjero
+        const taxIdType = docData.customer.taxType || (isConsumidorFinal ? "01" : "02");
+
+        const buyerObj = {
+            "TaxID": receptorRuc,                // C02
+            "TaxIDType": taxIdType,
+            "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
+            "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || ""),
+            "AdditionlInfo": [
+                { "Name": "PaisReceptorFE", "Data": null, "Value": "PA" } // CI08
+            ]
+        };
+
+        if (!isConsumidorFinal) {
+            buyerObj.AddressInfo = {
+                "Address": docData.customer.address || "Ciudad de Panama",
+                "City": "Panama",
+                "District": "Panama",
+                "State": "Panama",
+                "Country": "PA"
+            };
+        }
 
         const nucJson = {
             "Version": "1.0",
             "CountryCode": "PA",
             "Header": {
-                "DocType": docData.docType === 'C' ? "04" : "01",
-                "IssuedDateTime": new Date().toISOString(),
-                "AdditionalIssueType": "01",
-                "AdditionalIssueDocInfo": [{}],
-
-                // DGI original A block
-                "A02": "1", // Versión del formato
-                "A03": "PA", // Código del país
-                "A04": this.environment === 'TEST' ? "1" : "2", // 1=Pruebas, 2=Prod
-                "A05": tipoEmision, // Tipo de Emisión (01 Previa, 03 Posterior)
-                "A06": docData.documentNumber // Número interno
+                "DocType": docType,                  // A02: Tipo de documento
+                "IssuedDateTime": new Date().toISOString().replace('Z', '-05:00'), // A03
+                "AdditionalIssueType": this.environment === 'TEST' ? "2" : "1",   // A04: 2=Pruebas, 1=Producción
+                "AdditionalIssueDocInfo": [
+                    { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },    // AI01
+                    { "Name": "NumeroDF", "Data": null, "Value": numeroDF },       // AI04
+                    { "Name": "PtoFactDF", "Data": null, "Value": this.sucursal || "001" }, // AI05
+                    { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad }, // AI06
+                    { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },           // AI08: 01=Venta interna
+                    { "Name": "TipoOperacion", "Data": null, "Value": "1" },            // AI09: 1=Salida/Venta
+                    { "Name": "DestinoOperacion", "Data": null, "Value": "1" },            // AI10: 1=Panamá
+                    { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },            // AI11: 1=Sin CAFE
+                    { "Name": "ManeraEntrega", "Data": null, "Value": "1" },            // AI12: 1=Sin CAFE
+                    { "Name": "EnvioContenedor", "Data": null, "Value": "1" },            // AI13: 1=Normal
+                    { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" }             // AI14: 1=Sistema propio
+                ]
             },
             "Seller": {
-                "TaxID": authRuc,
-                "Name": this.config.razonSocial,
-                "TaxIDType": "01",
-                "TaxIDAdditionalInfo": [{ "Value": this.dvEmisor || "00" }],
-                "BranchInfo": {
-                    "Code": this.sucursal || "0000",
-                    "AddressInfo": { "Address": this.config.direccion || "Ciudad de Panama", "Country": "PA", "City": "Panama", "District": "08", "State": "8" },
-                    "AdditionalBranchInfo": [{}]
+                "TaxID": authRuc,                    // B02
+                "TaxIDType": "2",                    // B03: 2=Jurídico
+                "TaxIDAdditionalInfo": [
+                    { "Name": "DigitoVerificador", "Data": null, "Value": authDv }  // BI01
+                ],
+                "Name": emisorName,                  // B05
+                "Contact": {
+                    "PhoneList": { "Phone": [this.config.telefono || "6000-0000"] },
+                    "EmailList": { "Email": [this.config.email || "facturacion@empresa.com"] }
                 },
-
-                // DGI original B block
-                "B01": authRuc,
-                "B02": this.dvEmisor,
-                "B03": this.config.razonSocial,
-                "B07": this.sucursal || "0000",
-                "B08": this.config.direccion || "Ciudad de Panama"
-            },
-            "Buyer": {
-                "TaxID": receptorRuc,
-                "TaxIDType": "01",
-                "TaxIDAdditionalInfo": [{ "Value": receptorDv || "00" }],
-                "AdditionlInfo": [{}],
-
-                // DGI original C block
-                "C01": isConsumidorFinal ? "02" : "01",
-                "C02": receptorRuc,
-                "C03": receptorDv,
-                "C05": docData.customer.name,
-                "C08": docData.customer.address || "Ciudad de Panamá"
-            },
-            "Items": docData.items.map((item, index) => ({
-                "Price": Number(item.price || item.unitPrice),
-                "Totals": { "Amount": Number(item.total), "Tax": Number(item.total * item.taxRate), "TotalItem": Number(item.total * (1 + item.taxRate)) },
-                "Description": item.description,
-                "Qty": Number(item.quantity),
-                "Taxes": { "Code": "01", "Rate": Number(item.taxRate * 100), "Amount": Number(item.total * item.taxRate) },
-
-                // DGI original E block items
-                "E011": (index + 1).toString(), // Secuencia
-                "E012": item.description,
-                "E014": Number(item.quantity).toFixed(2),
-                "E015": Number(item.price || item.unitPrice).toFixed(4),
-                "E019": Number(item.total).toFixed(2),
-                "E09": {
-                    "E091": {
-                        "E0911": this.mapItbmsCode(item.taxRate)
-                    }
+                "BranchInfo": {
+                    "Code": this.sucursal || "0000", // B071
+                    "AddressInfo": {
+                        "Address": this.config.direccion || "Ciudad de Panama",
+                        "City": this.config.corregimiento || "San Felipe",
+                        "District": this.config.distrito || "Panama",
+                        "State": this.config.provincia || "Panama",
+                        "Country": "PA"
+                    },
+                    "AdditionalBranchInfo": [
+                        { "Name": "CoordEm", "Data": null, "Value": this.config.coordenadas || "+08.9939,-79.5197" }, // BI02
+                        { "Name": "CodUbi", "Data": null, "Value": this.config.codUbi || "8-8-1" } // BI03
+                    ]
                 }
-            })),
-            "Totals": {
-                "GrandTotal": { "Amount": Number(totalAmount.toFixed(2)), "InvoiceTotal": Number(totalAmount.toFixed(2)) },
-
-                // DGI original F block
-                "F01": "1",
-                "F03": totalTaxable.toFixed(2),
-                "F04": totalTax.toFixed(2),
-                "F05": totalAmount.toFixed(2) // Total Neto
             },
-            "Payments": [{ "Type": "01", "Amount": Number(totalAmount.toFixed(2)) }],
-            "AdditionalDocumentInfo": { "AdditionalInfo": [{ "AditionalInfo": [{}] }] }
+            "Buyer": buyerObj,
+            "Items": docData.items.map((item, index) => {
+                const unitPrice = Number(item.price || item.unitPrice || 0);
+                const qty = Number(item.quantity || 1);
+                const subtotal = Number(item.subtotal || (unitPrice * qty));
+                const taxRate = Number(item.taxRate || 0);
+                const taxAmount = parseFloat((subtotal * taxRate).toFixed(2));
+                const totalItem = parseFloat((subtotal + taxAmount).toFixed(2));
+
+                const itemObj = {
+                    "Description": item.description || item.name,    // E04
+                    "Qty": qty,                               // E05
+                    "Price": unitPrice,                         // E07
+                    "Taxes": {
+                        "Tax": [
+                            {
+                                "Code": this.mapItbmsCode(taxRate * 100), // E0911
+                                "Description": taxRate > 0 ? "ITBMS" : "Exento", // E0912
+                                "Amount": taxAmount                          // E0914
+                            }
+                        ]
+                    },
+                    "Totals": {
+                        "TotalItem": totalItem                        // E116
+                    }
+                };
+
+                return itemObj;
+            }),
+            "Totals": {
+                "QtyItems": docData.items.length,    // F02: Cantidad de líneas de ítems
+                "GrandTotal": {
+                    "SubTotalTax": parseFloat(totalTaxable.toFixed(2)),  // F051: Subtotal gravado
+                    "TotalTax": parseFloat(totalTax.toFixed(2)),      // F052: Total ITBMS
+                    "InvoiceTotal": parseFloat(totalAmount.toFixed(2))    // F053: Total factura
+                }
+            },
+            "Payments": [
+                { "Type": "01", "Amount": parseFloat(totalAmount.toFixed(2)) }  // G021: 01=Crédito/Contado
+            ],
+            "AdditionalDocumentInfo": {
+                "AdditionalInfo": [
+                    {
+                        "AditionalInfo": [
+                            { "Name": "TiempoPago", "Data": null, "Value": "1" } // HI06: 1=Contado
+                        ]
+                    }
+                ]
+            }
         };
 
-        // If it's a Credit Note, add References (G)
-        if (docData.docType === 'C') {
-            nucJson.G = {
-                "G01": {
-                    "G011": "1",
-                    "G012": docData.invoiceNumber,
-                    "G014": docData.invoiceNumberRefDate
-                }
-            };
+        // Nota de Crédito: agregar referencia al documento original
+        if (docData.docType === 'C' && docData.invoiceNumber) {
+            nucJson.Header.AdditionalIssueDocInfo.push(
+                { "Name": "NumDocRef", "Data": null, "Value": docData.invoiceNumber },
+                { "Name": "FechaDocRef", "Data": null, "Value": docData.invoiceNumberRefDate || new Date().toISOString().split('T')[0] },
+                { "Name": "MotivoAnulacion", "Data": null, "Value": "01" } // 01=Error datos
+            );
         }
 
         return nucJson;
     }
+
 
     /**
      * Executes an API request to Digifact with automatic token renewal on 401.
