@@ -171,7 +171,6 @@ class DigifactAdapter extends PACAdapter {
             "Version": "1.0",
             "CountryCode": "PA",
             "Header": {
-<<<<<<< HEAD
                 "DocType": docType,                  // A02: Tipo de documento
                 "IssuedDateTime": new Date().toISOString().replace('Z', '-05:00'), // A03
                 "AdditionalIssueType": this.environment === 'TEST' ? "2" : "1",   // A04: 2=Pruebas, 1=Producción
@@ -188,19 +187,6 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "EnvioContenedor", "Data": null, "Value": "1" },            // AI13: 1=Normal
                     { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" }             // AI14: 1=Sistema propio
                 ]
-=======
-                "DocType": docData.docType === 'C' ? "04" : "01",
-                "IssuedDateTime": new Date().toISOString(),
-                "AdditionalIssueType": "01",
-                "AdditionalIssueDocInfo": [{}],
-                
-                // DGI original A block
-                "A02": "1", // Versión del formato
-                "A03": "PA", // Código del país
-                "A04": this.environment === 'TEST' ? "1" : "2", // 1=Pruebas, 2=Prod
-                "A05": tipoEmision, // Tipo de Emisión (01 Previa, 03 Posterior)
-                "A06": docData.documentNumber // Número interno
->>>>>>> 8bb73e6ad2535b6f0afba9cc17a3545f22ae1854
             },
             "Seller": {
                 "TaxID": authRuc,                    // B02
@@ -213,9 +199,8 @@ class DigifactAdapter extends PACAdapter {
                     "PhoneList": { "Phone": [this.config.telefono || "6000-0000"] },
                     "EmailList": { "Email": [this.config.email || "facturacion@empresa.com"] }
                 },
-<<<<<<< HEAD
                 "BranchInfo": {
-                    "Code": this.sucursal || "0000", // B071
+                    "Code": "0001", // Sucursal solicitada por el usuario
                     "AddressInfo": {
                         "Address": this.config.direccion || "Ciudad de Panama",
                         "City": this.config.corregimiento || "San Felipe",
@@ -224,60 +209,10 @@ class DigifactAdapter extends PACAdapter {
                         "Country": "PA"
                     },
                     "AdditionalBranchInfo": [
-                        { "Name": "CoordEm", "Data": null, "Value": this.config.coordenadas || "+08.9939,-79.5197" }, // BI02
-                        { "Name": "CodUbi", "Data": null, "Value": this.config.codUbi || "8-8-1" } // BI03
+                        { "Name": "CoordEm", "Data": null, "Value": this.config.coordenadas || "+8.9892,-79.5201" }, // Coordenadas solicitadas
+                        { "Name": "CodUbi", "Data": null, "Value": this.config.codUbi || "8-8-12" } // CodUbi solicitado
                     ]
                 }
-=======
-                
-                // DGI original B block
-                "B01": authRuc,
-                "B02": this.dvEmisor,
-                "B03": this.config.razonSocial,
-                "B07": this.sucursal || "0000",
-                "B08": this.config.direccion || "Ciudad de Panama"
-            },
-            "Buyer": {
-                "TaxID": receptorRuc,
-                "TaxIDType": "01",
-                "TaxIDAdditionalInfo": [{ "Value": receptorDv || "00" }],
-                "AdditionlInfo": [{}],
-
-                // DGI original C block
-                "C01": isConsumidorFinal ? "02" : "01", 
-                "C02": receptorRuc,
-                "C03": receptorDv,
-                "C05": docData.customer.name,
-                "C08": docData.customer.address || "Ciudad de Panamá"
-            },
-            "Items": docData.items.map((item, index) => ({
-                "Price": Number(item.price || item.unitPrice),
-                "Totals": { "Amount": Number(item.total), "Tax": Number(item.total * item.taxRate), "TotalItem": Number(item.total * (1 + item.taxRate)) },
-                "Description": item.description,
-                "Qty": Number(item.quantity),
-                "Taxes": { "Code": "01", "Rate": Number(item.taxRate * 100), "Amount": Number(item.total * item.taxRate) },
-                
-                // DGI original E block items
-                "E011": (index + 1).toString(), // Secuencia
-                "E012": item.description,
-                "E014": Number(item.quantity).toFixed(2),
-                "E015": Number(item.price || item.unitPrice).toFixed(4),
-                "E019": Number(item.total).toFixed(2),
-                "E09": {
-                    "E091": {
-                        "E0911": this.mapItbmsCode(item.taxRate)
-                    }
-                }
-            })),
-            "Totals": {
-                "GrandTotal": { "Amount": Number(totalAmount.toFixed(2)), "InvoiceTotal": Number(totalAmount.toFixed(2)) },
-                
-                // DGI original F block
-                "F01": "1", 
-                "F03": totalTaxable.toFixed(2),
-                "F04": totalTax.toFixed(2),
-                "F05": totalAmount.toFixed(2) // Total Neto
->>>>>>> 8bb73e6ad2535b6f0afba9cc17a3545f22ae1854
             },
             "Buyer": buyerObj,
             "Items": docData.items.map((item, index) => {
@@ -330,7 +265,6 @@ class DigifactAdapter extends PACAdapter {
             }
         };
 
-<<<<<<< HEAD
         // Nota de Crédito: agregar referencia al documento original
         if (docData.docType === 'C' && docData.invoiceNumber) {
             nucJson.Header.AdditionalIssueDocInfo.push(
@@ -338,17 +272,6 @@ class DigifactAdapter extends PACAdapter {
                 { "Name": "FechaDocRef", "Data": null, "Value": docData.invoiceNumberRefDate || new Date().toISOString().split('T')[0] },
                 { "Name": "MotivoAnulacion", "Data": null, "Value": "01" } // 01=Error datos
             );
-=======
-        // If it's a Credit Note, add References (G)
-        if (docData.docType === 'C') {
-            nucJson.G = {
-                "G01": {
-                    "G011": "1", 
-                    "G012": docData.invoiceNumber, 
-                    "G014": docData.invoiceNumberRefDate 
-                }
-            };
->>>>>>> 8bb73e6ad2535b6f0afba9cc17a3545f22ae1854
         }
 
         return nucJson;
