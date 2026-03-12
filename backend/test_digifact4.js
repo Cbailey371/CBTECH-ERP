@@ -5,43 +5,10 @@ async function testDigifactSuccess() {
 
     const rucSandbox = '155704849-2-2021';
     
-    // 1. Obtención de Token
-    // Intentaremos con las dos URLs conocidas por si una falla (404/500)
-    const loginUrls = [
-        'https://testnucpa.digifact.com/api/login/get_token',
-        'https://nucpa.digifact.com/api/login/get_token'
-    ];
-    
-    let token = '';
-    let successLoginUrl = '';
-
-    for (const url of loginUrls) {
-        console.log(`Intentando login en: ${url}...`);
-        try {
-            const loginRes = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ Username: `PA.${rucSandbox}.CBAILEY`, Password: 'Digifact*25' })
-            });
-            const loginText = await loginRes.text();
-            if (loginRes.ok && !loginText.startsWith('<')) {
-                const loginData = JSON.parse(loginText);
-                token = loginData.Token;
-                successLoginUrl = url;
-                console.log('✅ Token obtenido exitosamente.');
-                break;
-            } else {
-                console.log(`❌ Falló ${url}: ${loginRes.status}`);
-            }
-        } catch (e) {
-            console.log(`❌ Error en ${url}: ${e.message}`);
-        }
-    }
-
-    if (!token) {
-        console.error("\n❌ No se pudo obtener el token en ningún endpoint. Verifica las credenciales o el estado de los servidores de Digifact.");
-        return;
-    }
+    // 1. Token proporcionado (Válido hasta el 4 de abril de 2026)
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VyIjoiUEEuMTU1NzA0ODQ5LTItMjAyMS5DQkFJTEVZIiwiQ291bnRyeSI6IlBBIiwiRW52IjoiMiIsIm5iZiI6MTc3MjY3MzUxNCwiZXhwIjoxNzc1MjY1NTE0LCJpYXQiOjE3NzI2NzM1MTQsImlzcyI6Imh0dHBzOi8vd3d3LmRpZ2lmYWN0LmNvbSIsImF1ZCI6Imh0dHBzOi8vdGVzdG51Y3BhLmRpZ2lmYWN0LmNvbSJ9.ZwlpxKls25mgZ6PORAj_irQG-uRLtLu-2y-r_PIXxFY';
+    const successLoginUrl = 'https://testnucpa.digifact.com';
+    console.log('✅ Usando token estático proporcionado.');
 
     // 2. Payload exacto que le funcionó al proveedor (ajustado con fecha actual)
     const nucJson = {

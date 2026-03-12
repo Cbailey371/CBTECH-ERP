@@ -68,6 +68,32 @@ const Customer = sequelize.define('Customer', {
       len: [1, 4]
     }
   },
+  tipoReceptor: {
+    type: DataTypes.STRING(2),
+    allowNull: true,
+    field: 'tipo_receptor',
+    defaultValue: '01',
+    comment: '01: Contribuyente, 02: Consumidor Final, 03: Gobierno, 04: Extranjero'
+  },
+  tipoIdentificacion: {
+    type: DataTypes.STRING(2),
+    allowNull: true,
+    field: 'tipo_identificacion',
+    defaultValue: '02',
+    comment: '01: Cedula, 02: RUC, 03: Pasaporte'
+  },
+  codUbi: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+    field: 'cod_ubi',
+    comment: 'Formato: Provincia-Distrito-Corregimiento (ej: 8-8-1)'
+  },
+  paisReceptor: {
+    type: DataTypes.STRING(2),
+    allowNull: true,
+    field: 'pais_receptor',
+    defaultValue: 'PA'
+  },
   isActive: {
     type: DataTypes.BOOLEAN,
     allowNull: false,

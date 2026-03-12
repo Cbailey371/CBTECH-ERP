@@ -48,7 +48,7 @@ router.get('/', requireCompanyContext, async (req, res) => {
 
     const { count, rows } = await Customer.findAndCountAll({
       where: whereClause,
-      attributes: ['id', 'code', 'name', 'tradeName', 'taxId', 'dv', 'email', 'phone', 'isActive'],
+      attributes: ['id', 'code', 'name', 'tradeName', 'taxId', 'dv', 'email', 'phone', 'isActive', 'tipoReceptor', 'tipoIdentificacion', 'codUbi', 'paisReceptor'],
       limit: parseInt(limit),
       offset: offset,
       order: [['created_at', 'DESC']]
@@ -122,7 +122,11 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['customers.cre
       dv,
       notes,
       customerType,
-      isActive
+      isActive,
+      tipoReceptor,
+      tipoIdentificacion,
+      codUbi,
+      paisReceptor
     } = req.body;
 
     // Validar campos requeridos
@@ -207,7 +211,11 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['customers.cre
       dv: dvNormalized, // Used normalized dv
       notes, // Kept notes
       customerType: customerType || 'business',
-      isActive: isActive !== undefined ? isActive : true
+      isActive: isActive !== undefined ? isActive : true,
+      tipoReceptor: tipoReceptor || '01',
+      tipoIdentificacion: tipoIdentificacion || '02',
+      codUbi: codUbi || null,
+      paisReceptor: paisReceptor || 'PA'
     });
 
     res.status(201).json({
@@ -260,7 +268,11 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['customers.u
       taxId,
       dv,
       isActive,
-      notes
+      notes,
+      tipoReceptor,
+      tipoIdentificacion,
+      codUbi,
+      paisReceptor
     } = req.body;
 
     // Verificar email único en la empresa si se cambia
@@ -317,7 +329,11 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['customers.u
       taxId: taxId !== undefined ? taxIdNormalizedUpdate : customer.taxId,
       dv: dv !== undefined ? dvNormalized : customer.dv,
       isActive: isActive !== undefined ? isActive : customer.isActive,
-      notes: notes !== undefined ? notes : customer.notes
+      notes: notes !== undefined ? notes : customer.notes,
+      tipoReceptor: tipoReceptor !== undefined ? tipoReceptor : customer.tipoReceptor,
+      tipoIdentificacion: tipoIdentificacion !== undefined ? tipoIdentificacion : customer.tipoIdentificacion,
+      codUbi: codUbi !== undefined ? codUbi : customer.codUbi,
+      paisReceptor: paisReceptor !== undefined ? paisReceptor : customer.paisReceptor
     });
 
     res.json({

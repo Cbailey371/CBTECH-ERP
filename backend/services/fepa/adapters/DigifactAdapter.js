@@ -140,7 +140,7 @@ class DigifactAdapter extends PACAdapter {
 
         // Construir arreglo base de ID adicionales para comprador
         let buyerTaxIDAdditionalInfo = [
-            { "Name": "TipoReceptor", "Data": null, "Value": isConsumidorFinal ? "02" : "01" } // CI01
+            { "Name": "TipoReceptor", "Data": null, "Value": isConsumidorFinal ? "02" : (docData.customer.tipoReceptor || "01") } // CI01
         ];
 
         if (!isConsumidorFinal && receptorDv) {
@@ -148,7 +148,7 @@ class DigifactAdapter extends PACAdapter {
         }
 
         // Tipo de ID del receptor: 01=Natural, 02=Jurídico, 03=Pasaporte, 04=Extranjero
-        const taxIdType = docData.customer.taxType || (isConsumidorFinal ? "01" : "02");
+        const taxIdType = docData.customer.tipoIdentificacion || (isConsumidorFinal ? "01" : "02");
 
         const buyerObj = {
             "TaxID": receptorRuc,                // C02
@@ -157,12 +157,12 @@ class DigifactAdapter extends PACAdapter {
             "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || ""),
             "Contact": null,                     // Según ejemplo del proveedor
             "AdditionlInfo": [
-                { "Name": "PaisReceptorFE", "Data": null, "Value": "PA" } // CI08
+                { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" } // CI08
             ]
         };
 
-        // En modo TEST, sincronizar CodUbi del receptor con el del emisor si así se requiere para la prueba
-        if (this.environment === 'TEST') {
+        // En modo TEST sugerimos usar un CodUbi por defecto si el cliente no lo tiene
+        if (this.environment === 'TEST' && !docData.customer.codUbi) {
             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-1" });
         } else if (docData.customer.codUbi) {
              buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": docData.customer.codUbi });
