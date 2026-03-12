@@ -12,7 +12,11 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
         email: '',
         phone: '',
         address: '',
-        notes: ''
+        notes: '',
+        tipoReceptor: '01',
+        tipoIdentificacion: '02',
+        codUbi: '',
+        paisReceptor: 'PA'
     });
 
     useEffect(() => {
@@ -26,7 +30,11 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                 email: customer.email || '',
                 phone: customer.phone || '',
                 address: customer.address || '',
-                notes: customer.notes || ''
+                notes: customer.notes || '',
+                tipoReceptor: customer.tipoReceptor || '01',
+                tipoIdentificacion: customer.tipoIdentificacion || '02',
+                codUbi: customer.codUbi || '',
+                paisReceptor: customer.paisReceptor || 'PA'
             });
         } else {
             setFormData({
@@ -37,7 +45,11 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                 email: '',
                 phone: '',
                 address: '',
-                notes: ''
+                notes: '',
+                tipoReceptor: '01',
+                tipoIdentificacion: '02',
+                codUbi: '',
+                paisReceptor: 'PA'
             });
         }
     }, [customer, isOpen]);
@@ -166,6 +178,65 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                             className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder="Información adicional..."
                         />
+                    </div>
+
+                    <div className="pt-4 border-t border-border">
+                        <h4 className="text-sm font-semibold text-foreground mb-4">Datos Requeridos por DGI (Facturación Electrónica)</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-muted-foreground">Tipo de Receptor</label>
+                                <select
+                                    name="tipoReceptor"
+                                    value={formData.tipoReceptor}
+                                    onChange={handleChange}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="01">01 - Contribuyente (B2B)</option>
+                                    <option value="02">02 - Consumidor Final (B2C)</option>
+                                    <option value="03">03 - Gobierno</option>
+                                    <option value="04">04 - Extranjero</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-muted-foreground">Tipo de Identificación</label>
+                                <select
+                                    name="tipoIdentificacion"
+                                    value={formData.tipoIdentificacion}
+                                    onChange={handleChange}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="01">01 - Cédula</option>
+                                    <option value="02">02 - RUC</option>
+                                    <option value="03">03 - Pasaporte</option>
+                                    <option value="04">04 - Id. Extranjera</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-muted-foreground">Cod. Ubicación (Ej. 8-8-12)</label>
+                                <Input
+                                    name="codUbi"
+                                    value={formData.codUbi}
+                                    onChange={handleChange}
+                                    placeholder="Prov-Dist-Correg"
+                                    className="bg-background border-input"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-muted-foreground">País Receptor</label>
+                                <select
+                                    name="paisReceptor"
+                                    value={formData.paisReceptor}
+                                    onChange={handleChange}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="PA">Panamá (PA)</option>
+                                    <option value="US">Estados Unidos (US)</option>
+                                    <option value="CO">Colombia (CO)</option>
+                                    <option value="CR">Costa Rica (CR)</option>
+                                    <option value="EX">Otro País/Región</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <DialogFooter className="pt-4">
