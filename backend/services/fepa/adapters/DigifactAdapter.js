@@ -143,15 +143,29 @@ class DigifactAdapter extends PACAdapter {
             { "Name": "TipoReceptor", "Data": null, "Value": isConsumidorFinal ? "02" : (docData.customer.tipoReceptor || "01") } // CI01
         ];
 
-        if (!isConsumidorFinal && receptorDv) {
+        // Manejo específico para Extranjeros (Tipo de Identificación 03/04 o Extranjero de Receptor 04)
+        const isExtranjero = docData.customer.tipoReceptor === '04' || docData.customer.paisReceptor !== 'PA';
+        
+        if (isExtranjero) {
+            if (docData.customer.taxId) {
+                // Si es pasaporte o similar (03/04), la DGI permite IdExt o NumPasaporte
+                buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId });
+            }
+            // CI06: País del receptor extranjero
+            buyerTaxIDAdditionalInfo.push({ "Name": "PaisExt", "Data": null, "Value": docData.customer.paisReceptor || "US" });
+        } else if (!isConsumidorFinal && receptorDv) {
+            // Solo para locales con RUC
             buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
         }
 
         // Tipo de ID del receptor: 01=Natural, 02=Jurídico, 03=Pasaporte, 04=Extranjero
         const taxIdType = docData.customer.tipoIdentificacion || (isConsumidorFinal ? "01" : "02");
+        
+        // Si es extranjero según las reglas de Digifact, o si es CF
+        const finalTaxId = isConsumidorFinal ? "CF" : (isExtranjero ? "EXTRANJERO" : receptorRuc);
 
         const buyerObj = {
-            "TaxID": receptorRuc,                // C02
+            "TaxID": finalTaxId,                 // C02
             "TaxIDType": taxIdType,
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
             "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || ""),
@@ -161,20 +175,25 @@ class DigifactAdapter extends PACAdapter {
             ]
         };
 
-        // En modo TEST sugerimos usar un CodUbi por defecto si el cliente no lo tiene
-        if (this.environment === 'TEST' && !docData.customer.codUbi) {
-            buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-1" });
-        } else if (docData.customer.codUbi) {
-             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": docData.customer.codUbi });
+        // En modo TEST sugerimos usar un CodUbi por defecto si el cliente no lo tiene y no es extranjero
+        if (!isExtranjero) {
+            if (this.environment === 'TEST' && !docData.customer.codUbi) {
+                buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-1" });
+            } else if (docData.customer.codUbi) {
+                buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": docData.customer.codUbi });
+            }
+        } else {
+            // El JSON de ejemplo usa '1-1-2' de relleno para extranjeros aunque DGI dice Opcional
+            buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-2" });
         }
 
         if (!isConsumidorFinal) {
             buyerObj.AddressInfo = {
-                "Address": docData.customer.address || "Ciudad de Panama",
-                "City": "Panama",
-                "District": "Panama",
-                "State": "Panama",
-                "Country": "PA"
+                "Address": docData.customer.address || "Direccion no especificada",
+                "City": isExtranjero ? "Ciudad Extranjera" : "Panama",
+                "District": isExtranjero ? "Distrito Extranjero" : "Panama",
+                "State": isExtranjero ? "Estado Extranjero" : "Panama",
+                "Country": docData.customer.paisReceptor || "PA"
             };
         }
 

@@ -1,0 +1,3358 @@
+[
+  {
+    "id": "1",
+    "name": "Bocas del Toro",
+    "distritos": [
+      {
+        "id": "1-1",
+        "name": "Bocas del Toro",
+        "corregimientos": [
+          {
+            "id": "1-1-1",
+            "name": "Bocas del Toro"
+          },
+          {
+            "id": "1-1-2",
+            "name": "Bastimentos"
+          },
+          {
+            "id": "1-1-3",
+            "name": "Cauchero"
+          },
+          {
+            "id": "1-1-4",
+            "name": "Punta Laurel"
+          },
+          {
+            "id": "1-1-5",
+            "name": "Tierra Oscura"
+          }
+        ]
+      },
+      {
+        "id": "1-2",
+        "name": "Changuinola",
+        "corregimientos": [
+          {
+            "id": "1-2-1",
+            "name": "Changuinola"
+          },
+          {
+            "id": "1-2-3",
+            "name": "Guabito"
+          },
+          {
+            "id": "1-2-4",
+            "name": "Teribe"
+          },
+          {
+            "id": "1-2-5",
+            "name": "Valle del Risco"
+          },
+          {
+            "id": "1-2-6",
+            "name": "El Empalme"
+          },
+          {
+            "id": "1-2-7",
+            "name": "Las Tablas"
+          }
+        ]
+      },
+      {
+        "id": "1-3",
+        "name": "Distrito 1-3",
+        "corregimientos": [
+          {
+            "id": "1-3-1",
+            "name": "Chiriquí Grande"
+          },
+          {
+            "id": "1-3-2",
+            "name": "Miramar"
+          },
+          {
+            "id": "1-3-3",
+            "name": "Punta Peña"
+          },
+          {
+            "id": "1-3-4",
+            "name": "Punta Robalo"
+          },
+          {
+            "id": "1-3-5",
+            "name": "Rambala"
+          },
+          {
+            "id": "1-3-6",
+            "name": "Bajo del Cedro"
+          }
+        ]
+      },
+      {
+        "id": "1-4",
+        "name": "Almirante",
+        "corregimientos": [
+          {
+            "id": "1-4-1",
+            "name": "Almirante"
+          },
+          {
+            "id": "1-4-2",
+            "name": "Barriada Guaymi"
+          },
+          {
+            "id": "1-4-3",
+            "name": "Barrio Francés"
+          },
+          {
+            "id": "1-4-4",
+            "name": "Nance de Risco"
+          },
+          {
+            "id": "1-4-5",
+            "name": "Valle de Aguas Arriba"
+          },
+          {
+            "id": "1-4-6",
+            "name": "Valle de Risco"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "name": "Coclé",
+    "distritos": [
+      {
+        "id": "2-1",
+        "name": "Aguadulce",
+        "corregimientos": [
+          {
+            "id": "2-1-1",
+            "name": "Aguadulce"
+          },
+          {
+            "id": "2-1-2",
+            "name": "El Cristo"
+          },
+          {
+            "id": "2-1-3",
+            "name": "El Roble"
+          },
+          {
+            "id": "2-1-4",
+            "name": "Pocri"
+          },
+          {
+            "id": "2-1-5",
+            "name": "Barrios Unidos"
+          }
+        ]
+      },
+      {
+        "id": "2-2",
+        "name": "Antón",
+        "corregimientos": [
+          {
+            "id": "2-2-1",
+            "name": "Antón"
+          },
+          {
+            "id": "2-2-2",
+            "name": "Cabuya"
+          },
+          {
+            "id": "2-2-3",
+            "name": "El Chiru"
+          },
+          {
+            "id": "2-2-4",
+            "name": "El Retiro"
+          },
+          {
+            "id": "2-2-5",
+            "name": "El Valle"
+          },
+          {
+            "id": "2-2-6",
+            "name": "Juan Díaz"
+          },
+          {
+            "id": "2-2-7",
+            "name": "Rio Hato"
+          },
+          {
+            "id": "2-2-8",
+            "name": "San Juan de Dios"
+          },
+          {
+            "id": "2-2-9",
+            "name": "Santa Rita"
+          },
+          {
+            "id": "2-2-10",
+            "name": "Caballero"
+          }
+        ]
+      },
+      {
+        "id": "2-3",
+        "name": "La Pintada",
+        "corregimientos": [
+          {
+            "id": "2-3-1",
+            "name": "La Pintada"
+          },
+          {
+            "id": "2-3-2",
+            "name": "El Harino"
+          },
+          {
+            "id": "2-3-3",
+            "name": "El Potrero"
+          },
+          {
+            "id": "2-3-4",
+            "name": "Llano Grande"
+          },
+          {
+            "id": "2-3-5",
+            "name": "Piedras Gordas"
+          },
+          {
+            "id": "2-3-6",
+            "name": "Las Lomas"
+          }
+        ]
+      },
+      {
+        "id": "2-4",
+        "name": "Nata",
+        "corregimientos": [
+          {
+            "id": "2-4-1",
+            "name": "Nata"
+          },
+          {
+            "id": "2-4-2",
+            "name": "Capellania"
+          },
+          {
+            "id": "2-4-3",
+            "name": "El Caño"
+          },
+          {
+            "id": "2-4-4",
+            "name": "Guzmán"
+          },
+          {
+            "id": "2-4-5",
+            "name": "Las Huacas"
+          },
+          {
+            "id": "2-4-6",
+            "name": "Toza"
+          }
+        ]
+      },
+      {
+        "id": "2-5",
+        "name": "Ola",
+        "corregimientos": [
+          {
+            "id": "2-5-1",
+            "name": "Ola"
+          },
+          {
+            "id": "2-5-2",
+            "name": "El Cope"
+          },
+          {
+            "id": "2-5-3",
+            "name": "El Palmar"
+          },
+          {
+            "id": "2-5-4",
+            "name": "El Picacho"
+          },
+          {
+            "id": "2-5-5",
+            "name": "La Pava"
+          }
+        ]
+      },
+      {
+        "id": "2-6",
+        "name": "Penonomé",
+        "corregimientos": [
+          {
+            "id": "2-6-1",
+            "name": "Penonomé"
+          },
+          {
+            "id": "2-6-2",
+            "name": "Cañaveral"
+          },
+          {
+            "id": "2-6-3",
+            "name": "Coclé"
+          },
+          {
+            "id": "2-6-4",
+            "name": "Chiguirí Arriba"
+          },
+          {
+            "id": "2-6-5",
+            "name": "El Coco"
+          },
+          {
+            "id": "2-6-6",
+            "name": "Pajonal"
+          },
+          {
+            "id": "2-6-7",
+            "name": "Rio Grande"
+          },
+          {
+            "id": "2-6-8",
+            "name": "Rio Indio"
+          },
+          {
+            "id": "2-6-9",
+            "name": "Toabre"
+          },
+          {
+            "id": "2-6-10",
+            "name": "Tulu"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Colón",
+    "distritos": [
+      {
+        "id": "3-1",
+        "name": "Distrito 3-1",
+        "corregimientos": [
+          {
+            "id": "3-1-1",
+            "name": "Barrio Norte"
+          },
+          {
+            "id": "3-1-2",
+            "name": "Barrio Sur"
+          },
+          {
+            "id": "3-1-3",
+            "name": "Buena Vista"
+          },
+          {
+            "id": "3-1-4",
+            "name": "Cativa"
+          },
+          {
+            "id": "3-1-5",
+            "name": "Ciricito"
+          },
+          {
+            "id": "3-1-6",
+            "name": "Cristobal"
+          },
+          {
+            "id": "3-1-7",
+            "name": "Escobal"
+          },
+          {
+            "id": "3-1-8",
+            "name": "Limón"
+          },
+          {
+            "id": "3-1-9",
+            "name": "Nueva Providencia"
+          },
+          {
+            "id": "3-1-10",
+            "name": "Puerto Pilón"
+          },
+          {
+            "id": "3-1-11",
+            "name": "Sabanitas"
+          },
+          {
+            "id": "3-1-12",
+            "name": "Salamanca"
+          },
+          {
+            "id": "3-1-13",
+            "name": "San Juan"
+          },
+          {
+            "id": "3-1-14",
+            "name": "Santa Rosa"
+          },
+          {
+            "id": "3-1-15",
+            "name": "Cristobal Este"
+          }
+        ]
+      },
+      {
+        "id": "3-2",
+        "name": "Nuevo Chagres",
+        "corregimientos": [
+          {
+            "id": "3-2-1",
+            "name": "Nuevo Chagres"
+          },
+          {
+            "id": "3-2-2",
+            "name": "Achiote"
+          },
+          {
+            "id": "3-2-3",
+            "name": "El Guabo"
+          },
+          {
+            "id": "3-2-4",
+            "name": "La Encantada"
+          },
+          {
+            "id": "3-2-5",
+            "name": "Palmas Bellas"
+          },
+          {
+            "id": "3-2-6",
+            "name": "Piña"
+          },
+          {
+            "id": "3-2-7",
+            "name": "Salud"
+          }
+        ]
+      },
+      {
+        "id": "3-3",
+        "name": "Distrito 3-3",
+        "corregimientos": [
+          {
+            "id": "3-3-1",
+            "name": "Miguel de La Borda"
+          },
+          {
+            "id": "3-3-2",
+            "name": "Coclé del Norte"
+          },
+          {
+            "id": "3-3-3",
+            "name": "El Guasimo"
+          },
+          {
+            "id": "3-3-4",
+            "name": "Gobea"
+          },
+          {
+            "id": "3-3-5",
+            "name": "Rio Indio"
+          },
+          {
+            "id": "3-3-6",
+            "name": "San José del General"
+          }
+        ]
+      },
+      {
+        "id": "3-4",
+        "name": "Portobelo",
+        "corregimientos": [
+          {
+            "id": "3-4-1",
+            "name": "Portobelo"
+          },
+          {
+            "id": "3-4-2",
+            "name": "Cacique"
+          },
+          {
+            "id": "3-4-3",
+            "name": "Garrote"
+          },
+          {
+            "id": "3-4-4",
+            "name": "Isla Grande"
+          },
+          {
+            "id": "3-4-5",
+            "name": "María Chiquita"
+          }
+        ]
+      },
+      {
+        "id": "3-5",
+        "name": "Palenque",
+        "corregimientos": [
+          {
+            "id": "3-5-1",
+            "name": "Palenque"
+          },
+          {
+            "id": "3-5-2",
+            "name": "Cuango"
+          },
+          {
+            "id": "3-5-3",
+            "name": "Miramar"
+          },
+          {
+            "id": "3-5-4",
+            "name": "Nombre de Dios"
+          },
+          {
+            "id": "3-5-5",
+            "name": "Palmira"
+          },
+          {
+            "id": "3-5-6",
+            "name": "Playa Chiquita"
+          },
+          {
+            "id": "3-5-7",
+            "name": "Santa Isabel"
+          },
+          {
+            "id": "3-5-8",
+            "name": "Viento Frio"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Chiriquí",
+    "distritos": [
+      {
+        "id": "4-1",
+        "name": "Alanje",
+        "corregimientos": [
+          {
+            "id": "4-1-1",
+            "name": "Alanje"
+          },
+          {
+            "id": "4-1-2",
+            "name": "Divala"
+          },
+          {
+            "id": "4-1-3",
+            "name": "El Tejar"
+          },
+          {
+            "id": "4-1-4",
+            "name": "Guarumal"
+          },
+          {
+            "id": "4-1-5",
+            "name": "Palo Grande"
+          },
+          {
+            "id": "4-1-6",
+            "name": "Querevalo"
+          },
+          {
+            "id": "4-1-7",
+            "name": "Santo Tomas"
+          },
+          {
+            "id": "4-1-8",
+            "name": "Canta Gallo"
+          },
+          {
+            "id": "4-1-9",
+            "name": "Nuevo Mexico"
+          }
+        ]
+      },
+      {
+        "id": "4-2",
+        "name": "Puerto Armuelle",
+        "corregimientos": [
+          {
+            "id": "4-2-1",
+            "name": "Puerto Armuelle"
+          },
+          {
+            "id": "4-2-2",
+            "name": "Limones"
+          },
+          {
+            "id": "4-2-3",
+            "name": "Progreso"
+          },
+          {
+            "id": "4-2-4",
+            "name": "Baco"
+          },
+          {
+            "id": "4-2-5",
+            "name": "Rodolfo Aguilar Delgado"
+          }
+        ]
+      },
+      {
+        "id": "4-3",
+        "name": "Boqueron",
+        "corregimientos": [
+          {
+            "id": "4-3-1",
+            "name": "Boqueron"
+          },
+          {
+            "id": "4-3-2",
+            "name": "Bagala"
+          },
+          {
+            "id": "4-3-3",
+            "name": "Cordillera"
+          },
+          {
+            "id": "4-3-4",
+            "name": "Guabal"
+          },
+          {
+            "id": "4-3-5",
+            "name": "Guayabal"
+          },
+          {
+            "id": "4-3-6",
+            "name": "Paraíso"
+          },
+          {
+            "id": "4-3-7",
+            "name": "Pedregal"
+          },
+          {
+            "id": "4-3-8",
+            "name": "Tijeras"
+          }
+        ]
+      },
+      {
+        "id": "4-4",
+        "name": "Bajo Boquete",
+        "corregimientos": [
+          {
+            "id": "4-4-1",
+            "name": "Bajo Boquete"
+          },
+          {
+            "id": "4-4-2",
+            "name": "Caldera"
+          },
+          {
+            "id": "4-4-3",
+            "name": "Palmira"
+          },
+          {
+            "id": "4-4-4",
+            "name": "Alto Boquete"
+          },
+          {
+            "id": "4-4-5",
+            "name": "Jaramillo"
+          },
+          {
+            "id": "4-4-6",
+            "name": "Los Naranjos"
+          }
+        ]
+      },
+      {
+        "id": "4-5",
+        "name": "La Concepción",
+        "corregimientos": [
+          {
+            "id": "4-5-1",
+            "name": "La Concepción"
+          },
+          {
+            "id": "4-5-2",
+            "name": "Aserrio de Gariche"
+          },
+          {
+            "id": "4-5-3",
+            "name": "Bugaba"
+          },
+          {
+            "id": "4-5-5",
+            "name": "Gómez"
+          },
+          {
+            "id": "4-5-6",
+            "name": "La Estrella"
+          },
+          {
+            "id": "4-5-7",
+            "name": "San Andres"
+          },
+          {
+            "id": "4-5-8",
+            "name": "Santa Marta"
+          },
+          {
+            "id": "4-5-9",
+            "name": "Santa Rosa"
+          },
+          {
+            "id": "4-5-10",
+            "name": "Santo Domingo"
+          },
+          {
+            "id": "4-5-11",
+            "name": "Sortova"
+          },
+          {
+            "id": "4-5-13",
+            "name": "El Bongo"
+          }
+        ]
+      },
+      {
+        "id": "4-6",
+        "name": "David",
+        "corregimientos": [
+          {
+            "id": "4-6-1",
+            "name": "David"
+          },
+          {
+            "id": "4-6-2",
+            "name": "Bijagual"
+          },
+          {
+            "id": "4-6-3",
+            "name": "Cochea"
+          },
+          {
+            "id": "4-6-4",
+            "name": "Chiriquí"
+          },
+          {
+            "id": "4-6-5",
+            "name": "Guaca"
+          },
+          {
+            "id": "4-6-6",
+            "name": "Las Lomas"
+          },
+          {
+            "id": "4-6-7",
+            "name": "Pedregal"
+          },
+          {
+            "id": "4-6-8",
+            "name": "San Carlos"
+          },
+          {
+            "id": "4-6-9",
+            "name": "San Pablo Nuevo"
+          },
+          {
+            "id": "4-6-10",
+            "name": "San Pablo Viejo"
+          }
+        ]
+      },
+      {
+        "id": "4-7",
+        "name": "Dolega",
+        "corregimientos": [
+          {
+            "id": "4-7-1",
+            "name": "Dolega"
+          },
+          {
+            "id": "4-7-2",
+            "name": "Dos Rios"
+          },
+          {
+            "id": "4-7-3",
+            "name": "Los Anastacios"
+          },
+          {
+            "id": "4-7-4",
+            "name": "Potrerillos"
+          },
+          {
+            "id": "4-7-5",
+            "name": "Potrerillos Abajo"
+          },
+          {
+            "id": "4-7-6",
+            "name": "Rovira"
+          },
+          {
+            "id": "4-7-7",
+            "name": "Tinajas"
+          },
+          {
+            "id": "4-7-8",
+            "name": "Los Algarrobos"
+          }
+        ]
+      },
+      {
+        "id": "4-8",
+        "name": "Gualaca",
+        "corregimientos": [
+          {
+            "id": "4-8-1",
+            "name": "Gualaca"
+          },
+          {
+            "id": "4-8-2",
+            "name": "Hornito"
+          },
+          {
+            "id": "4-8-3",
+            "name": "Los Angeles"
+          },
+          {
+            "id": "4-8-4",
+            "name": "Paja de Sombrero"
+          },
+          {
+            "id": "4-8-5",
+            "name": "Rincon"
+          }
+        ]
+      },
+      {
+        "id": "4-9",
+        "name": "Remedios",
+        "corregimientos": [
+          {
+            "id": "4-9-1",
+            "name": "Remedios"
+          },
+          {
+            "id": "4-9-2",
+            "name": "El Nancito"
+          },
+          {
+            "id": "4-9-3",
+            "name": "El Porvenir"
+          },
+          {
+            "id": "4-9-4",
+            "name": "El Puerto"
+          },
+          {
+            "id": "4-9-5",
+            "name": "Santa Lucia"
+          }
+        ]
+      },
+      {
+        "id": "4-10",
+        "name": "Rio Sereno",
+        "corregimientos": [
+          {
+            "id": "4-10-1",
+            "name": "Rio Sereno"
+          },
+          {
+            "id": "4-10-2",
+            "name": "Breñon"
+          },
+          {
+            "id": "4-10-3",
+            "name": "Cañas Gordas"
+          },
+          {
+            "id": "4-10-4",
+            "name": "Monte Lirio"
+          },
+          {
+            "id": "4-10-5",
+            "name": "Plaza Caisan"
+          },
+          {
+            "id": "4-10-6",
+            "name": "Santa Cruz"
+          },
+          {
+            "id": "4-10-7",
+            "name": "Dominical"
+          },
+          {
+            "id": "4-10-8",
+            "name": "Santa Clara"
+          }
+        ]
+      },
+      {
+        "id": "4-11",
+        "name": "Las Lajas",
+        "corregimientos": [
+          {
+            "id": "4-11-1",
+            "name": "Las Lajas"
+          },
+          {
+            "id": "4-11-2",
+            "name": "Juay"
+          },
+          {
+            "id": "4-11-3",
+            "name": "Lajas Adentro"
+          },
+          {
+            "id": "4-11-4",
+            "name": "San Félix"
+          },
+          {
+            "id": "4-11-5",
+            "name": "Santa Cruz"
+          }
+        ]
+      },
+      {
+        "id": "4-12",
+        "name": "Horconcitos",
+        "corregimientos": [
+          {
+            "id": "4-12-1",
+            "name": "Horconcitos"
+          },
+          {
+            "id": "4-12-2",
+            "name": "Boca Chica"
+          },
+          {
+            "id": "4-12-3",
+            "name": "Boca del Monte"
+          },
+          {
+            "id": "4-12-4",
+            "name": "San Juan"
+          },
+          {
+            "id": "4-12-5",
+            "name": "San Lorenzo"
+          }
+        ]
+      },
+      {
+        "id": "4-13",
+        "name": "Tole",
+        "corregimientos": [
+          {
+            "id": "4-13-1",
+            "name": "Tole"
+          },
+          {
+            "id": "4-13-2",
+            "name": "Bella Vista"
+          },
+          {
+            "id": "4-13-3",
+            "name": "Cerro Viejo"
+          },
+          {
+            "id": "4-13-4",
+            "name": "El Cristo"
+          },
+          {
+            "id": "4-13-5",
+            "name": "Justo Fidel Palacios"
+          },
+          {
+            "id": "4-13-6",
+            "name": "Lajas de Tole"
+          },
+          {
+            "id": "4-13-7",
+            "name": "Potrero de Caña"
+          },
+          {
+            "id": "4-13-8",
+            "name": "Quebrada de Piedra"
+          },
+          {
+            "id": "4-13-9",
+            "name": "Veladero"
+          }
+        ]
+      },
+      {
+        "id": "4-15",
+        "name": "Distrito 4-15",
+        "corregimientos": [
+          {
+            "id": "4-15-1",
+            "name": "Cerro Punta"
+          },
+          {
+            "id": "4-15-2",
+            "name": "Cuesta de Piedra"
+          },
+          {
+            "id": "4-15-3",
+            "name": "Nueva California"
+          },
+          {
+            "id": "4-15-4",
+            "name": "Paso Ancho"
+          },
+          {
+            "id": "4-15-5",
+            "name": "Volcán"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "name": "Darién",
+    "distritos": [
+      {
+        "id": "5-1",
+        "name": "La Palma",
+        "corregimientos": [
+          {
+            "id": "5-1-1",
+            "name": "La Palma"
+          },
+          {
+            "id": "5-1-2",
+            "name": "Camoganti"
+          },
+          {
+            "id": "5-1-3",
+            "name": "Chepigana"
+          },
+          {
+            "id": "5-1-4",
+            "name": "Garachine"
+          },
+          {
+            "id": "5-1-5",
+            "name": "Jaque"
+          },
+          {
+            "id": "5-1-6",
+            "name": "Puerto Piña"
+          },
+          {
+            "id": "5-1-7",
+            "name": "Inactivo"
+          },
+          {
+            "id": "5-1-8",
+            "name": "Inactivo"
+          },
+          {
+            "id": "5-1-9",
+            "name": "Sambu"
+          },
+          {
+            "id": "5-1-10",
+            "name": "Seteganti"
+          },
+          {
+            "id": "5-1-11",
+            "name": "Taimati"
+          },
+          {
+            "id": "5-1-12",
+            "name": "Tucuti"
+          },
+          {
+            "id": "5-1-13",
+            "name": "Inactivo"
+          },
+          {
+            "id": "5-1-14",
+            "name": "Inactivo"
+          },
+          {
+            "id": "5-1-15",
+            "name": "Inactivo"
+          },
+          {
+            "id": "5-1-16",
+            "name": "Inactivo"
+          }
+        ]
+      },
+      {
+        "id": "5-2",
+        "name": "Distrito 5-2",
+        "corregimientos": [
+          {
+            "id": "5-2-1",
+            "name": "El Real de Santa María"
+          },
+          {
+            "id": "5-2-2",
+            "name": "Boca de Cupe"
+          },
+          {
+            "id": "5-2-2",
+            "name": "Boca de Cupe"
+          },
+          {
+            "id": "5-2-3",
+            "name": "Paya"
+          },
+          {
+            "id": "5-2-3",
+            "name": "Paya"
+          },
+          {
+            "id": "5-2-4",
+            "name": "Pinogana"
+          },
+          {
+            "id": "5-2-4",
+            "name": "Pinogana"
+          },
+          {
+            "id": "5-2-5",
+            "name": "Pucuro"
+          },
+          {
+            "id": "5-2-6",
+            "name": "Yape"
+          },
+          {
+            "id": "5-2-7",
+            "name": "Yaviza"
+          },
+          {
+            "id": "5-2-8",
+            "name": "Meteti"
+          },
+          {
+            "id": "5-2-9",
+            "name": "Comarca Kuna de"
+          }
+        ]
+      },
+      {
+        "id": "5-3",
+        "name": "Distrito 5-3",
+        "corregimientos": [
+          {
+            "id": "5-3-1",
+            "name": "Agua Fría"
+          },
+          {
+            "id": "5-3-2",
+            "name": "Cucunatí"
+          },
+          {
+            "id": "5-3-3",
+            "name": "Río Congo"
+          },
+          {
+            "id": "5-3-4",
+            "name": "Río Congo Arriba"
+          },
+          {
+            "id": "5-3-5",
+            "name": "Río Iglesia"
+          },
+          {
+            "id": "5-3-6",
+            "name": "Santa Fé"
+          },
+          {
+            "id": "5-3-7",
+            "name": "Zapallal"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "name": "Herrera",
+    "distritos": [
+      {
+        "id": "6-1",
+        "name": "Chitre",
+        "corregimientos": [
+          {
+            "id": "6-1-1",
+            "name": "Chitre"
+          },
+          {
+            "id": "6-1-2",
+            "name": "La Arena"
+          },
+          {
+            "id": "6-1-3",
+            "name": "Monagrillo"
+          },
+          {
+            "id": "6-1-4",
+            "name": "Llano Bonito"
+          },
+          {
+            "id": "6-1-5",
+            "name": "San Juan Bautista"
+          }
+        ]
+      },
+      {
+        "id": "6-2",
+        "name": "Las Minas",
+        "corregimientos": [
+          {
+            "id": "6-2-1",
+            "name": "Las Minas"
+          },
+          {
+            "id": "6-2-2",
+            "name": "Chepo"
+          },
+          {
+            "id": "6-2-3",
+            "name": "Chumical"
+          },
+          {
+            "id": "6-2-4",
+            "name": "El Toro"
+          },
+          {
+            "id": "6-2-5",
+            "name": "Leones"
+          },
+          {
+            "id": "6-2-6",
+            "name": "Quebrada del Rosario"
+          },
+          {
+            "id": "6-2-7",
+            "name": "Quebrada El Ciprian"
+          }
+        ]
+      },
+      {
+        "id": "6-3",
+        "name": "Los Pozos",
+        "corregimientos": [
+          {
+            "id": "6-3-1",
+            "name": "Los Pozos"
+          },
+          {
+            "id": "6-3-2",
+            "name": "Capuri"
+          },
+          {
+            "id": "6-3-3",
+            "name": "El Calabacito"
+          },
+          {
+            "id": "6-3-4",
+            "name": "El Cedro"
+          },
+          {
+            "id": "6-3-5",
+            "name": "La Arena"
+          },
+          {
+            "id": "6-3-6",
+            "name": "La Pitalosa"
+          },
+          {
+            "id": "6-3-7",
+            "name": "Los Cerritos"
+          },
+          {
+            "id": "6-3-8",
+            "name": "Los Cerros de Paja"
+          },
+          {
+            "id": "6-3-9",
+            "name": "Las Llanas"
+          }
+        ]
+      },
+      {
+        "id": "6-4",
+        "name": "Ocu",
+        "corregimientos": [
+          {
+            "id": "6-4-1",
+            "name": "Ocu"
+          },
+          {
+            "id": "6-4-2",
+            "name": "Cerro Largo"
+          },
+          {
+            "id": "6-4-3",
+            "name": "Los Llanos"
+          },
+          {
+            "id": "6-4-4",
+            "name": "Llano Grande"
+          },
+          {
+            "id": "6-4-5",
+            "name": "Peñas Chatas"
+          },
+          {
+            "id": "6-4-6",
+            "name": "El Tijera"
+          },
+          {
+            "id": "6-4-7",
+            "name": "Menchaca"
+          }
+        ]
+      },
+      {
+        "id": "6-5",
+        "name": "Parita",
+        "corregimientos": [
+          {
+            "id": "6-5-1",
+            "name": "Parita"
+          },
+          {
+            "id": "6-5-2",
+            "name": "Cabuya"
+          },
+          {
+            "id": "6-5-3",
+            "name": "Los Castillos"
+          },
+          {
+            "id": "6-5-4",
+            "name": "Llano de La Cruz"
+          },
+          {
+            "id": "6-5-5",
+            "name": "Paris"
+          },
+          {
+            "id": "6-5-6",
+            "name": "Portobelillo"
+          },
+          {
+            "id": "6-5-7",
+            "name": "Potuga"
+          }
+        ]
+      },
+      {
+        "id": "6-6",
+        "name": "Pese",
+        "corregimientos": [
+          {
+            "id": "6-6-1",
+            "name": "Pese"
+          },
+          {
+            "id": "6-6-2",
+            "name": "Las Cabras"
+          },
+          {
+            "id": "6-6-3",
+            "name": "El Pájaro"
+          },
+          {
+            "id": "6-6-4",
+            "name": "El Barrero"
+          },
+          {
+            "id": "6-6-5",
+            "name": "El Pedregoso"
+          },
+          {
+            "id": "6-6-6",
+            "name": "El Ciruelo"
+          },
+          {
+            "id": "6-6-7",
+            "name": "Sabana grande"
+          },
+          {
+            "id": "6-6-8",
+            "name": "Rincón Hondo"
+          }
+        ]
+      },
+      {
+        "id": "6-7",
+        "name": "Santa María",
+        "corregimientos": [
+          {
+            "id": "6-7-1",
+            "name": "Santa María"
+          },
+          {
+            "id": "6-7-2",
+            "name": "Chupampa"
+          },
+          {
+            "id": "6-7-3",
+            "name": "El Rincón"
+          },
+          {
+            "id": "6-7-4",
+            "name": "El Limón"
+          },
+          {
+            "id": "6-7-5",
+            "name": "Los Canelos"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "name": "Los Santos",
+    "distritos": [
+      {
+        "id": "7-1",
+        "name": "Guarare",
+        "corregimientos": [
+          {
+            "id": "7-1-1",
+            "name": "Guarare"
+          },
+          {
+            "id": "7-1-2",
+            "name": "El Espinal"
+          },
+          {
+            "id": "7-1-3",
+            "name": "El Macano"
+          },
+          {
+            "id": "7-1-4",
+            "name": "Guarare Arriba"
+          },
+          {
+            "id": "7-1-5",
+            "name": "La Enea"
+          },
+          {
+            "id": "7-1-6",
+            "name": "La Pasera"
+          },
+          {
+            "id": "7-1-7",
+            "name": "Las Trancas"
+          },
+          {
+            "id": "7-1-8",
+            "name": "Llano Abajo"
+          },
+          {
+            "id": "7-1-9",
+            "name": "El Hato"
+          },
+          {
+            "id": "7-1-10",
+            "name": "Perales"
+          }
+        ]
+      },
+      {
+        "id": "7-2",
+        "name": "Las Tablas",
+        "corregimientos": [
+          {
+            "id": "7-2-1",
+            "name": "Las Tablas"
+          },
+          {
+            "id": "7-2-2",
+            "name": "Bajo Corral"
+          },
+          {
+            "id": "7-2-3",
+            "name": "Bayano"
+          },
+          {
+            "id": "7-2-4",
+            "name": "El Carate"
+          },
+          {
+            "id": "7-2-5",
+            "name": "El Cocal"
+          },
+          {
+            "id": "7-2-6",
+            "name": "El Manantial"
+          },
+          {
+            "id": "7-2-7",
+            "name": "El Muñoz"
+          },
+          {
+            "id": "7-2-8",
+            "name": "El Pedregoso"
+          },
+          {
+            "id": "7-2-9",
+            "name": "La Laja"
+          },
+          {
+            "id": "7-2-10",
+            "name": "La Miel"
+          },
+          {
+            "id": "7-2-11",
+            "name": "La Palma"
+          },
+          {
+            "id": "7-2-12",
+            "name": "La Tiza"
+          },
+          {
+            "id": "7-2-13",
+            "name": "Las Palmitas"
+          },
+          {
+            "id": "7-2-14",
+            "name": "Las Tablas Abajo"
+          },
+          {
+            "id": "7-2-15",
+            "name": "Nuario"
+          },
+          {
+            "id": "7-2-16",
+            "name": "Palmira"
+          },
+          {
+            "id": "7-2-17",
+            "name": "Peña Blanca"
+          },
+          {
+            "id": "7-2-18",
+            "name": "Rio Hondo"
+          },
+          {
+            "id": "7-2-19",
+            "name": "San José"
+          },
+          {
+            "id": "7-2-20",
+            "name": "San Miguel"
+          },
+          {
+            "id": "7-2-21",
+            "name": "Santo Domingo"
+          },
+          {
+            "id": "7-2-22",
+            "name": "Sesteadero"
+          },
+          {
+            "id": "7-2-23",
+            "name": "Valle Rico"
+          },
+          {
+            "id": "7-2-24",
+            "name": "Valleriquito"
+          }
+        ]
+      },
+      {
+        "id": "7-3",
+        "name": "Distrito 7-3",
+        "corregimientos": [
+          {
+            "id": "7-3-1",
+            "name": "La Villa de Los Santos"
+          },
+          {
+            "id": "7-3-2",
+            "name": "El Guasimo"
+          },
+          {
+            "id": "7-3-3",
+            "name": "La Colorada"
+          },
+          {
+            "id": "7-3-4",
+            "name": "La Espigadilla"
+          },
+          {
+            "id": "7-3-5",
+            "name": "Las Cruces"
+          },
+          {
+            "id": "7-3-6",
+            "name": "Las Guabas"
+          },
+          {
+            "id": "7-3-7",
+            "name": "Los Ángeles"
+          },
+          {
+            "id": "7-3-8",
+            "name": "Los Olivos"
+          },
+          {
+            "id": "7-3-9",
+            "name": "Llano Largo"
+          },
+          {
+            "id": "7-3-10",
+            "name": "Sabana grande"
+          },
+          {
+            "id": "7-3-11",
+            "name": "Santa Ana"
+          },
+          {
+            "id": "7-3-12",
+            "name": "Tres Quebradas"
+          },
+          {
+            "id": "7-3-13",
+            "name": "Agua Buena"
+          },
+          {
+            "id": "7-3-14",
+            "name": "Villa Lourdes"
+          }
+        ]
+      },
+      {
+        "id": "7-4",
+        "name": "Macaracas",
+        "corregimientos": [
+          {
+            "id": "7-4-1",
+            "name": "Macaracas"
+          },
+          {
+            "id": "7-4-2",
+            "name": "Bahia Honda"
+          },
+          {
+            "id": "7-4-3",
+            "name": "Bajos de Guera"
+          },
+          {
+            "id": "7-4-4",
+            "name": "Corozal"
+          },
+          {
+            "id": "7-4-5",
+            "name": "Chupa"
+          },
+          {
+            "id": "7-4-6",
+            "name": "El Cedro"
+          },
+          {
+            "id": "7-4-7",
+            "name": "Espino Amarillo"
+          },
+          {
+            "id": "7-4-8",
+            "name": "La Mesa"
+          },
+          {
+            "id": "7-4-9",
+            "name": "Las Palmas"
+          },
+          {
+            "id": "7-4-10",
+            "name": "Llano de Piedra"
+          },
+          {
+            "id": "7-4-11",
+            "name": "Mogollon"
+          }
+        ]
+      },
+      {
+        "id": "7-5",
+        "name": "Pedasi",
+        "corregimientos": [
+          {
+            "id": "7-5-1",
+            "name": "Pedasi"
+          },
+          {
+            "id": "7-5-2",
+            "name": "Los Asientos"
+          },
+          {
+            "id": "7-5-3",
+            "name": "Mariabe"
+          },
+          {
+            "id": "7-5-4",
+            "name": "Purio"
+          },
+          {
+            "id": "7-5-4",
+            "name": "Purio"
+          },
+          {
+            "id": "7-5-5",
+            "name": "Oria Arriba"
+          },
+          {
+            "id": "7-5-5",
+            "name": "Oria Arriba"
+          }
+        ]
+      },
+      {
+        "id": "7-6",
+        "name": "Distrito 7-6",
+        "corregimientos": [
+          {
+            "id": "7-6-1",
+            "name": "Pocri"
+          },
+          {
+            "id": "7-6-1",
+            "name": "Pocri"
+          },
+          {
+            "id": "7-6-2",
+            "name": "El Cañafistulo"
+          },
+          {
+            "id": "7-6-2",
+            "name": "El Cañafistulo"
+          },
+          {
+            "id": "7-6-3",
+            "name": "Lajamina"
+          },
+          {
+            "id": "7-6-4",
+            "name": "Paraiso"
+          },
+          {
+            "id": "7-6-5",
+            "name": "Paritilla"
+          }
+        ]
+      },
+      {
+        "id": "7-7",
+        "name": "Tonosi",
+        "corregimientos": [
+          {
+            "id": "7-7-1",
+            "name": "Tonosi"
+          },
+          {
+            "id": "7-7-2",
+            "name": "Altos de Guera"
+          },
+          {
+            "id": "7-7-3",
+            "name": "Cañas"
+          },
+          {
+            "id": "7-7-4",
+            "name": "El Bebedero"
+          },
+          {
+            "id": "7-7-5",
+            "name": "El Cacao"
+          },
+          {
+            "id": "7-7-6",
+            "name": "El Cortezo"
+          },
+          {
+            "id": "7-7-7",
+            "name": "Flores"
+          },
+          {
+            "id": "7-7-8",
+            "name": "Guanico"
+          },
+          {
+            "id": "7-7-9",
+            "name": "La Tronosa"
+          },
+          {
+            "id": "7-7-10",
+            "name": "Cambutal"
+          },
+          {
+            "id": "7-7-11",
+            "name": "Isla de Caqas"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "name": "Panamá",
+    "distritos": [
+      {
+        "id": "8-2",
+        "name": "San Miguel",
+        "corregimientos": [
+          {
+            "id": "8-2-1",
+            "name": "San Miguel"
+          },
+          {
+            "id": "8-2-2",
+            "name": "La Ensenada"
+          },
+          {
+            "id": "8-2-3",
+            "name": "La Esmeralda"
+          },
+          {
+            "id": "8-2-4",
+            "name": "La Guinea"
+          },
+          {
+            "id": "8-2-5",
+            "name": "Pedro Gonzalez"
+          },
+          {
+            "id": "8-2-6",
+            "name": "Saboga"
+          }
+        ]
+      },
+      {
+        "id": "8-5",
+        "name": "Chepo",
+        "corregimientos": [
+          {
+            "id": "8-5-1",
+            "name": "Chepo"
+          },
+          {
+            "id": "8-5-2",
+            "name": "Cañita"
+          },
+          {
+            "id": "8-5-3",
+            "name": "Chepillo"
+          },
+          {
+            "id": "8-5-4",
+            "name": "El Llano"
+          },
+          {
+            "id": "8-5-5",
+            "name": "Las Margaritas"
+          },
+          {
+            "id": "8-5-6",
+            "name": "Santa Cruz de Chinina"
+          },
+          {
+            "id": "8-5-7",
+            "name": "Comarca Kuna de"
+          },
+          {
+            "id": "8-5-8",
+            "name": "Torti"
+          }
+        ]
+      },
+      {
+        "id": "8-6",
+        "name": "Chiman",
+        "corregimientos": [
+          {
+            "id": "8-6-1",
+            "name": "Chiman"
+          },
+          {
+            "id": "8-6-2",
+            "name": "Brujas"
+          },
+          {
+            "id": "8-6-3",
+            "name": "Gonzalo Vasquez"
+          },
+          {
+            "id": "8-6-4",
+            "name": "Pasiga"
+          },
+          {
+            "id": "8-6-5",
+            "name": "Union Santeña"
+          }
+        ]
+      },
+      {
+        "id": "8-8",
+        "name": "Distrito 8-8",
+        "corregimientos": [
+          {
+            "id": "8-8-1",
+            "name": "San Felipe"
+          },
+          {
+            "id": "8-8-2",
+            "name": "El Chorrillo"
+          },
+          {
+            "id": "8-8-3",
+            "name": "Santa Ana"
+          },
+          {
+            "id": "8-8-4",
+            "name": "La Exposicion O"
+          },
+          {
+            "id": "8-8-5",
+            "name": "Curundu"
+          },
+          {
+            "id": "8-8-6",
+            "name": "Betania"
+          },
+          {
+            "id": "8-8-7",
+            "name": "Bella Vista"
+          },
+          {
+            "id": "8-8-8",
+            "name": "Pueblo Nuevo"
+          },
+          {
+            "id": "8-8-9",
+            "name": "San Francisco"
+          },
+          {
+            "id": "8-8-10",
+            "name": "Parque Lefevre"
+          },
+          {
+            "id": "8-8-11",
+            "name": "Rio Abajo"
+          },
+          {
+            "id": "8-8-12",
+            "name": "Juan Diaz"
+          },
+          {
+            "id": "8-8-13",
+            "name": "Pedregal"
+          },
+          {
+            "id": "8-8-14",
+            "name": "Ancón"
+          },
+          {
+            "id": "8-8-15",
+            "name": "Chilibre"
+          },
+          {
+            "id": "8-8-16",
+            "name": "Las Cumbres"
+          },
+          {
+            "id": "8-8-17",
+            "name": "Pacora"
+          },
+          {
+            "id": "8-8-18",
+            "name": "San Martin"
+          },
+          {
+            "id": "8-8-19",
+            "name": "Tocumen"
+          },
+          {
+            "id": "8-8-20",
+            "name": "Las Mañanitas"
+          },
+          {
+            "id": "8-8-22",
+            "name": "Ernesto Córdoba"
+          },
+          {
+            "id": "8-8-23",
+            "name": "Alcalde Díaz"
+          },
+          {
+            "id": "8-8-24",
+            "name": "Caimitillo"
+          },
+          {
+            "id": "8-8-25",
+            "name": "Don Bosco"
+          },
+          {
+            "id": "8-8-26",
+            "name": "Las Garzas"
+          }
+        ]
+      },
+      {
+        "id": "8-10",
+        "name": "Distrito 8-10",
+        "corregimientos": [
+          {
+            "id": "8-10-1",
+            "name": "Amelia Denis de Icaza"
+          },
+          {
+            "id": "8-10-2",
+            "name": "Belisario Porras"
+          },
+          {
+            "id": "8-10-3",
+            "name": "José Domingo Espinar"
+          },
+          {
+            "id": "8-10-4",
+            "name": "Mateo Iturralde"
+          },
+          {
+            "id": "8-10-5",
+            "name": "Victoriano Lorenzo"
+          },
+          {
+            "id": "8-10-6",
+            "name": "Arnulfo Arias"
+          },
+          {
+            "id": "8-10-7",
+            "name": "Belisario Frías"
+          },
+          {
+            "id": "8-10-8",
+            "name": "Omar Torrijos"
+          },
+          {
+            "id": "8-10-9",
+            "name": "Rufina Alfaro"
+          }
+        ]
+      },
+      {
+        "id": "8-11",
+        "name": "Taboga",
+        "corregimientos": [
+          {
+            "id": "8-11-1",
+            "name": "Taboga"
+          },
+          {
+            "id": "8-11-2",
+            "name": "Otoque Oriente"
+          },
+          {
+            "id": "8-11-3",
+            "name": "Otoque Occidente"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "9",
+    "name": "Veraguas",
+    "distritos": [
+      {
+        "id": "9-1",
+        "name": "Atalaya",
+        "corregimientos": [
+          {
+            "id": "9-1-1",
+            "name": "Atalaya"
+          },
+          {
+            "id": "9-1-2",
+            "name": "El Barrito"
+          },
+          {
+            "id": "9-1-3",
+            "name": "La Montañuela"
+          },
+          {
+            "id": "9-1-4",
+            "name": "La Carrillo"
+          },
+          {
+            "id": "9-1-5",
+            "name": "San Antonio"
+          }
+        ]
+      },
+      {
+        "id": "9-2",
+        "name": "Calobre",
+        "corregimientos": [
+          {
+            "id": "9-2-1",
+            "name": "Calobre"
+          },
+          {
+            "id": "9-2-2",
+            "name": "Barnizal"
+          },
+          {
+            "id": "9-2-3",
+            "name": "Chitra"
+          },
+          {
+            "id": "9-2-4",
+            "name": "El Cocla"
+          },
+          {
+            "id": "9-2-5",
+            "name": "El Potrero"
+          },
+          {
+            "id": "9-2-6",
+            "name": "La Laguna"
+          },
+          {
+            "id": "9-2-7",
+            "name": "La Raya de Calobre"
+          },
+          {
+            "id": "9-2-8",
+            "name": "La Tetilla"
+          },
+          {
+            "id": "9-2-9",
+            "name": "La Yeguada"
+          },
+          {
+            "id": "9-2-10",
+            "name": "Las Guias"
+          },
+          {
+            "id": "9-2-11",
+            "name": "Monjaras"
+          },
+          {
+            "id": "9-2-12",
+            "name": "San José"
+          }
+        ]
+      },
+      {
+        "id": "9-3",
+        "name": "Cañazas",
+        "corregimientos": [
+          {
+            "id": "9-3-1",
+            "name": "Cañazas"
+          },
+          {
+            "id": "9-3-2",
+            "name": "Cerro Plata"
+          },
+          {
+            "id": "9-3-3",
+            "name": "El Picador"
+          },
+          {
+            "id": "9-3-4",
+            "name": "Los Valles"
+          },
+          {
+            "id": "9-3-5",
+            "name": "San José"
+          },
+          {
+            "id": "9-3-6",
+            "name": "San Marcelo"
+          },
+          {
+            "id": "9-3-7",
+            "name": "El Aromillo"
+          },
+          {
+            "id": "9-3-8",
+            "name": "Las Cruces"
+          }
+        ]
+      },
+      {
+        "id": "9-4",
+        "name": "La Mesa",
+        "corregimientos": [
+          {
+            "id": "9-4-1",
+            "name": "La Mesa"
+          },
+          {
+            "id": "9-4-2",
+            "name": "Bisvalles"
+          },
+          {
+            "id": "9-4-3",
+            "name": "Boro"
+          },
+          {
+            "id": "9-4-4",
+            "name": "Llano Grande"
+          },
+          {
+            "id": "9-4-5",
+            "name": "San Bartolo"
+          },
+          {
+            "id": "9-4-6",
+            "name": "Los Milagros"
+          }
+        ]
+      },
+      {
+        "id": "9-5",
+        "name": "Las Palmas",
+        "corregimientos": [
+          {
+            "id": "9-5-1",
+            "name": "Las Palmas"
+          },
+          {
+            "id": "9-5-2",
+            "name": "Cerro de Casa"
+          },
+          {
+            "id": "9-5-3",
+            "name": "Corozal"
+          },
+          {
+            "id": "9-5-4",
+            "name": "El Maria"
+          },
+          {
+            "id": "9-5-5",
+            "name": "El Prado"
+          },
+          {
+            "id": "9-5-6",
+            "name": "El Rincón"
+          },
+          {
+            "id": "9-5-7",
+            "name": "Lola"
+          },
+          {
+            "id": "9-5-8",
+            "name": "Pixvae"
+          },
+          {
+            "id": "9-5-9",
+            "name": "Puerto Vidal"
+          },
+          {
+            "id": "9-5-10",
+            "name": "San Martin de Porres"
+          },
+          {
+            "id": "9-5-11",
+            "name": "Vigui"
+          },
+          {
+            "id": "9-5-12",
+            "name": "Zapotillo"
+          },
+          {
+            "id": "9-5-13",
+            "name": "Altamira"
+          }
+        ]
+      },
+      {
+        "id": "9-6",
+        "name": "Montijo",
+        "corregimientos": [
+          {
+            "id": "9-6-1",
+            "name": "Montijo"
+          },
+          {
+            "id": "9-6-2",
+            "name": "Arenas"
+          },
+          {
+            "id": "9-6-3",
+            "name": "Gobernadora"
+          },
+          {
+            "id": "9-6-4",
+            "name": "La Garceana"
+          },
+          {
+            "id": "9-6-5",
+            "name": "Leones"
+          },
+          {
+            "id": "9-6-6",
+            "name": "Cebaco"
+          },
+          {
+            "id": "9-6-7",
+            "name": "Costa Hermosa"
+          },
+          {
+            "id": "9-6-8",
+            "name": "Unión del Norte"
+          },
+          {
+            "id": "9-6-9",
+            "name": "Tebario"
+          },
+          {
+            "id": "9-6-10",
+            "name": "El Pilon"
+          }
+        ]
+      },
+      {
+        "id": "9-7",
+        "name": "Rio de Jesús",
+        "corregimientos": [
+          {
+            "id": "9-7-1",
+            "name": "Rio de Jesús"
+          },
+          {
+            "id": "9-7-2",
+            "name": "Las Huacas"
+          },
+          {
+            "id": "9-7-3",
+            "name": "Los Castillos"
+          },
+          {
+            "id": "9-7-4",
+            "name": "Utira"
+          },
+          {
+            "id": "9-7-5",
+            "name": "Catorce de Noviembre"
+          }
+        ]
+      },
+      {
+        "id": "9-8",
+        "name": "Distrito 9-8",
+        "corregimientos": [
+          {
+            "id": "9-8-1",
+            "name": "San Francisco"
+          },
+          {
+            "id": "9-8-2",
+            "name": "Corral Falso"
+          },
+          {
+            "id": "9-8-3",
+            "name": "Los Hatillos"
+          },
+          {
+            "id": "9-8-4",
+            "name": "Remance"
+          },
+          {
+            "id": "9-8-5",
+            "name": "San Juan"
+          },
+          {
+            "id": "9-8-6",
+            "name": "San José"
+          }
+        ]
+      },
+      {
+        "id": "9-9",
+        "name": "Santa Fe",
+        "corregimientos": [
+          {
+            "id": "9-9-1",
+            "name": "Santa Fe"
+          },
+          {
+            "id": "9-9-2",
+            "name": "Calovebora"
+          },
+          {
+            "id": "9-9-3",
+            "name": "El Alto"
+          },
+          {
+            "id": "9-9-4",
+            "name": "El Cuay"
+          },
+          {
+            "id": "9-9-5",
+            "name": "El Pantano"
+          },
+          {
+            "id": "9-9-6",
+            "name": "Gatu O Gatucito"
+          },
+          {
+            "id": "9-9-7",
+            "name": "Rio Luis"
+          }
+        ]
+      },
+      {
+        "id": "9-10",
+        "name": "Santiago",
+        "corregimientos": [
+          {
+            "id": "9-10-1",
+            "name": "Santiago"
+          },
+          {
+            "id": "9-10-2",
+            "name": "La Colorada"
+          },
+          {
+            "id": "9-10-3",
+            "name": "La Peña"
+          },
+          {
+            "id": "9-10-4",
+            "name": "La Raya de Santa María"
+          },
+          {
+            "id": "9-10-5",
+            "name": "Ponuga"
+          },
+          {
+            "id": "9-10-6",
+            "name": "San Pedro del Espino"
+          },
+          {
+            "id": "9-10-7",
+            "name": "Canto del Llano"
+          },
+          {
+            "id": "9-10-8",
+            "name": "Los Algarrobos"
+          },
+          {
+            "id": "9-10-9",
+            "name": "Carlos Santana Ávila"
+          },
+          {
+            "id": "9-10-10",
+            "name": "Edwin F ábrega"
+          },
+          {
+            "id": "9-10-11",
+            "name": "San Martin de Porres"
+          },
+          {
+            "id": "9-10-12",
+            "name": "Urraca"
+          }
+        ]
+      },
+      {
+        "id": "9-11",
+        "name": "Sona",
+        "corregimientos": [
+          {
+            "id": "9-11-1",
+            "name": "Sona"
+          },
+          {
+            "id": "9-11-2",
+            "name": "Bahía Honda"
+          },
+          {
+            "id": "9-11-3",
+            "name": "Calidonia"
+          },
+          {
+            "id": "9-11-4",
+            "name": "Cative"
+          },
+          {
+            "id": "9-11-5",
+            "name": "El Marañón"
+          },
+          {
+            "id": "9-11-6",
+            "name": "Guarumal"
+          },
+          {
+            "id": "9-11-7",
+            "name": "La Soledad"
+          },
+          {
+            "id": "9-11-8",
+            "name": "Quebrada de Oro"
+          },
+          {
+            "id": "9-11-9",
+            "name": "Rio Grande"
+          },
+          {
+            "id": "9-11-10",
+            "name": "Rodeo Viejo"
+          }
+        ]
+      },
+      {
+        "id": "9-12",
+        "name": "Distrito 9-12",
+        "corregimientos": [
+          {
+            "id": "9-12-1",
+            "name": "Llano de Catival O"
+          },
+          {
+            "id": "9-12-2",
+            "name": "Arenas"
+          },
+          {
+            "id": "9-12-3",
+            "name": "El Cacao"
+          },
+          {
+            "id": "9-12-4",
+            "name": "Quebro"
+          },
+          {
+            "id": "9-12-5",
+            "name": "Tebario"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "name": "Guna Yala",
+    "distritos": [
+      {
+        "id": "10-1",
+        "name": "Nargana",
+        "corregimientos": [
+          {
+            "id": "10-1-1",
+            "name": "Nargana"
+          },
+          {
+            "id": "10-1-1",
+            "name": "Comarca Kuna"
+          },
+          {
+            "id": "10-1-2",
+            "name": "Ailigandi"
+          },
+          {
+            "id": "10-1-2",
+            "name": "Comarca Kuna"
+          },
+          {
+            "id": "10-1-3",
+            "name": "Puerto Obaldía"
+          },
+          {
+            "id": "10-1-3",
+            "name": "Comarca Kuna"
+          },
+          {
+            "id": "10-1-4",
+            "name": "Tubuala"
+          },
+          {
+            "id": "10-1-4",
+            "name": "Comarca Kuna"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "11",
+    "name": "Emberá-Wounaan",
+    "distritos": [
+      {
+        "id": "11-1",
+        "name": "Distrito 11-1",
+        "corregimientos": [
+          {
+            "id": "11-1-1",
+            "name": "Cirilo Guainora"
+          },
+          {
+            "id": "11-1-1",
+            "name": "Comarca"
+          },
+          {
+            "id": "11-1-2",
+            "name": "Lajas Blancas"
+          },
+          {
+            "id": "11-1-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "11-1-3",
+            "name": "Manuel Ortega"
+          },
+          {
+            "id": "11-1-3",
+            "name": "Comarca"
+          }
+        ]
+      },
+      {
+        "id": "11-2",
+        "name": "Distrito 11-2",
+        "corregimientos": [
+          {
+            "id": "11-2-1",
+            "name": "Rio Sabalo"
+          },
+          {
+            "id": "11-2-1",
+            "name": "Comarca"
+          },
+          {
+            "id": "11-2-2",
+            "name": "Jingurudo"
+          },
+          {
+            "id": "11-2-2",
+            "name": "Comarca"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "12",
+    "name": "Ngäbe-Buglé",
+    "distritos": [
+      {
+        "id": "12-1",
+        "name": "Soloy",
+        "corregimientos": [
+          {
+            "id": "12-1-1",
+            "name": "Soloy"
+          },
+          {
+            "id": "12-1-2",
+            "name": "Boca de Balsa"
+          },
+          {
+            "id": "12-1-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-1-3",
+            "name": "Camarón Arriba"
+          },
+          {
+            "id": "12-1-3",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-1-4",
+            "name": "Cerro Banco"
+          },
+          {
+            "id": "12-1-4",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-1-5",
+            "name": "Cerro de Patena"
+          },
+          {
+            "id": "12-1-5",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-1-6",
+            "name": "Emplanada de Chorcha"
+          },
+          {
+            "id": "12-1-6",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-1-7",
+            "name": "Namnoni"
+          },
+          {
+            "id": "12-1-8",
+            "name": "Niba"
+          }
+        ]
+      },
+      {
+        "id": "12-2",
+        "name": "Hato Pilón",
+        "corregimientos": [
+          {
+            "id": "12-2-1",
+            "name": "Hato Pilón"
+          },
+          {
+            "id": "12-2-2",
+            "name": "Cascabel"
+          },
+          {
+            "id": "12-2-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-2-3",
+            "name": "Hato Corotu"
+          },
+          {
+            "id": "12-2-4",
+            "name": "Hato Culantro"
+          },
+          {
+            "id": "12-2-5",
+            "name": "Hato Jobo"
+          },
+          {
+            "id": "12-2-6",
+            "name": "Hato Juli"
+          },
+          {
+            "id": "12-2-7",
+            "name": "Quebrada de Loro"
+          },
+          {
+            "id": "12-2-8",
+            "name": "Salto Dupi"
+          }
+        ]
+      },
+      {
+        "id": "12-3",
+        "name": "Chichica",
+        "corregimientos": [
+          {
+            "id": "12-3-1",
+            "name": "Chichica"
+          },
+          {
+            "id": "12-3-1",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-3-2",
+            "name": "Alto Caballero"
+          },
+          {
+            "id": "12-3-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-3-3",
+            "name": "Bakama"
+          },
+          {
+            "id": "12-3-3",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-3-4",
+            "name": "Cerro Caña"
+          },
+          {
+            "id": "12-3-4",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-3-5",
+            "name": "Cerro Puerco"
+          },
+          {
+            "id": "12-3-5",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-3-6",
+            "name": "Krua"
+          },
+          {
+            "id": "12-3-7",
+            "name": "Maraca"
+          },
+          {
+            "id": "12-3-8",
+            "name": "Nibra"
+          },
+          {
+            "id": "12-3-9",
+            "name": "Peña Blanca"
+          },
+          {
+            "id": "12-3-10",
+            "name": "Roka"
+          },
+          {
+            "id": "12-3-11",
+            "name": "Sitio Prado"
+          },
+          {
+            "id": "12-3-12",
+            "name": "Umani"
+          }
+        ]
+      },
+      {
+        "id": "12-4",
+        "name": "Distrito 12-4",
+        "corregimientos": [
+          {
+            "id": "12-4-1",
+            "name": "Cerro Iglesias"
+          },
+          {
+            "id": "12-4-1",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-4-2",
+            "name": "Hato Chami"
+          },
+          {
+            "id": "12-4-3",
+            "name": "Jadeberi"
+          },
+          {
+            "id": "12-4-4",
+            "name": "Lajero"
+          },
+          {
+            "id": "12-4-5",
+            "name": "Susama"
+          }
+        ]
+      },
+      {
+        "id": "12-5",
+        "name": "Buenos Aires",
+        "corregimientos": [
+          {
+            "id": "12-5-1",
+            "name": "Buenos Aires"
+          },
+          {
+            "id": "12-5-1",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-5-2",
+            "name": "Agua de Salud"
+          },
+          {
+            "id": "12-5-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-5-3",
+            "name": "Alto de Jesús"
+          },
+          {
+            "id": "12-5-3",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-5-4",
+            "name": "Cerro Pelado"
+          },
+          {
+            "id": "12-5-4",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-5-5",
+            "name": "El Bale"
+          },
+          {
+            "id": "12-5-5",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-5-6",
+            "name": "El Paredon"
+          },
+          {
+            "id": "12-5-6",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-5-7",
+            "name": "El Piro"
+          },
+          {
+            "id": "12-5-7",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-5-8",
+            "name": "Guayabito"
+          },
+          {
+            "id": "12-5-9",
+            "name": "Guibale"
+          }
+        ]
+      },
+      {
+        "id": "12-6",
+        "name": "Bisira",
+        "corregimientos": [
+          {
+            "id": "12-6-1",
+            "name": "Bisira"
+          },
+          {
+            "id": "12-6-1",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-6-2",
+            "name": "Buri"
+          },
+          {
+            "id": "12-6-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-6-3",
+            "name": "Guariviara"
+          },
+          {
+            "id": "12-6-3",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-6-4",
+            "name": "Guoroni"
+          },
+          {
+            "id": "12-6-5",
+            "name": "Kankintu"
+          },
+          {
+            "id": "12-6-6",
+            "name": "Mununi"
+          },
+          {
+            "id": "12-6-7",
+            "name": "Piedra Roja"
+          },
+          {
+            "id": "12-6-8",
+            "name": "Tuwai"
+          },
+          {
+            "id": "12-6-9",
+            "name": "Man Creek"
+          }
+        ]
+      },
+      {
+        "id": "12-7",
+        "name": "Kusapin",
+        "corregimientos": [
+          {
+            "id": "12-7-1",
+            "name": "Kusapin"
+          },
+          {
+            "id": "12-7-2",
+            "name": "Bahia Azul"
+          },
+          {
+            "id": "12-7-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-7-3",
+            "name": "Calovebora O Santa"
+          },
+          {
+            "id": "12-7-3",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-7-4",
+            "name": "Loma Yuca"
+          },
+          {
+            "id": "12-7-5",
+            "name": "Rio Chiriquí"
+          },
+          {
+            "id": "12-7-6",
+            "name": "Tobobe"
+          },
+          {
+            "id": "12-7-7",
+            "name": "Valle Bonito"
+          }
+        ]
+      },
+      {
+        "id": "12-8",
+        "name": "Distrito 12-8",
+        "corregimientos": [
+          {
+            "id": "12-8-1",
+            "name": "Samboa"
+          },
+          {
+            "id": "12-8-2",
+            "name": "Buri"
+          },
+          {
+            "id": "12-8-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-8-3",
+            "name": "Guariviara"
+          },
+          {
+            "id": "12-8-4",
+            "name": "Man Creek"
+          },
+          {
+            "id": "12-8-5",
+            "name": "Tuwai"
+          }
+        ]
+      },
+      {
+        "id": "12-9",
+        "name": "Distrito 12-9",
+        "corregimientos": [
+          {
+            "id": "12-9-1",
+            "name": "Santa Catalina O"
+          },
+          {
+            "id": "12-9-2",
+            "name": "Alto Bilingue"
+          },
+          {
+            "id": "12-9-2",
+            "name": "Comarca"
+          },
+          {
+            "id": "12-9-3",
+            "name": "Loma Yuka (Ljuicho)"
+          },
+          {
+            "id": "12-9-4",
+            "name": "San Pedrito"
+          },
+          {
+            "id": "12-9-5",
+            "name": "Valle Bonito(Dogata)"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "13",
+    "name": "Panamá Oeste",
+    "distritos": [
+      {
+        "id": "13-1",
+        "name": "Arraijan",
+        "corregimientos": [
+          {
+            "id": "13-1-1",
+            "name": "Arraijan"
+          },
+          {
+            "id": "13-1-2",
+            "name": "Burunga"
+          },
+          {
+            "id": "13-1-3",
+            "name": "Cerro Silvestre"
+          },
+          {
+            "id": "13-1-4",
+            "name": "Juan Demostenes"
+          },
+          {
+            "id": "13-1-5",
+            "name": "Nuevo Emperador"
+          },
+          {
+            "id": "13-1-6",
+            "name": "Santa Clara"
+          },
+          {
+            "id": "13-1-7",
+            "name": "Veracruz"
+          },
+          {
+            "id": "13-1-8",
+            "name": "Vista Alegre"
+          }
+        ]
+      },
+      {
+        "id": "13-2",
+        "name": "Capira",
+        "corregimientos": [
+          {
+            "id": "13-2-1",
+            "name": "Capira"
+          },
+          {
+            "id": "13-2-2",
+            "name": "Caimito"
+          },
+          {
+            "id": "13-2-3",
+            "name": "Campana"
+          },
+          {
+            "id": "13-2-4",
+            "name": "Cermeño"
+          },
+          {
+            "id": "13-2-5",
+            "name": "Ciri de Los Sotos"
+          },
+          {
+            "id": "13-2-6",
+            "name": "Ciri Grande"
+          },
+          {
+            "id": "13-2-7",
+            "name": "El Cacao"
+          },
+          {
+            "id": "13-2-8",
+            "name": "La Trinidad"
+          },
+          {
+            "id": "13-2-9",
+            "name": "Las Ollas Arriba"
+          },
+          {
+            "id": "13-2-10",
+            "name": "Lidice"
+          },
+          {
+            "id": "13-2-11",
+            "name": "Villa Carmen"
+          },
+          {
+            "id": "13-2-12",
+            "name": "Villa Rosario"
+          },
+          {
+            "id": "13-2-13",
+            "name": "Santa Rosa"
+          }
+        ]
+      },
+      {
+        "id": "13-3",
+        "name": "Chame",
+        "corregimientos": [
+          {
+            "id": "13-3-1",
+            "name": "Chame"
+          },
+          {
+            "id": "13-3-2",
+            "name": "Bejuco"
+          },
+          {
+            "id": "13-3-3",
+            "name": "Buenos Aires"
+          },
+          {
+            "id": "13-3-4",
+            "name": "Cabuya"
+          },
+          {
+            "id": "13-3-5",
+            "name": "Chica"
+          },
+          {
+            "id": "13-3-6",
+            "name": "El Libano"
+          },
+          {
+            "id": "13-3-7",
+            "name": "Las Lajas"
+          },
+          {
+            "id": "13-3-8",
+            "name": "Nueva Gorgona"
+          },
+          {
+            "id": "13-3-9",
+            "name": "Punta Chame"
+          },
+          {
+            "id": "13-3-10",
+            "name": "Sajalices"
+          },
+          {
+            "id": "13-3-11",
+            "name": "Sora"
+          }
+        ]
+      },
+      {
+        "id": "13-4",
+        "name": "Distrito 13-4",
+        "corregimientos": [
+          {
+            "id": "13-4-1",
+            "name": "Barrio Balboa"
+          },
+          {
+            "id": "13-4-2",
+            "name": "Barrio Colon"
+          },
+          {
+            "id": "13-4-3",
+            "name": "Amador"
+          },
+          {
+            "id": "13-4-4",
+            "name": "Arosemena"
+          },
+          {
+            "id": "13-4-5",
+            "name": "El Arado"
+          },
+          {
+            "id": "13-4-6",
+            "name": "El Coco"
+          },
+          {
+            "id": "13-4-7",
+            "name": "Feuillet"
+          },
+          {
+            "id": "13-4-8",
+            "name": "Guadalupe"
+          },
+          {
+            "id": "13-4-9",
+            "name": "Herrera"
+          },
+          {
+            "id": "13-4-10",
+            "name": "Hurtado"
+          },
+          {
+            "id": "13-4-11",
+            "name": "Iturralde"
+          },
+          {
+            "id": "13-4-12",
+            "name": "La Represa"
+          },
+          {
+            "id": "13-4-13",
+            "name": "Los Díaz"
+          },
+          {
+            "id": "13-4-14",
+            "name": "Mendoza"
+          },
+          {
+            "id": "13-4-15",
+            "name": "Obaldia"
+          },
+          {
+            "id": "13-4-16",
+            "name": "Playa Leona"
+          },
+          {
+            "id": "13-4-17",
+            "name": "Puerto Caimito"
+          },
+          {
+            "id": "13-4-18",
+            "name": "Santa Rita"
+          }
+        ]
+      },
+      {
+        "id": "13-5",
+        "name": "San Carlos",
+        "corregimientos": [
+          {
+            "id": "13-5-1",
+            "name": "San Carlos"
+          },
+          {
+            "id": "13-5-2",
+            "name": "El Espino"
+          },
+          {
+            "id": "13-5-3",
+            "name": "El Higo"
+          },
+          {
+            "id": "13-5-4",
+            "name": "Guayabito"
+          },
+          {
+            "id": "13-5-5",
+            "name": "La Ermita"
+          },
+          {
+            "id": "13-5-6",
+            "name": "La Laguna"
+          },
+          {
+            "id": "13-5-7",
+            "name": "Las Uvas"
+          },
+          {
+            "id": "13-5-8",
+            "name": "Los Llanitos"
+          },
+          {
+            "id": "13-5-9",
+            "name": "San José"
+          }
+        ]
+      }
+    ]
+  }
+]

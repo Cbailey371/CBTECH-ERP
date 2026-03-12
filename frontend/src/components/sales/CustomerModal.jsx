@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import panamaLocations from '../../../utils/panamaLocations.json';
 
 export default function CustomerModal({ isOpen, onClose, onSave, customer, loading }) {
     const [formData, setFormData] = useState({
@@ -18,6 +19,9 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
         codUbi: '',
         paisReceptor: 'PA'
     });
+
+    const [selectedProvinciaId, setSelectedProvinciaId] = useState('');
+    const [selectedDistritoId, setSelectedDistritoId] = useState('');
 
     useEffect(() => {
         if (customer) {
@@ -36,6 +40,18 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                 codUbi: customer.codUbi || '',
                 paisReceptor: customer.paisReceptor || 'PA'
             });
+
+            // Si el cliente tiene codUbi, configurar los selects de provincia y distrito
+            if (customer.codUbi) {
+                const parts = customer.codUbi.split('-');
+                if (parts.length >= 2) {
+                    setSelectedProvinciaId(parts[0]);
+                    setSelectedDistritoId(`${parts[0]}-${parts[1]}`);
+                }
+            } else {
+                setSelectedProvinciaId('');
+                setSelectedDistritoId('');
+            }
         } else {
             setFormData({
                 name: '',
@@ -51,6 +67,8 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                 codUbi: '',
                 paisReceptor: 'PA'
             });
+            setSelectedProvinciaId('');
+            setSelectedDistritoId('');
         }
     }, [customer, isOpen]);
 
@@ -58,6 +76,22 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
+
+    const handleProvinciaChange = (e) => {
+        const provId = e.target.value;
+        setSelectedProvinciaId(provId);
+        setSelectedDistritoId('');
+        setFormData(prev => ({ ...prev, codUbi: '' })); // Reset corregimiento
+    };
+
+    const handleDistritoChange = (e) => {
+        const distId = e.target.value;
+        setSelectedDistritoId(distId);
+        setFormData(prev => ({ ...prev, codUbi: '' })); // Reset corregimiento
+    };
+
+    const provSelected = useMemo(() => panamaLocations.find(p => p.id === selectedProvinciaId), [selectedProvinciaId]);
+    const distSelected = useMemo(() => provSelected?.distritos.find(d => d.id === selectedDistritoId), [provSelected, selectedDistritoId]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -211,17 +245,51 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                                     <option value="04">04 - Id. Extranjera</option>
                                 </select>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-muted-foreground">Cod. Ubicación (Ej. 8-8-12)</label>
-                                <Input
-                                    name="codUbi"
-                                    value={formData.codUbi}
-                                    onChange={handleChange}
-                                    placeholder="Prov-Dist-Correg"
-                                    className="bg-background border-input"
-                                />
+                            <div className="space-y-4 col-span-2 border p-3 rounded-md border-border bg-muted/20">
+                                <div>
+                                    <label className="text-sm font-medium text-foreground mb-1 block">Ubicación Geográfica (DGI)</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <select
+                                            value={selectedProvinciaId}
+                                            onChange={handleProvinciaChange}
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            disabled={formData.paisReceptor !== 'PA'}
+                                        >
+                                            <option value="">-- Provincia --</option>
+                                            {panamaLocations.map(p => (
+                                                <option key={p.id} value={p.id}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            value={selectedDistritoId}
+                                            onChange={handleDistritoChange}
+                                            disabled={!selectedProvinciaId || formData.paisReceptor !== 'PA'}
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <option value="">-- Distrito --</option>
+                                            {provSelected?.distritos.map(d => (
+                                                <option key={d.id} value={d.id}>{d.name}</option>
+                                            ))}
+                                        </select>
+                                        <select
+                                            name="codUbi"
+                                            value={formData.codUbi}
+                                            onChange={handleChange}
+                                            disabled={!selectedDistritoId || formData.paisReceptor !== 'PA'}
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <option value="">-- Corregimiento --</option>
+                                            {distSelected?.corregimientos.map(c => (
+                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground mt-1">
+                                        Código resultante: {formData.codUbi || '(Ninguno)'} -- Requerido solo para operaciones locales en Panamá.
+                                    </p>
+                                </div>
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-2 col-span-2">
                                 <label className="text-sm font-medium text-muted-foreground">País Receptor</label>
                                 <select
                                     name="paisReceptor"
