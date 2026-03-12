@@ -135,6 +135,9 @@ class DigifactAdapter extends PACAdapter {
         // DocType: 01=Factura, 04=Nota de Crédito
         const docType = docData.docType === 'C' ? '04' : '01';
 
+        // PtoFactDF: Para pruebas debe ser mayor a 599 (ej: 987)
+        const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
+
         // Construir arreglo base de ID adicionales para comprador
         let buyerTaxIDAdditionalInfo = [
             { "Name": "TipoReceptor", "Data": null, "Value": isConsumidorFinal ? "02" : "01" } // CI01
@@ -152,10 +155,18 @@ class DigifactAdapter extends PACAdapter {
             "TaxIDType": taxIdType,
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
             "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || ""),
+            "Contact": null,                     // Según ejemplo del proveedor
             "AdditionlInfo": [
                 { "Name": "PaisReceptorFE", "Data": null, "Value": "PA" } // CI08
             ]
         };
+
+        // En modo TEST, sincronizar CodUbi del receptor con el del emisor si así se requiere para la prueba
+        if (this.environment === 'TEST') {
+            buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-1" });
+        } else if (docData.customer.codUbi) {
+             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": docData.customer.codUbi });
+        }
 
         if (!isConsumidorFinal) {
             buyerObj.AddressInfo = {
@@ -168,16 +179,17 @@ class DigifactAdapter extends PACAdapter {
         }
 
         const nucJson = {
-            "Version": "1.0",
+            "Version": "1.00",
             "CountryCode": "PA",
             "Header": {
                 "DocType": docType,                  // A02: Tipo de documento
                 "IssuedDateTime": new Date().toISOString().replace('Z', '-05:00'), // A03
-                "AdditionalIssueType": this.environment === 'TEST' ? "2" : "1",   // A04: 2=Pruebas, 1=Producción
+                "AdditionalIssueType": this.environment === 'TEST' ? 2 : 1,   // A04: 2=Pruebas, 1=Producción (Valor numérico según ejemplo)
+                "Currency": null,
                 "AdditionalIssueDocInfo": [
                     { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },    // AI01
                     { "Name": "NumeroDF", "Data": null, "Value": numeroDF },       // AI04
-                    { "Name": "PtoFactDF", "Data": null, "Value": this.sucursal || "001" }, // AI05
+                    { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },     // AI05
                     { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad }, // AI06
                     { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },           // AI08: 01=Venta interna
                     { "Name": "TipoOperacion", "Data": null, "Value": "1" },            // AI09: 1=Salida/Venta
@@ -185,7 +197,9 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },            // AI11: 1=Sin CAFE
                     { "Name": "ManeraEntrega", "Data": null, "Value": "1" },            // AI12: 1=Sin CAFE
                     { "Name": "EnvioContenedor", "Data": null, "Value": "1" },            // AI13: 1=Normal
-                    { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" }             // AI14: 1=Sistema propio
+                    { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },             // AI14: 1=Sistema propio
+                    { "Name": "TipoTransaccion", "Data": null, "Value": "1" },            // AI15: 1=Venta pasiva (ejemplo proveedor)
+                    { "Name": "TipoSucursal", "Data": null, "Value": "2" }                // AI16: 2=Física (ejemplo proveedor)
                 ]
             },
             "Seller": {
@@ -209,8 +223,8 @@ class DigifactAdapter extends PACAdapter {
                         "Country": "PA"
                     },
                     "AdditionalBranchInfo": [
-                        { "Name": "CoordEm", "Data": null, "Value": this.config.coordenadas || "+8.9892,-79.5201" }, // Coordenadas solicitadas
-                        { "Name": "CodUbi", "Data": null, "Value": this.config.codUbi || "8-8-12" } // CodUbi solicitado
+                        { "Name": "CoordEm", "Data": null, "Value": this.config.coordenadas || "+8.9892,-79.5201" },
+                        { "Name": "CodUbi", "Data": null, "Value": this.environment === 'TEST' ? "1-1-1" : (this.config.codUbi || "8-8-1") }
                     ]
                 }
             },
@@ -221,11 +235,17 @@ class DigifactAdapter extends PACAdapter {
                 const subtotal = Number(item.subtotal || (unitPrice * qty));
                 const taxRate = Number(item.taxRate || 0);
                 const taxAmount = parseFloat((subtotal * taxRate).toFixed(2));
-                const totalItem = parseFloat((subtotal + taxAmount).toFixed(2));
+                const totalWTaxes = parseFloat((subtotal + taxAmount).toFixed(2));
 
                 const itemObj = {
+                    "Codes": [
+                        { "Name": "CodigoProd", "Data": null, "Value": item.code || "1234567890" },
+                        { "Name": "CodCPBSabr", "Data": null, "Value": "13" }, // Ejemplo proveedor
+                        { "Name": "CodCPBScmp", "Data": null, "Value": "1310" } // Ejemplo proveedor
+                    ],
                     "Description": item.description || item.name,    // E04
                     "Qty": qty,                               // E05
+                    "UnitOfMeasure": item.uom || "ud",        // E06
                     "Price": unitPrice,                         // E07
                     "Taxes": {
                         "Tax": [
@@ -237,7 +257,10 @@ class DigifactAdapter extends PACAdapter {
                         ]
                     },
                     "Totals": {
-                        "TotalItem": totalItem                        // E116
+                        "TotalBTaxes": subtotal,
+                        "TotalWTaxes": totalWTaxes,
+                        "SpecificTotal": totalWTaxes, // En este caso coincide
+                        "TotalItem": totalWTaxes      // E116
                     }
                 };
 
@@ -246,9 +269,9 @@ class DigifactAdapter extends PACAdapter {
             "Totals": {
                 "QtyItems": docData.items.length,    // F02: Cantidad de líneas de ítems
                 "GrandTotal": {
-                    "SubTotalTax": parseFloat(totalTaxable.toFixed(2)),  // F051: Subtotal gravado
-                    "TotalTax": parseFloat(totalTax.toFixed(2)),      // F052: Total ITBMS
-                    "InvoiceTotal": parseFloat(totalAmount.toFixed(2))    // F053: Total factura
+                    "TotalBTaxes": parseFloat(totalTaxable.toFixed(2)),  // F051: Subtotal sin impuestos
+                    "TotalWTaxes": parseFloat(totalAmount.toFixed(2)),   // F052: Total con impuestos
+                    "InvoiceTotal": parseFloat(totalAmount.toFixed(2))   // F053: Total factura
                 }
             },
             "Payments": [
