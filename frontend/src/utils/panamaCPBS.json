@@ -1,0 +1,138 @@
+[
+    {
+        "id": "10",
+        "name": "Material Vivo Vegetal y Animal, Accesorios y Suministros"
+    },
+    {
+        "id": "1010",
+        "name": "Animales vivos"
+    },
+    {
+        "id": "1011",
+        "name": "Productos para animales domésticos"
+    },
+    {
+        "id": "1015",
+        "name": "Semillas, bulbos, plántulas y esquejes"
+    },
+    {
+        "id": "11",
+        "name": "Material Mineral, Textil y Vegetal y Animal No Comestible"
+    },
+    {
+        "id": "1110",
+        "name": "Minerales, minerales metálicos y metales"
+    },
+    {
+        "id": "1115",
+        "name": "Fibra, hilos e hilados"
+    },
+    {
+        "id": "12",
+        "name": "Material Químico incluyendo Bioquímicos y Materiales de Gas"
+    },
+    {
+        "id": "13",
+        "name": "Materiales de Resina, Colofonia, Caucho, Espuma, Película y Elastómericos"
+    },
+    {
+        "id": "14",
+        "name": "Materiales y Productos de Papel"
+    },
+    {
+        "id": "1411",
+        "name": "Productos de papel"
+    },
+    {
+        "id": "15",
+        "name": "Materiales Combustibles, Aditivos para Combustibles, Lubricantes y Anticorrosivos"
+    },
+    {
+        "id": "20",
+        "name": "Maquinaria y Accesorios de Minería y Perforación de Pozos"
+    },
+    {
+        "id": "30",
+        "name": "Componentes y Suministros para Estructuras, Edificación, Construcción y Obras Civiles"
+    },
+    {
+        "id": "3011",
+        "name": "Hormigón, cemento y yeso"
+    },
+    {
+        "id": "31",
+        "name": "Componentes y Suministros de Manufactura"
+    },
+    {
+        "id": "3116",
+        "name": "Ferretería"
+    },
+    {
+        "id": "3121",
+        "name": "Pinturas y bases y acabados"
+    },
+    {
+        "id": "32",
+        "name": "Componentes y Suministros Electrónicos"
+    },
+    {
+        "id": "39",
+        "name": "Componentes, Accesorios y Suministros de Sistemas Eléctricos e Iluminación"
+    },
+    {
+        "id": "40",
+        "name": "Componentes y Equipos para Distribución y Sistemas de Acondicionamiento"
+    },
+    {
+        "id": "41",
+        "name": "Equipos y Suministros de Laboratorio, de Medición, de Observación y de Pruebas"
+    },
+    {
+        "id": "42",
+        "name": "Equipo Médico, Accesorios y Suministros"
+    },
+    {
+        "id": "43",
+        "name": "Difusión de Tecnologías de Información y Telecomunicaciones"
+    },
+    {
+        "id": "4321",
+        "name": "Equipo informático y accesorios"
+    },
+    {
+        "id": "4323",
+        "name": "Software"
+    },
+    {
+        "id": "44",
+        "name": "Equipos de Oficina, Accesorios y Suministros"
+    },
+    {
+        "id": "4412",
+        "name": "Suministros de oficina"
+    },
+    {
+        "id": "45",
+        "name": "Equipos y Suministros para Impresión, Fotografía y Audiovisuales"
+    },
+    {
+        "id": "46",
+        "name": "Equipos y Suministros de Defensa, Orden Público, Protección, Vigilancia y Seguridad"
+    },
+    {
+        "id": "47",
+        "name": "Equipos de Limpieza y Suministros"
+    },
+    {
+        "id": "48",
+        "name": "Maquinaria, Equipo y Suministros para la Industria de Servicios"
+    },
+    {
+        "id": "49",
+        "name": "Equipos, Suministros y Accesorios para Deportes y Recreación"
+    },
+    {
+        "id": "50",
+        "name": "Alimentos, Bebidas y Tabaco"
+    }
+]

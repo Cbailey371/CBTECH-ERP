@@ -1,0 +1,8 @@
+[
+    { "id": "1", "name": "1 - Pago por servicio profesional al estado 100%" },
+    { "id": "2", "name": "2 - Pago por venta de bienes/servicios al estado 50%" },
+    { "id": "3", "name": "3 - Pago o acreditación a no domiciliado o empresa constituida en el exterior 100%" },
+    { "id": "4", "name": "4 - Pago o acreditación por compra de bienes/servicios 50%" },
+    { "id": "7", "name": "7 - Pago a comercio afiliado a sistema de TC/TD 50%" },
+    { "id": "8", "name": "8 - Otros (disminución de la retención)" }
+]

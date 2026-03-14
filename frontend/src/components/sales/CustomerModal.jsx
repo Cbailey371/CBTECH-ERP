@@ -3,6 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import panamaLocations from '../../../utils/panamaLocations.json';
+import panamaCountries from '../../../utils/panamaCountries.json';
+import panamaRetentions from '../../../utils/panamaRetentions.json';
+import panamaCPBS from '../../../utils/panamaCPBS.json';
 
 export default function CustomerModal({ isOpen, onClose, onSave, customer, loading }) {
     const [formData, setFormData] = useState({
@@ -17,7 +20,8 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
         tipoReceptor: '01',
         tipoIdentificacion: '02',
         codUbi: '',
-        paisReceptor: 'PA'
+        paisReceptor: 'PA',
+        objetoRetencion: ''
     });
 
     const [selectedProvinciaId, setSelectedProvinciaId] = useState('');
@@ -38,7 +42,8 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                 tipoReceptor: customer.tipoReceptor || '01',
                 tipoIdentificacion: customer.tipoIdentificacion || '02',
                 codUbi: customer.codUbi || '',
-                paisReceptor: customer.paisReceptor || 'PA'
+                paisReceptor: customer.paisReceptor || 'PA',
+                objetoRetencion: customer.objetoRetencion || ''
             });
 
             // Si el cliente tiene codUbi, configurar los selects de provincia y distrito
@@ -65,7 +70,8 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                 tipoReceptor: '01',
                 tipoIdentificacion: '02',
                 codUbi: '',
-                paisReceptor: 'PA'
+                paisReceptor: 'PA',
+                objetoRetencion: ''
             });
             setSelectedProvinciaId('');
             setSelectedDistritoId('');
@@ -297,13 +303,36 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                                     onChange={handleChange}
                                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    <option value="PA">Panamá (PA)</option>
-                                    <option value="US">Estados Unidos (US)</option>
-                                    <option value="CO">Colombia (CO)</option>
-                                    <option value="CR">Costa Rica (CR)</option>
-                                    <option value="EX">Otro País/Región</option>
+                                    {panamaCountries.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
                                 </select>
                             </div>
+
+                            <div className="space-y-2 col-span-2">
+                                <label className="text-sm font-medium text-muted-foreground">Objeto de Retención (DGI)</label>
+                                <select
+                                    name="objetoRetencion"
+                                    value={formData.objetoRetencion}
+                                    onChange={handleChange}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">-- Sin Retención --</option>
+                                    {panamaRetentions.map(r => (
+                                        <option key={r.id} value={r.id}>{r.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {formData.tipoReceptor === '03' && (
+                                <div className="space-y-2 col-span-2 bg-blue-50 p-3 rounded-md border border-blue-200">
+                                    <p className="text-xs font-semibold text-blue-800">Facturación a Gobierno detectada:</p>
+                                    <ul className="text-[10px] text-blue-700 list-disc ml-4">
+                                        <li>Es obligatorio usar el Catálogo CPBS en los ítems de factura.</li>
+                                        <li>Asegúrese de que el RUC sea válido para Organismos de Gobierno.</li>
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     </div>
 

@@ -100,6 +100,12 @@ const Customer = sequelize.define('Customer', {
     defaultValue: true,
     field: 'is_active'
   },
+  objetoRetencion: {
+    type: DataTypes.STRING(2),
+    allowNull: true,
+    field: 'objeto_retencion',
+    comment: 'ID del catálogo de Objetos de Retención DGI'
+  },
   notes: {
     type: DataTypes.TEXT,
     allowNull: true

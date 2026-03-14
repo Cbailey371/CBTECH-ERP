@@ -158,6 +158,11 @@ class DigifactAdapter extends PACAdapter {
             buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
         }
 
+        // CI07: Objeto de Retención (DGI Tabla 22)
+        if (docData.customer.objetoRetencion) {
+            buyerTaxIDAdditionalInfo.push({ "Name": "ObjetoRetencion", "Data": null, "Value": docData.customer.objetoRetencion });
+        }
+
         // Tipo de ID del receptor: 01=Natural, 02=Jurídico, 03=Pasaporte, 04=Extranjero
         const taxIdType = docData.customer.tipoIdentificacion || (isConsumidorFinal ? "01" : "02");
         
