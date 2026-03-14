@@ -106,7 +106,7 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[600px] bg-background border-border text-foreground">
+            <DialogContent className="sm:max-w-[600px] max-h-[95vh] overflow-y-auto bg-background border-border text-foreground p-6">
                 <DialogHeader>
                     <DialogTitle>{customer ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
                 </DialogHeader>
