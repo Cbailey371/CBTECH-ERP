@@ -130,7 +130,10 @@ const Quotation = sequelize.define('Quotation', {
     beforeCreate: async (quotation, options) => {
       if (!quotation.sequence) {
         const lastQuotation = await quotation.constructor.findOne({
-          where: { companyId: quotation.companyId },
+          where: { 
+            companyId: quotation.companyId,
+            sequence: { [require('sequelize').Op.ne]: null }
+          },
           order: [['sequence', 'DESC']],
           transaction: options.transaction
         });
