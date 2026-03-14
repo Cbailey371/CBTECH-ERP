@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/Dialog';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
-import panamaLocations from '../../../utils/panamaLocations.json';
-import panamaCountries from '../../../utils/panamaCountries.json';
-import panamaRetentions from '../../../utils/panamaRetentions.json';
-import panamaCPBS from '../../../utils/panamaCPBS.json';
+import panamaLocations from '../../utils/panamaLocations.json';
+import panamaCountries from '../../utils/panamaCountries.json';
+import panamaRetentions from '../../utils/panamaRetentions.json';
+import panamaCPBS from '../../utils/panamaCPBS.json';
 
 export default function CustomerModal({ isOpen, onClose, onSave, customer, loading }) {
     const [formData, setFormData] = useState({
