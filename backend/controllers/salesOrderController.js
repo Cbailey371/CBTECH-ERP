@@ -1,4 +1,4 @@
-const { sequelize, SalesOrder, SalesOrderItem, Customer, Product, Quotation, QuotationItem, Company, FE_IssuerConfig, Payment } = require('../models');
+const { sequelize, SalesOrder, SalesOrderItem, Customer, Product, Quotation, QuotationItem, Company, FE_IssuerConfig, Payment, FE_Document } = require('../models');
 const { Op } = require('sequelize');
 const { generateInvoicePdf } = require('../services/pdf/invoicePdfGenerator');
 
