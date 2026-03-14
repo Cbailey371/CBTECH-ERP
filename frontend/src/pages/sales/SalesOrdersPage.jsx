@@ -55,6 +55,9 @@ export default function SalesOrdersPage() {
         if (order.paymentStatus === 'partial') return <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">Abono</Badge>;
 
         // Default for confirmed/fulfilled but unpaid
+        if (order.feDocument) {
+            return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Autorizada DGI</Badge>;
+        }
         return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">Fiscalizada</Badge>;
     };
 
@@ -136,6 +139,16 @@ export default function SalesOrdersPage() {
                                             <Button variant="ghost" size="icon" onClick={() => navigate(`/sales-orders/${order.id}`)}>
                                                 <Eye className="w-4 h-4" />
                                             </Button>
+                                            {order.feDocument && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/fepa/download/${order.feDocument.id}`, '_blank')}
+                                                    title="Descargar CAFE (PDF)"
+                                                >
+                                                    <FileText className="w-4 h-4 text-emerald-600" />
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"

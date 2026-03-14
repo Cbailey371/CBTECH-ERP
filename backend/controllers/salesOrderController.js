@@ -9,7 +9,8 @@ const getOrder = async (id, companyId) => {
         include: [
             { model: Customer, as: 'customer' },
             { model: SalesOrderItem, as: 'items', include: [{ model: Product, as: 'product' }] },
-            { model: Payment, as: 'payments' }
+            { model: Payment, as: 'payments' },
+            { model: FE_Document, as: 'feDocument' }
         ]
     });
 };
@@ -60,7 +61,10 @@ exports.getOrders = async (req, res) => {
         const { count, rows } = await SalesOrder.findAndCountAll({
             where: whereClause,
             attributes: ['id', 'orderNumber', 'issueDate', 'status', 'total', 'currency', 'customerId'],
-            include: [{ model: Customer, as: 'customer', attributes: ['name', 'id'] }],
+            include: [
+                { model: Customer, as: 'customer', attributes: ['name', 'id'] },
+                { model: FE_Document, as: 'feDocument', attributes: ['cufe', 'status', 'auth_date'] }
+            ],
             limit: parseInt(limit),
             offset: parseInt(offset),
             order: [['issueDate', 'DESC'], ['id', 'DESC']]

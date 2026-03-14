@@ -157,7 +157,8 @@ export default function SalesOrderForm() {
                     paymentStatus: order.paymentStatus || 'unpaid',
                     paidAmount: parseFloat(order.paidAmount) || 0,
                     balance: parseFloat(order.balance) || 0,
-                    payments: order.payments || [] // Store payments list
+                    payments: order.payments || [], // Store payments list
+                    feDocument: order.feDocument || null
                 });
 
                 // Recalculate totals based on loaded items to ensure consistency
@@ -368,8 +369,12 @@ export default function SalesOrderForm() {
         if (!confirm('¿Está seguro de emitir esta factura fiscalmente? Esta acción no se puede deshacer.')) return;
         setLoading(true);
         try {
-            await salesOrderService.emitFiscalDocument(token, selectedCompany.id, id);
-            alert('Factura emitida fiscalmente con éxito');
+            const response = await salesOrderService.emitFiscalDocument(token, selectedCompany.id, id);
+            if (response.success) {
+                alert(`Factura emitida exitosamente.\nCUFE: ${response.document?.cufe || 'Ver en detalles'}`);
+            } else {
+                alert('La factura fue enviada pero el estado es: ' + (response.document?.status || 'Desconocido'));
+            }
             loadOrder();
         } catch (error) {
             console.error(error);
@@ -406,6 +411,11 @@ export default function SalesOrderForm() {
         } finally {
             setLoading(false);
         }
+    };
+    
+    const handleDownloadCafe = async () => {
+        if (!formData.feDocument?.id) return alert('No hay un documento fiscal asociado.');
+        window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/fepa/download/${formData.feDocument.id}`, '_blank');
     };
 
     const handleRegisterPayment = async (e) => {
@@ -498,7 +508,12 @@ export default function SalesOrderForm() {
                             <Printer className="w-4 h-4 mr-2" /> PDF No Fiscal
                         </Button>
                     )}
-                    {isEditMode && formData.status === 'draft' && (
+                    {isEditMode && formData.feDocument && (
+                        <Button onClick={handleDownloadCafe} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                            <FileText className="w-4 h-4 mr-2" /> Descargar CAFE (DGI)
+                        </Button>
+                    )}
+                    {isEditMode && !formData.feDocument && formData.status === 'draft' && (
                         <>
                             <Button onClick={handleDelete} variant="destructive" className="mr-2">
                                 <Trash2 className="w-4 h-4 mr-2" /> Eliminar
@@ -543,6 +558,20 @@ export default function SalesOrderForm() {
                             disabled={isEditMode}
                         />
                     </div>
+                    {formData.feDocument && (
+                        <div className="md:col-span-2 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Documento Fiscal Autorizado (DGI)</p>
+                                    <p className="font-mono text-sm text-foreground break-all mt-1">CUFE: {formData.feDocument.cufe}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Fecha Autorización: {new Date(formData.feDocument.auth_date || formData.feDocument.authDate).toLocaleString()}</p>
+                                </div>
+                                <div className="text-right">
+                                    <Badge variant="outline" className="bg-emerald-500 text-white border-0">AUTORIZADO</Badge>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 
