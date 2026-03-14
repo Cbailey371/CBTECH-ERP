@@ -48,6 +48,11 @@ const Quotation = sequelize.define('Quotation', {
     defaultValue: 'draft',
     allowNull: false
   },
+  currency: {
+    type: DataTypes.STRING(3),
+    allowNull: false,
+    defaultValue: 'USD'
+  },
   discount: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
