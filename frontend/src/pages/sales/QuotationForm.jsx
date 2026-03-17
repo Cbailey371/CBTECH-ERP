@@ -202,7 +202,12 @@ export default function QuotationForm() {
     const loadProducts = async () => {
         try {
             console.log('Loading products...');
-            const response = await productService.getProducts({ limit: 100 });
+            // Increase limit and add cache buster + explicit active filter
+            const response = await productService.getProducts({ 
+                limit: 1000, 
+                is_active: 'true',
+                _t: new Date().getTime() 
+            });
             console.log('Products response:', response); // Debug log
 
             if (response.success) {
@@ -484,7 +489,7 @@ export default function QuotationForm() {
                                                 <Combobox
                                                     options={products.map(p => ({
                                                         value: p.id,
-                                                        label: `${p.code || ''} - ${p.sku ? '[' + p.sku + '] - ' : ''}${p.description}`.trim()
+                                                        label: `${p.code || 'S/C'} ${p.sku ? '[' + p.sku + '] ' : ''}- ${p.description}`.trim()
                                                     }))}
                                                     value={item.productId}
                                                     onChange={(value) => handleProductSelect(index, value)}
