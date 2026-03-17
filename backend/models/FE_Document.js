@@ -26,6 +26,15 @@ const FE_Document = sequelize.define('FE_Document', {
             key: 'id'
         }
     },
+    creditNoteId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        field: 'credit_note_id',
+        references: {
+            model: 'credit_notes',
+            key: 'id'
+        }
+    },
     docType: {
         type: DataTypes.ENUM('01', '03', '04'), // 01=Factura, 03=NC, 04=ND
         allowNull: false,
@@ -71,6 +80,16 @@ const FE_Document = sequelize.define('FE_Document', {
         type: DataTypes.ENUM('TEST', 'PROD'),
         allowNull: false,
         defaultValue: 'TEST'
+    },
+    htmlContent: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'html_content'
+    },
+    pdfContent: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        field: 'pdf_content'
     }
 }, {
     tableName: 'fe_documents',

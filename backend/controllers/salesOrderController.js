@@ -1,4 +1,4 @@
-const { sequelize, SalesOrder, SalesOrderItem, Customer, Product, Quotation, QuotationItem, Company, FE_IssuerConfig, Payment, FE_Document } = require('../models');
+const { sequelize, SalesOrder, SalesOrderItem, Customer, Product, Quotation, QuotationItem, Company, FE_IssuerConfig, Payment, FE_Document, CreditNote } = require('../models');
 const { Op } = require('sequelize');
 const { generateInvoicePdf } = require('../services/pdf/invoicePdfGenerator');
 
@@ -63,11 +63,13 @@ exports.getOrders = async (req, res) => {
             attributes: ['id', 'orderNumber', 'issueDate', 'status', 'total', 'currency', 'customerId'],
             include: [
                 { model: Customer, as: 'customer', attributes: ['name', 'id'] },
-                { model: FE_Document, as: 'feDocument', attributes: ['cufe', 'status', 'auth_date'] }
+                { model: FE_Document, as: 'feDocument', attributes: ['cufe', 'status', 'auth_date'] },
+                { model: CreditNote, as: 'creditNotes', attributes: ['id'] }
             ],
             limit: parseInt(limit),
             offset: parseInt(offset),
-            order: [['issueDate', 'DESC'], ['id', 'DESC']]
+            order: [['issueDate', 'DESC'], ['id', 'DESC']],
+            distinct: true
         });
 
         res.json({
@@ -185,6 +187,8 @@ exports.createOrder = async (req, res) => {
             subtotal,
             taxTotal,
             total: finalTotal,
+            balance: finalTotal, // Set initial balance equal to total
+            paidAmount: 0,
             discount: globalDiscountAmt, // Store the calculated/derived amount
             discountType: discountType || 'amount',
             discountValue: discountValue || 0,

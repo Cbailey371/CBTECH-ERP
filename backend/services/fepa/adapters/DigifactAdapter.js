@@ -88,33 +88,26 @@ class DigifactAdapter extends PACAdapter {
      * Maps Tax Rate percentage to Digifact ITBMS Codes (E0911)
      */
     mapItbmsCode(taxRate) {
-        const rate = parseFloat(taxRate) || 0;
-        if (rate === 0.07 || rate === 7) return '01';  // 7% - ITBMS estándar
-        if (rate === 0.10 || rate === 10) return '02';  // 10%
-        if (rate === 0.15 || rate === 15) return '03';  // 15%
+        const rate = Math.round(parseFloat(taxRate) || 0);
+        if (rate === 7) return '01';  // 7% - ITBMS estándar
+        if (rate === 10) return '02';  // 10%
+        if (rate === 15) return '03';  // 15%
         return '00'; // Exento o no aplica
     }
 
     /**
      * Maps internal ERP document data to Digifact NUC-JSON v2.0.8 format.
-     *
-     * KEY MAPPINGS (NUC ref -> JSON field):
-     *   A04 = Header.AdditionalIssueType  ("2"=pruebas, "1"=producción)
-     *   AI01 = AdditionalIssueDocInfo[{Name:"TipoEmision", Value}]
-     *   BI02 = AdditionalBranchInfo[{Name:"CoordEm", Value}]
-     *   BI03 = AdditionalBranchInfo[{Name:"CodUbi", Value}]
-     *   F02  = Totals.QtyItems
      */
     mapToNucJson(docData) {
         const { totalTaxable, totalTax, totalAmount } = calculateTaxes(docData.items);
 
-        const isConsumidorFinal = !docData.customer.ruc || docData.customer.taxType === '02';
+        const isConsumidorFinal = !docData.customer.taxId || docData.customer.tipoReceptor === '02';
 
         // TipoEmision: Contribuyente Previo (01) | Consumidor Final Posterior (03)
         const tipoEmision = isConsumidorFinal ? '03' : '01';
 
         // Receptor
-        const receptorRuc = isConsumidorFinal ? 'CF' : docData.customer.ruc;
+        const receptorRuc = isConsumidorFinal ? 'CF' : docData.customer.taxId;
         const receptorDv = isConsumidorFinal ? '' : (docData.customer.dv || '');
 
         // En ambiente TEST Digifact requiere usar su propio RUC de sandbox
@@ -130,10 +123,13 @@ class DigifactAdapter extends PACAdapter {
         const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
 
         // Número correlativo de la FE (AI04) - derivado del número de documento
-        const numeroDF = String(docData.documentNumber || '1').padStart(10, '0');
+        const numeroDF = String(docData.documentNumber || '1')
+            .replace(/\D/g, '') // Eliminar todo lo que no sea dígito
+            .slice(-10)         // Tomar los últimos 10
+            .padStart(10, '0'); // Rellenar con ceros a la izquierda
 
-        // DocType: 01=Factura, 04=Nota de Crédito
-        const docType = docData.docType === 'C' ? '04' : '01';
+        // DocType: 01=Factura, 04=Nota de Crédito, 05=Nota de Débito
+        const docType = (docData.docType === '04' || docData.docType === '03' || docData.docType === 'C') ? '04' : '01';
 
         // PtoFactDF: Para pruebas debe ser mayor a 599 (ej: 987)
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
@@ -143,61 +139,63 @@ class DigifactAdapter extends PACAdapter {
             { "Name": "TipoReceptor", "Data": null, "Value": isConsumidorFinal ? "02" : (docData.customer.tipoReceptor || "01") } // CI01
         ];
 
-        // Manejo específico para Extranjeros (Tipo de Identificación 03/04 o Extranjero de Receptor 04)
-        const isExtranjero = docData.customer.tipoReceptor === '04' || docData.customer.paisReceptor !== 'PA';
+        // Manejo específico para Extranjeros
+        const isExtranjero = docData.customer.tipoReceptor === '04' || 
+                            (docData.customer.paisReceptor && docData.customer.paisReceptor !== 'PA') || 
+                            docData.customer.taxId === 'EXTRANJERO';
         
         if (isExtranjero) {
             if (docData.customer.taxId) {
-                // Si es pasaporte o similar (03/04), la DGI permite IdExt o NumPasaporte
                 buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId });
             }
-            // CI06: País del receptor extranjero
             buyerTaxIDAdditionalInfo.push({ "Name": "PaisExt", "Data": null, "Value": docData.customer.paisReceptor || "US" });
         } else if (!isConsumidorFinal && receptorDv) {
-            // Solo para locales con RUC
             buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
         }
 
-        // CI07: Objeto de Retención (DGI Tabla 22)
         if (docData.customer.objetoRetencion) {
             buyerTaxIDAdditionalInfo.push({ "Name": "ObjetoRetencion", "Data": null, "Value": docData.customer.objetoRetencion });
         }
 
-        // Tipo de ID del receptor: 01=Natural, 02=Jurídico, 03=Pasaporte, 04=Extranjero
-        const taxIdType = docData.customer.tipoIdentificacion || (isConsumidorFinal ? "01" : "02");
+        const taxIdType = docData.customer.tipoIdentificacion 
+            ? String(docData.customer.tipoIdentificacion).replace(/^0/, '') 
+            : (isConsumidorFinal ? "1" : "2");
         
-        // Si es extranjero según las reglas de Digifact, o si es CF
         const finalTaxId = isConsumidorFinal ? "CF" : (isExtranjero ? "EXTRANJERO" : receptorRuc);
 
-        const buyerObj = {
-            "TaxID": finalTaxId,                 // C02
-            "TaxIDType": taxIdType,
+        let buyerObj = {
+            "TaxID": finalTaxId,
+            "TaxIDType": isExtranjero ? undefined : taxIdType,
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
-            "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || ""),
-            "Contact": null,                     // Según ejemplo del proveedor
+            "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente Sin Nombre"),
+            "Contact": null,
             "AdditionlInfo": [
-                { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" } // CI08
+                { "Name": "PaisReceptorFE", "Data": null, "Value": "PA" }
             ]
         };
 
-        // En modo TEST sugerimos usar un CodUbi por defecto si el cliente no lo tiene y no es extranjero
+        // CodUbi Comprador
         if (!isExtranjero) {
-            if (this.environment === 'TEST' && !docData.customer.codUbi) {
-                buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-1" });
-            } else if (docData.customer.codUbi) {
-                buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": docData.customer.codUbi });
-            }
+            buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": docData.customer.codUbi || (this.environment === 'TEST' ? "1-1-1" : "8-8-1") });
         } else {
-            // El JSON de ejemplo usa '1-1-2' de relleno para extranjeros aunque DGI dice Opcional
             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-2" });
         }
 
+        // Dirección Comprador Dinámica
         if (!isConsumidorFinal) {
+            const ubiParts = (docData.customer.codUbi || "").split('-');
+            const provMap = {
+                "1": "Bocas del Toro", "2": "Coclé", "3": "Colón", "4": "Chiriquí", "5": "Darién",
+                "6": "Herrera", "7": "Los Santos", "8": "Panamá", "9": "Veraguas", "10": "Guna Yala",
+                "12": "Ngäbe-Buglé", "13": "Panamá Oeste"
+            };
+            const provName = provMap[ubiParts[0]] || (this.environment === 'TEST' ? "Bocas del Toro" : "Panama");
+
             buyerObj.AddressInfo = {
-                "Address": docData.customer.address || "Direccion no especificada",
-                "City": isExtranjero ? "Ciudad Extranjera" : "Panama",
-                "District": isExtranjero ? "Distrito Extranjero" : "Panama",
-                "State": isExtranjero ? "Estado Extranjero" : "Panama",
+                "Address": docData.customer.address || (this.environment === 'TEST' ? "Westland Mall, Vista Alegre, Arraijan" : "Direccion no especificada"),
+                "City": isExtranjero ? "Ciudad Extranjera" : (docData.customer.city || (this.environment === 'TEST' ? `${provName} (Cabecera)` : provName)),
+                "District": isExtranjero ? "Distrito Extranjero" : (docData.customer.district || provName),
+                "State": isExtranjero ? "Estado Extranjero" : (docData.customer.state || provName),
                 "Country": docData.customer.paisReceptor || "PA"
             };
         }
@@ -206,139 +204,163 @@ class DigifactAdapter extends PACAdapter {
             "Version": "1.00",
             "CountryCode": "PA",
             "Header": {
-                "DocType": docType,                  // A02: Tipo de documento
-                "IssuedDateTime": new Date().toISOString().replace('Z', '-05:00'), // A03
-                "AdditionalIssueType": this.environment === 'TEST' ? 2 : 1,   // A04: 2=Pruebas, 1=Producción (Valor numérico según ejemplo)
-                "Currency": null,
+                "DocType": docType,
+                "IssuedDateTime": (() => {
+                    const now = new Date();
+                    const panamaTime = new Date(now.getTime() - (5 * 60 * 60 * 1000));
+                    return panamaTime.toISOString().split('.')[0] + '-05:00';
+                })(),
+                "AdditionalIssueType": this.environment === 'TEST' ? 2 : 1,
+                "Currency": (docData.customer.tipoReceptor === '03' || docData.customer.tipoReceptor === '04') ? undefined : null,
                 "AdditionalIssueDocInfo": [
-                    { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },    // AI01
-                    { "Name": "NumeroDF", "Data": null, "Value": numeroDF },       // AI04
-                    { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },     // AI05
-                    { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad }, // AI06
-                    { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },           // AI08: 01=Venta interna
-                    { "Name": "TipoOperacion", "Data": null, "Value": "1" },            // AI09: 1=Salida/Venta
-                    { "Name": "DestinoOperacion", "Data": null, "Value": "1" },            // AI10: 1=Panamá
-                    { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },            // AI11: 1=Sin CAFE
-                    { "Name": "ManeraEntrega", "Data": null, "Value": "1" },            // AI12: 1=Sin CAFE
-                    { "Name": "EnvioContenedor", "Data": null, "Value": "1" },            // AI13: 1=Normal
-                    { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },             // AI14: 1=Sistema propio
-                    { "Name": "TipoTransaccion", "Data": null, "Value": "1" },            // AI15: 1=Venta pasiva (ejemplo proveedor)
-                    { "Name": "TipoSucursal", "Data": null, "Value": "2" }                // AI16: 2=Física (ejemplo proveedor)
+                    { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },
+                    { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
+                    { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },
+                    { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad },
+                    { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },
+                    { "Name": "TipoOperacion", "Data": null, "Value": "1" },
+                    { "Name": "DestinoOperacion", "Data": null, "Value": "1" },
+                    { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
+                    { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
+                    { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
+                    { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
+                    { "Name": "TipoTransaccion", "Data": null, "Value": "1" },
+                    { "Name": "TipoSucursal", "Data": null, "Value": "2" }
                 ]
             },
             "Seller": {
-                "TaxID": authRuc,                    // B02
-                "TaxIDType": "2",                    // B03: 2=Jurídico
+                "TaxID": authRuc,
+                "TaxIDType": "2",
                 "TaxIDAdditionalInfo": [
-                    { "Name": "DigitoVerificador", "Data": null, "Value": authDv }  // BI01
+                    { "Name": "DigitoVerificador", "Data": null, "Value": authDv }
                 ],
-                "Name": emisorName,                  // B05
+                "Name": emisorName,
                 "Contact": {
                     "PhoneList": { "Phone": [this.config.telefono || "6000-0000"] },
-                    "EmailList": { "Email": [this.config.email || "facturacion@empresa.com"] }
+                    "EmailList": null
                 },
                 "BranchInfo": {
-                    "Code": "0001", // Sucursal solicitada por el usuario
+                    "Code": "0001", 
+                    "Name": null,
                     "AddressInfo": {
-                        "Address": this.config.direccion || "Ciudad de Panama",
-                        "City": this.config.corregimiento || "San Felipe",
-                        "District": this.config.distrito || "Panama",
-                        "State": this.config.provincia || "Panama",
+                        "Address": (this.config.direccion || (this.environment === 'TEST' ? "Blv Costa del Este,PH Financial Tower Piso 17" : "Ciudad de Panama")),
+                        "City": (this.config.corregimiento || (this.environment === 'TEST' ? "Bocas del Toro (Cabecera)" : "San Felipe")),
+                        "District": (this.config.distrito || (this.environment === 'TEST' ? "Bocas del Toro" : "Panama")),
+                        "State": (this.config.provincia || (this.environment === 'TEST' ? "Bocas del Toro" : "Panama")),
                         "Country": "PA"
                     },
                     "AdditionalBranchInfo": [
                         { "Name": "CoordEm", "Data": null, "Value": this.config.coordenadas || "+8.9892,-79.5201" },
-                        { "Name": "CodUbi", "Data": null, "Value": this.environment === 'TEST' ? "1-1-1" : (this.config.codUbi || "8-8-1") }
+                        { "Name": "CodUbi", "Data": null, "Value": this.config.codUbi || (this.environment === 'TEST' ? "1-1-1" : "8-8-1") }
                     ]
                 }
             },
             "Buyer": buyerObj,
+            "ThirdParties": null,
             "Items": docData.items.map((item, index) => {
                 const unitPrice = Number(item.price || item.unitPrice || 0);
                 const qty = Number(item.quantity || 1);
-                const subtotal = Number(item.subtotal || (unitPrice * qty));
+                
+                // Recalcular el subtotal siempre en caso de que la DB tenga datos legacy incorrectos
+                const subtotal = parseFloat((unitPrice * qty).toFixed(2));
+                
                 const taxRate = Number(item.taxRate || 0);
                 const taxAmount = parseFloat((subtotal * taxRate).toFixed(2));
                 const totalWTaxes = parseFloat((subtotal + taxAmount).toFixed(2));
+                
+                const discountAmount = Number(item.discount || 0);
+                const itemChargesAmount = Number(item.chargesAmount || 0);
+                const totalItem = parseFloat((totalWTaxes - discountAmount + itemChargesAmount).toFixed(2));
 
                 const itemObj = {
                     "Codes": [
                         { "Name": "CodigoProd", "Data": null, "Value": item.code || "1234567890" },
-                        { "Name": "CodCPBSabr", "Data": null, "Value": "13" }, // Ejemplo proveedor
-                        { "Name": "CodCPBScmp", "Data": null, "Value": "1310" } // Ejemplo proveedor
+                        { "Name": "CodCPBSabr", "Data": null, "Value": item.cpbsAbr || "13" }, 
+                        { "Name": "CodCPBScmp", "Data": null, "Value": item.cpbsCmp || "1310" }
                     ],
-                    "Description": item.description || item.name,    // E04
-                    "Qty": qty,                               // E05
-                    "UnitOfMeasure": item.uom || "ud",        // E06
-                    "Price": unitPrice,                         // E07
+                    "Description": item.description || item.name,
+                    "Qty": qty,
+                    "UnitOfMeasure": item.uom === 'ud' || item.uom === 'UND' ? 'und' : (item.uom || "und"),
+                    "Price": unitPrice,
+                    "Discounts": discountAmount > 0 ? {
+                        "Discount": [{ "Amount": discountAmount }]
+                    } : null,
                     "Taxes": {
                         "Tax": [
                             {
-                                "Code": this.mapItbmsCode(taxRate * 100), // E0911
-                                "Description": taxRate > 0 ? "ITBMS" : "Exento", // E0912
-                                "Amount": taxAmount                          // E0914
+                                "Code": this.mapItbmsCode(taxRate * 100),
+                                "Description": "ITBMS",
+                                "Amount": taxAmount
                             }
                         ]
                     },
+                    "Charges": itemChargesAmount > 0 ? {
+                        "Charge": [{ "Amount": itemChargesAmount }]
+                    } : null,
                     "Totals": {
                         "TotalBTaxes": subtotal,
                         "TotalWTaxes": totalWTaxes,
-                        "SpecificTotal": totalWTaxes, // En este caso coincide
-                        "TotalItem": totalWTaxes      // E116
+                        "SpecificTotal": totalItem,
+                        "TotalItem": totalItem
                     }
                 };
+
+                if (docData.customer.tipoReceptor === '03') {
+                    itemObj.Codes.push({ "Name": "UnidadCPBS", "Data": null, "Value": item.uom === 'ud' || item.uom === 'UND' ? 'und' : (item.uom || "und") });
+                    itemObj.AdditionalInfo = [
+                        { "Name": "InfEmFE", "Data": null, "Value": item.description || "ITEM" },
+                        { "Name": "PrSegItem", "Data": null, "Value": String(unitPrice) }
+                    ];
+                }
 
                 return itemObj;
             }),
             "Totals": {
-                "QtyItems": docData.items.length,    // F02: Cantidad de líneas de ítems
+                "QtyItems": docData.items.length,
                 "GrandTotal": {
-                    "TotalBTaxes": parseFloat(totalTaxable.toFixed(2)),  // F051: Subtotal sin impuestos
-                    "TotalWTaxes": parseFloat(totalAmount.toFixed(2)),   // F052: Total con impuestos
-                    "InvoiceTotal": parseFloat(totalAmount.toFixed(2))   // F053: Total factura
+                    "TotalBTaxes": Number(totalTaxable.toFixed(2)),
+                    "TotalWTaxes": Number(totalAmount.toFixed(2)),
+                    "InvoiceTotal": Number(totalAmount.toFixed(2))
                 }
             },
             "Payments": [
-                { "Type": "01", "Amount": parseFloat(totalAmount.toFixed(2)) }  // G021: 01=Crédito/Contado
+                { "Type": "01", "Amount": Number(totalAmount.toFixed(2)) }
             ],
             "AdditionalDocumentInfo": {
                 "AdditionalInfo": [
                     {
                         "AditionalInfo": [
-                            { "Name": "TiempoPago", "Data": null, "Value": "1" } // HI06: 1=Contado
+                            { "Name": "TiempoPago", "Data": null, "Value": "1" }
                         ]
                     }
                 ]
             }
         };
 
-        // Nota de Crédito: agregar referencia al documento original
-        if (docData.docType === 'C' && docData.invoiceNumber) {
-            nucJson.Header.AdditionalIssueDocInfo.push(
-                { "Name": "NumDocRef", "Data": null, "Value": docData.invoiceNumber },
-                { "Name": "FechaDocRef", "Data": null, "Value": docData.invoiceNumberRefDate || new Date().toISOString().split('T')[0] },
-                { "Name": "MotivoAnulacion", "Data": null, "Value": "01" } // 01=Error datos
-            );
+        if (['C', '03', '04', '05'].includes(docData.docType) && docData.invoiceNumber) {
+            nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
+                "Data": [
+                    {
+                        "Info": [
+                            { "Name": "NombEmRef", "Data": null, "Value": emisorName },
+                            { "Name": "FechaDFRef", "Data": null, "Value": docData.invoiceNumberRefDate || new Date().toISOString().replace('Z', '-05:00') },
+                            { "Name": "CUFERef", "Data": null, "Value": docData.cufeRef || docData.invoiceNumber }
+                        ],
+                        "Name": null
+                    }
+                ]
+            };
         }
 
         return nucJson;
     }
 
-
-    /**
-     * Executes an API request to Digifact with automatic token renewal on 401.
-     */
     async executeRequest(url, method, queryParams, body) {
         let token = await this.getToken();
-
         let queryString = new URLSearchParams(queryParams).toString();
         let fullUrl = queryString ? `${url}?${queryString}` : url;
 
-        console.log(`[DEBUG-DIGIFACT] Executing: ${method} ${fullUrl}`);
-        if (body) console.log(`[DEBUG-DIGIFACT] Payload (Length: ${JSON.stringify(body).length}):`, JSON.stringify(body).substring(0, 200) + '...');
-
         const makeCall = async (authToken) => {
-            console.log(`[DEBUG-DIGIFACT] Auth Token starts with: ${authToken.substring(0, 15)}...`);
             return await fetch(fullUrl, {
                 method: method,
                 headers: {
@@ -350,34 +372,16 @@ class DigifactAdapter extends PACAdapter {
         };
 
         let response = await makeCall(token);
-
-        // If 401 Unauthorized, token might have expired or been revoked
         if (response.status === 401) {
-            console.log(`🔄 Token expirado (401). Headers recibidos:`, Object.fromEntries(response.headers.entries()));
-            console.log(`🔄 Full URL que falló: ${fullUrl}`);
-            const errorBody = await response.text();
-            console.log(`🔄 Body error: ${errorBody}`);
-
-            console.log('🔄 Solicitando uno nuevo...');
-            token = await this.getToken(true); // Force refresh
-            response = await makeCall(token);  // Retry
-            if (response.status === 401) {
-                const err2 = await response.text();
-                console.log(`❌ Segundo intento falló 401 con: ${err2}`);
-            }
+            token = await this.getToken(true);
+            response = await makeCall(token);
         }
-
         return response;
     }
 
-    /**
-     * Implements signAndSend from PACAdapter API.
-     */
     async signAndSend(documentData) {
         try {
             const nucJsonPayload = this.mapToNucJson(documentData);
-
-            // Endpoint: /api/v2/transform/nuc_json
             const transformUrl = `${this.baseUrl}/api/v2/transform/nuc_json`;
             const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
             const queryParams = {
@@ -386,13 +390,13 @@ class DigifactAdapter extends PACAdapter {
                 "USERNAME": this.pacUsername
             };
 
-            console.log(`📡 Certificando doc ${documentData.documentNumber} en Digifact...`);
-
             const response = await this.executeRequest(transformUrl, 'POST', queryParams, nucJsonPayload);
             const resultText = await response.text();
+            console.log("== RAW DIGIFACT RESPONSE ==");
+            console.log(resultText);
+            console.log("============================");
 
             if (!response.ok) {
-                console.error(`❌ Error Digifact [${response.status}]:`, resultText);
                 return {
                     success: false,
                     status: 'REJECTED',
@@ -400,57 +404,35 @@ class DigifactAdapter extends PACAdapter {
                 };
             }
 
-            let result;
-            try {
-                result = JSON.parse(resultText);
-            } catch (e) {
-                // Si devuelven el XML directamente en vez de JSON, manejarlo aquí.
-                // Según la especificación retornará JSON con responseData1 (XML), responseData2 (HTML), responseData3 (PDF). 
-                throw new Error("Respuesta no válida del servicio de certificación");
-            }
-
-            // Validar si la respuesta indica éxito según la estructura de Digifact V2.0.4
-            // Generalmente, 'authNumber' indica éxito al generar CUFE
+            const result = JSON.parse(resultText);
             if (result && result.authNumber) {
-                console.log(`✅ Documento Autorizado. CUFE: ${result.authNumber}`);
                 return {
                     success: true,
-                    cufe: result.authNumber,  // El UUID / CUFE
-                    xmlSigned: result.responseData1, // String codificado de retorno del XML si está
-                    qr: null, // Queda en el PDF normalmente o como un data interno
-                    pdfBase64: result.responseData3, // PDF en string Base64 devuelto por la API
+                    cufe: result.authNumber,
+                    xmlSigned: result.responseData1,
+                    htmlContent: result.responseData2,
+                    pdfBase64: result.responseData3,
                     authDate: new Date(),
-                    status: 'AUTHORIZED',
-                    protocoloAutorizacion: result.additionalInfo?.ProtocoloAutorizacion // Dato específico para previas
+                    status: 'AUTHORIZED'
                 };
             } else {
-                // Puede ser que devuelva código de error interno 
                 return {
                     success: false,
                     status: 'REJECTED',
                     error: result.message || JSON.stringify(result)
                 };
             }
-
         } catch (error) {
-            console.error("❌ Digifact Adapter Error:", error);
             return {
                 success: false,
-                status: 'ERROR',
-                error: error.message
+                status: 'REJECTED',
+                error: `Technical Error: ${error.message}`
             };
         }
     }
 
-    async checkStatus(txId) {
-        // Implementación futura si es necesario
-        throw new Error("Not implemented yet");
-    }
-
-    async voidDocument(cufe, reason) {
-        // Implementación de API de anulación de Digifact futura
-        throw new Error("Not implemented yet");
-    }
+    async checkStatus(txId) { throw new Error("Not implemented yet"); }
+    async voidDocument(cufe, reason) { throw new Error("Not implemented yet"); }
 }
 
 module.exports = DigifactAdapter;

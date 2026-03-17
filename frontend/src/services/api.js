@@ -98,7 +98,7 @@ const getCurrentCompany = () => {
 
   // Fallback: intentar obtener desde localStorage si está disponible
   try {
-    const stored = localStorage.getItem('currentCompany');
+    const stored = localStorage.getItem('currentCompany') || localStorage.getItem('company');
     return stored ? JSON.parse(stored) : null;
   } catch {
     return null;

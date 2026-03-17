@@ -1,0 +1,228 @@
+Executing (default): SELECT "SalesOrder"."id", "SalesOrder"."company_id" AS "companyId", "SalesOrder"."customer_id" AS "customerId", "SalesOrder"."quotation_id" AS "quotationId", "SalesOrder"."order_number" AS "orderNumber", "SalesOrder"."status", "SalesOrder"."issue_date" AS "issueDate", "SalesOrder"."currency", "SalesOrder"."discount", "SalesOrder"."discount_type" AS "discountType", "SalesOrder"."discount_value" AS "discountValue", "SalesOrder"."subtotal", "SalesOrder"."tax_total" AS "taxTotal", "SalesOrder"."total", "SalesOrder"."payment_status" AS "paymentStatus", "SalesOrder"."paid_amount" AS "paidAmount", "SalesOrder"."balance", "SalesOrder"."notes", "SalesOrder"."created_by" AS "createdBy", "SalesOrder"."updated_by" AS "updatedBy", "SalesOrder"."created_at", "SalesOrder"."updated_at", "customer"."id" AS "customer.id", "customer"."company_id" AS "customer.companyId", "customer"."code" AS "customer.code", "customer"."name" AS "customer.name", "customer"."trade_name" AS "customer.tradeName", "customer"."email" AS "customer.email", "customer"."phone" AS "customer.phone", "customer"."address" AS "customer.address", "customer"."tax_id" AS "customer.taxId", "customer"."dv" AS "customer.dv", "customer"."tipo_receptor" AS "customer.tipoReceptor", "customer"."tipo_identificacion" AS "customer.tipoIdentificacion", "customer"."cod_ubi" AS "customer.codUbi", "customer"."pais_receptor" AS "customer.paisReceptor", "customer"."is_active" AS "customer.isActive", "customer"."objeto_retencion" AS "customer.objetoRetencion", "customer"."notes" AS "customer.notes", "customer"."created_at" AS "customer.created_at", "customer"."updated_at" AS "customer.updated_at", "items"."id" AS "items.id", "items"."sales_order_id" AS "items.salesOrderId", "items"."product_id" AS "items.productId", "items"."description" AS "items.description", "items"."quantity" AS "items.quantity", "items"."unit_price" AS "items.unitPrice", "items"."discount" AS "items.discount", "items"."tax_rate" AS "items.taxRate", "items"."subtotal" AS "items.subtotal", "items"."total" AS "items.total", "items->product"."id" AS "items.product.id", "items->product"."company_id" AS "items.product.companyId", "items->product"."type" AS "items.product.type", "items->product"."name" AS "items.product.name", "items->product"."code" AS "items.product.code", "items->product"."sku" AS "items.product.sku", "items->product"."description" AS "items.product.description", "items->product"."cost" AS "items.product.cost", "items->product"."margin" AS "items.product.margin", "items->product"."price" AS "items.product.price", "items->product"."is_active" AS "items.product.isActive", "items->product"."created_at" AS "items.product.created_at", "items->product"."updated_at" AS "items.product.updated_at", "company"."id" AS "company.id", "company"."code" AS "company.code", "company"."name" AS "company.name", "company"."legal_name" AS "company.legalName", "company"."trade_name" AS "company.tradeName", "company"."tax_id" AS "company.taxId", "company"."dv" AS "company.dv", "company"."tax_id_type" AS "company.taxIdType", "company"."verification_digit" AS "company.verificationDigit", "company"."email" AS "company.email", "company"."phone" AS "company.phone", "company"."mobile" AS "company.mobile", "company"."website" AS "company.website", "company"."industry" AS "company.industry", "company"."address_line1" AS "company.addressLine1", "company"."address_line2" AS "company.addressLine2", "company"."city" AS "company.city", "company"."state_province" AS "company.stateProvince", "company"."postal_code" AS "company.postalCode", "company"."country" AS "company.country", "company"."default_currency" AS "company.defaultCurrency", "company"."timezone" AS "company.timezone", "company"."tax_name" AS "company.taxName", "company"."tax_rate" AS "company.taxRate", "company"."is_main_company" AS "company.isMainCompany", "company"."is_active" AS "company.isActive", "company"."login_logo" AS "company.loginLogo", "company"."document_logo" AS "company.documentLogo", "company"."notes" AS "company.notes", "company"."created_at" AS "company.created_at", "company"."updated_at" AS "company.updated_at" FROM "sales_orders" AS "SalesOrder" LEFT OUTER JOIN "customers" AS "customer" ON "SalesOrder"."customer_id" = "customer"."id" LEFT OUTER JOIN "sales_order_items" AS "items" ON "SalesOrder"."id" = "items"."sales_order_id" LEFT OUTER JOIN "products" AS "items->product" ON "items"."product_id" = "items->product"."id" LEFT OUTER JOIN "companies" AS "company" ON "SalesOrder"."company_id" = "company"."id" WHERE "SalesOrder"."id" = 63;
+{
+  "Version": "1.00",
+  "CountryCode": "PA",
+  "Header": {
+    "DocType": "01",
+    "IssuedDateTime": "2026-03-17T05:44:07-05:00",
+    "AdditionalIssueType": 2,
+    "Currency": null,
+    "AdditionalIssueDocInfo": [
+      {
+        "Name": "TipoEmision",
+        "Data": null,
+        "Value": "01"
+      },
+      {
+        "Name": "NumeroDF",
+        "Data": null,
+        "Value": "0020260063"
+      },
+      {
+        "Name": "PtoFactDF",
+        "Data": null,
+        "Value": "987"
+      },
+      {
+        "Name": "CodigoSeguridad",
+        "Data": null,
+        "Value": "810813932"
+      },
+      {
+        "Name": "NaturalezaOperacion",
+        "Data": null,
+        "Value": "01"
+      },
+      {
+        "Name": "TipoOperacion",
+        "Data": null,
+        "Value": "1"
+      },
+      {
+        "Name": "DestinoOperacion",
+        "Data": null,
+        "Value": "1"
+      },
+      {
+        "Name": "FormatoGeneracion",
+        "Data": null,
+        "Value": "1"
+      },
+      {
+        "Name": "ManeraEntrega",
+        "Data": null,
+        "Value": "1"
+      },
+      {
+        "Name": "EnvioContenedor",
+        "Data": null,
+        "Value": "1"
+      },
+      {
+        "Name": "ProcesoGeneracion",
+        "Data": null,
+        "Value": "1"
+      },
+      {
+        "Name": "TipoTransaccion",
+        "Data": null,
+        "Value": "1"
+      },
+      {
+        "Name": "TipoSucursal",
+        "Data": null,
+        "Value": "2"
+      }
+    ]
+  },
+  "Seller": {
+    "TaxID": "155704849-2-2021",
+    "TaxIDType": "2",
+    "TaxIDAdditionalInfo": [
+      {
+        "Name": "DigitoVerificador",
+        "Data": null,
+        "Value": "32"
+      }
+    ],
+    "Name": "FE generada en ambiente de pruebas - sin valor comercial ni fiscal",
+    "Contact": {
+      "PhoneList": {
+        "Phone": [
+          "6000-0000"
+        ]
+      },
+      "EmailList": null
+    },
+    "BranchInfo": {
+      "Code": "0001",
+      "Name": null,
+      "AddressInfo": {
+        "Address": "Direccion test",
+        "City": "Corregimiento test",
+        "District": "Distrito test",
+        "State": "Provincia test",
+        "Country": "PA"
+      },
+      "AdditionalBranchInfo": [
+        {
+          "Name": "CoordEm",
+          "Data": null,
+          "Value": "+8.9892,-79.5201"
+        },
+        {
+          "Name": "CodUbi",
+          "Data": null,
+          "Value": "1-1-1"
+        }
+      ]
+    }
+  },
+  "Buyer": {
+    "TaxID": "67890",
+    "TaxIDType": "2",
+    "TaxIDAdditionalInfo": [
+      {
+        "Name": "TipoReceptor",
+        "Data": null,
+        "Value": "01"
+      },
+      {
+        "Name": "DigitoVerificador",
+        "Data": null,
+        "Value": "33"
+      },
+      {
+        "Name": "CodUbi",
+        "Data": null,
+        "Value": "8-8-10"
+      }
+    ],
+    "Name": "panamauto",
+    "Contact": null,
+    "AdditionlInfo": [
+      {
+        "Name": "PaisReceptorFE",
+        "Data": null,
+        "Value": "PA"
+      }
+    ],
+    "AddressInfo": {
+      "Address": "Westland Mall, Vista Alegre, Arraijan",
+      "City": "Panamá (Cabecera)",
+      "District": "Panamá",
+      "State": "Panamá",
+      "Country": "PA"
+    }
+  },
+  "ThirdParties": null,
+  "Items": [
+    {
+      "Codes": [
+        {
+          "Name": "CodigoProd",
+          "Data": null,
+          "Value": "1234567890"
+        },
+        {
+          "Name": "CodCPBSabr",
+          "Data": null,
+          "Value": "13"
+        },
+        {
+          "Name": "CodCPBScmp",
+          "Data": null,
+          "Value": "1310"
+        }
+      ],
+      "Description": "Laptop HP ProBook",
+      "Qty": 1,
+      "UnitOfMeasure": "ud",
+      "Price": 714.29,
+      "Discounts": null,
+      "Taxes": {
+        "Tax": [
+          {
+            "Code": "00",
+            "Description": "ITBMS",
+            "Amount": 50
+          }
+        ]
+      },
+      "Charges": null,
+      "Totals": {
+        "TotalBTaxes": 714.29,
+        "TotalWTaxes": 764.29,
+        "SpecificTotal": 764.29,
+        "TotalItem": 764.29
+      }
+    }
+  ],
+  "Totals": {
+    "QtyItems": 1,
+    "GrandTotal": {
+      "TotalBTaxes": 714.29,
+      "TotalWTaxes": 764.29,
+      "InvoiceTotal": 764.29
+    }
+  },
+  "Payments": [
+    {
+      "Type": "01",
+      "Amount": 764.29
+    }
+  ],
+  "AdditionalDocumentInfo": {
+    "AdditionalInfo": [
+      {
+        "AditionalInfo": [
+          {
+            "Name": "TiempoPago",
+            "Data": null,
+            "Value": "1"
+          }
+        ]
+      }
+    ]
+  }
+}

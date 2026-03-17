@@ -8,6 +8,12 @@ const fonts = {
         bold: 'Helvetica-Bold',
         italics: 'Helvetica-Oblique',
         bolditalics: 'Helvetica-BoldOblique'
+    },
+    Courier: {
+        normal: 'Courier',
+        bold: 'Courier-Bold',
+        italics: 'Courier-Oblique',
+        bolditalics: 'Courier-BoldOblique'
     }
 };
 
@@ -112,9 +118,9 @@ const generateCafePdf = async (data) => {
                             table: {
                                 widths: ['*', 'auto'],
                                 body: [
-                                    [{ text: 'Subtotal:', bold: true, alignment: 'right' }, { text: Number(data.totals.subtotal).toFixed(2), alignment: 'right' }],
-                                    [{ text: 'ITBMS:', bold: true, alignment: 'right' }, { text: Number(data.totals.tax).toFixed(2), alignment: 'right' }],
-                                    [{ text: 'TOTAL:', bold: true, alignment: 'right', fontSize: 12 }, { text: Number(data.totals.total).toFixed(2), alignment: 'right', fontSize: 12, bold: true }]
+                                    [{ text: 'Subtotal:', bold: true, alignment: 'right' }, { text: Number(data.totals.totalTaxable || 0).toFixed(2), alignment: 'right' }],
+                                    [{ text: 'ITBMS:', bold: true, alignment: 'right' }, { text: Number(data.totals.totalTax || 0).toFixed(2), alignment: 'right' }],
+                                    [{ text: 'TOTAL:', bold: true, alignment: 'right', fontSize: 12 }, { text: Number(data.totals.totalAmount || 0).toFixed(2), alignment: 'right', fontSize: 12, bold: true }]
                                 ]
                             },
                             layout: 'noBorders'

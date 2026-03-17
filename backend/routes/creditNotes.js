@@ -12,6 +12,7 @@ router.get('/', creditNoteController.getCreditNotes);
 router.get('/:id', creditNoteController.getCreditNoteById);
 router.post('/', creditNoteController.createCreditNote);
 router.post('/:id/emit', creditNoteController.emitCreditNote);
+router.get('/:id/download', creditNoteController.downloadCafe);
 router.delete('/:id', creditNoteController.deleteCreditNote);
 
 module.exports = router;

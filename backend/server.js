@@ -47,29 +47,7 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Middlewares de seguridad
-app.use(helmet()); // Añade cabeceras de seguridad HTTP
-
-// Rate Limiting para prevenir fuerza bruta y DoS
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // Máximo 100 peticiones por ventana
-  message: { message: 'Demasiadas peticiones desde esta IP, por favor intente más tarde.' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Aplicar rate limit general
-app.use('/api/', limiter);
-
-// Rate limit más estricto para login y autenticación
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20, // Solo 20 intentos por 15 minutos
-  message: { message: 'Demasiados intentos de acceso, por favor intente más tarde.' }
-});
-app.use('/api/auth/login', authLimiter);
-
+// 1. CORS primero para asegurar cabeceras en todas las respuestas (incluyendo errores)
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -82,6 +60,31 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'x-company-id', 'X-Company-Id'],
   optionsSuccessStatus: 200
 }));
+
+// Middlewares de seguridad
+app.use(helmet()); // Añade cabeceras de seguridad HTTP
+
+// Rate Limiting para prevenir fuerza bruta y DoS (Relajado en desarrollo)
+const isDev = process.env.NODE_ENV === 'development';
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: isDev ? 2000 : 100, // Mucho más permisivo en dev
+  message: { message: 'Demasiadas peticiones desde esta IP, por favor intente más tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Aplicar rate limit general
+app.use('/api/', limiter);
+
+// Rate limit más estricto para login y autenticación (Relajado en desarrollo)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isDev ? 500 : 20, // Más permisivo en dev
+  message: { message: 'Demasiados intentos de acceso, por favor intente más tarde.' }
+});
+app.use('/api/auth/login', authLimiter);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

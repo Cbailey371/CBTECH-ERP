@@ -16,7 +16,7 @@ const calculateTaxes = (items) => {
 
     items.forEach(item => {
         const qty = parseFloat(item.quantity) || 0;
-        const price = parseFloat(item.price) || 0;
+        const price = parseFloat(item.price) || parseFloat(item.unitPrice) || 0;
         const rate = parseFloat(item.taxRate) || 0;
 
         // Ensure rate is standard (approximate matching could be added if needed)

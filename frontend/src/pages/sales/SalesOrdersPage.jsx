@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as salesOrderService from '../../services/salesOrderService';
-import { Plus, Search, Eye, FileText, Truck } from 'lucide-react';
+import { Plus, Search, Eye, FileText, Truck, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -47,6 +47,11 @@ export default function SalesOrdersPage() {
     };
 
     const getStatusBadge = (order) => {
+        // High priority: Electronic Invoice check
+        if (order.feDocument || (order.fe_documents && order.fe_documents.length > 0)) {
+            return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Autorizada DGI</Badge>;
+        }
+
         if (order.status === 'draft') return <Badge variant="outline" className="bg-muted text-muted-foreground border-border">No Fiscalizada</Badge>;
         if (order.status === 'cancelled') return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">Cancelada</Badge>;
 
@@ -54,10 +59,6 @@ export default function SalesOrdersPage() {
         if (order.paymentStatus === 'paid') return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Pagada</Badge>;
         if (order.paymentStatus === 'partial') return <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">Abono</Badge>;
 
-        // Default for confirmed/fulfilled but unpaid
-        if (order.feDocument) {
-            return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Autorizada DGI</Badge>;
-        }
         return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">Fiscalizada</Badge>;
     };
 
@@ -130,7 +131,19 @@ export default function SalesOrdersPage() {
                             ) : (
                                 orders.map(order => (
                                     <TableRow key={order.id}>
-                                        <TableCell className="font-medium">{order.orderNumber}</TableCell>
+                                        <TableCell className="font-medium flex items-center gap-2">
+                                            {order.orderNumber}
+                                            {order.creditNotes && order.creditNotes.length > 0 && (
+                                                <AlertCircle 
+                                                    className="w-4 h-4 text-orange-500 cursor-pointer animate-pulse" 
+                                                    title={`Esta factura tiene ${order.creditNotes.length} Nota(s) de Crédito asociada(s). Haz clic para ir a NC.`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate('/credit-notes', { state: { searchTerm: order.orderNumber } });
+                                                    }}
+                                                />
+                                            )}
+                                        </TableCell>
                                         <TableCell>{order.customer?.name}</TableCell>
                                         <TableCell>{new Date(order.issueDate).toLocaleDateString()}</TableCell>
                                         <TableCell>${parseFloat(order.total).toFixed(2)}</TableCell>

@@ -346,6 +346,40 @@ const CreditNoteForm = () => {
         }
     };
 
+    const handleDownloadPDF = async () => {
+        try {
+            setLoading(true);
+            const baseUrl = import.meta.env.VITE_API_URL || '';
+            const url = `${baseUrl}/api/credit-notes/${id}/download`;
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'x-company-id': selectedCompany.id
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error al descargar el PDF');
+            }
+
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = `NC_${formData.number}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(a);
+        } catch (err) {
+            alert('Error al descargar: ' + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // --- Render ---
 
     if (viewMode) {
@@ -367,10 +401,10 @@ const CreditNoteForm = () => {
                                 </Button>
                             </>
                         )}
-                        {/* Actions for Authorized (Placeholder for PDF) */}
+                        {/* Actions for Authorized (PDF Download) */}
                         {formData.status === 'authorized' && (
-                            <Button variant="outline">
-                                <FileText className="mr-2 h-4 w-4" /> Descargar PDF
+                            <Button variant="outline" onClick={handleDownloadPDF} disabled={loading}>
+                                <FileText className="mr-2 h-4 w-4" /> {loading ? 'Descargando...' : 'Descargar PDF'}
                             </Button>
                         )}
                     </div>

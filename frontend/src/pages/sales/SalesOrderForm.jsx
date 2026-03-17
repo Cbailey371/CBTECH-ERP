@@ -1,3 +1,4 @@
+// Final fix for FileText and Invoicing structure
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -8,10 +9,11 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
-import { Plus, Trash2, Save, ArrowLeft, Send, Printer, Calculator, CreditCard, X } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Send, Printer, Calculator, CreditCard, X, FileText } from 'lucide-react';
 import paymentService from '../../services/paymentService';
 import { Combobox } from '../../components/ui/Combobox';
 import { Textarea } from '../../components/ui/Textarea';
+import { Badge } from '../../components/ui/Badge';
 
 import { generateInvoicePDF } from '../../utils/InvoicePDF';
 
@@ -70,11 +72,10 @@ export default function SalesOrderForm() {
     }, [selectedCompany, id]);
 
     const loadDependencies = async () => {
-        if (!selectedCompany) return;
+        if (!token || !selectedCompany) return;
         setDebugLog(prev => [...prev, 'Starting loadDependencies for company: ' + selectedCompany.id]);
         try {
             console.log('Loading dependencies for company:', selectedCompany.id);
-            // Limit reduced to 100 to be safe, though 1000 should work. Adding explicit error handling.
             const [custRes, prodRes] = await Promise.all([
                 customerService.getCustomers({ limit: 100 }),
                 productService.getProducts({ limit: 100 })
@@ -415,7 +416,9 @@ export default function SalesOrderForm() {
     
     const handleDownloadCafe = async () => {
         if (!formData.feDocument?.id) return alert('No hay un documento fiscal asociado.');
-        window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/fepa/download/${formData.feDocument.id}`, '_blank');
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+        const url = `${baseUrl}/fepa/cafe/${formData.feDocument.id}?token=${token}&companyId=${selectedCompany.id}`;
+        window.open(url, '_blank');
     };
 
     const handleRegisterPayment = async (e) => {
@@ -559,15 +562,45 @@ export default function SalesOrderForm() {
                         />
                     </div>
                     {formData.feDocument && (
-                        <div className="md:col-span-2 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
+                        <div className={`md:col-span-2 p-4 rounded-lg border ${
+                            formData.feDocument.status === 'AUTHORIZED' || formData.feDocument.status === 'PROCESSED'
+                                ? 'bg-emerald-500/10 border-emerald-500/20' 
+                                : 'bg-red-500/10 border-red-500/20'
+                        }`}>
                             <div className="flex justify-between items-center">
                                 <div>
-                                    <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Documento Fiscal Autorizado (DGI)</p>
-                                    <p className="font-mono text-sm text-foreground break-all mt-1">CUFE: {formData.feDocument.cufe}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Fecha Autorización: {new Date(formData.feDocument.auth_date || formData.feDocument.authDate).toLocaleString()}</p>
+                                    <p className={`text-xs font-semibold uppercase tracking-wider ${
+                                        formData.feDocument.status === 'AUTHORIZED' || formData.feDocument.status === 'PROCESSED'
+                                            ? 'text-emerald-600' : 'text-red-600'
+                                    }`}>
+                                        {formData.feDocument.status === 'AUTHORIZED' || formData.feDocument.status === 'PROCESSED'
+                                            ? 'Documento Fiscal Autorizado (DGI)' : 'Documento Fiscal Rechazado / Error'}
+                                    </p>
+                                    <p className="font-mono text-sm text-foreground break-all mt-1">
+                                        {formData.feDocument.cufe ? `CUFE: ${formData.feDocument.cufe}` : 'Sin CUFE asignado'}
+                                    </p>
+                                    {formData.feDocument.authDate && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Fecha Autorización: {new Date(formData.feDocument.authDate).toLocaleString()}
+                                        </p>
+                                    )}
+                                    {formData.feDocument.rejectionReason && (
+                                        <p className="text-xs text-red-500 mt-1">
+                                            Motivo: {formData.feDocument.rejectionReason}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="text-right">
-                                    <Badge variant="outline" className="bg-emerald-500 text-white border-0">AUTORIZADO</Badge>
+                                    <Badge 
+                                        variant="outline" 
+                                        className={
+                                            formData.feDocument.status === 'AUTHORIZED' || formData.feDocument.status === 'PROCESSED'
+                                                ? "bg-emerald-500 text-white border-0" 
+                                                : "bg-red-500 text-white border-0"
+                                        }
+                                    >
+                                        {formData.feDocument.status}
+                                    </Badge>
                                 </div>
                             </div>
                         </div>

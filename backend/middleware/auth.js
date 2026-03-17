@@ -4,8 +4,8 @@ const { User, Role, Permission } = require('../models');
 // Middleware para verificar el token JWT
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  const companyId = req.headers['x-company-id']; // Extract company ID from header
+  const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
+  const companyId = req.headers['x-company-id'] || req.query.companyId; 
 
   if (!token) {
     return res.status(401).json({

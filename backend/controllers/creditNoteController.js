@@ -66,7 +66,11 @@ const creditNoteController = {
                 where: { id, companyId: companyId },
                 include: [
                     { model: Customer, as: 'customer' },
-                    { model: SalesOrder, as: 'salesOrder' },
+                    { 
+                        model: SalesOrder, 
+                        as: 'salesOrder',
+                        include: [{ model: Customer, as: 'customer' }]
+                    },
                     { model: User, as: 'creator', attributes: ['username'] }
                 ]
             });
@@ -91,7 +95,14 @@ const creditNoteController = {
             // 1. Validate Sales Order
             const salesOrder = await SalesOrder.findOne({
                 where: { id: salesOrderId, companyId: companyId },
-                include: [{ model: SalesOrderItem, as: 'items' }, { model: Customer, as: 'customer' }]
+                include: [
+                    { 
+                        model: SalesOrderItem, 
+                        as: 'items',
+                        include: [{ model: Product, as: 'product' }]
+                    }, 
+                    { model: Customer, as: 'customer' }
+                ]
             });
 
             if (!salesOrder) throw new Error('Factura original no encontrada');
@@ -127,7 +138,7 @@ const creditNoteController = {
 
                     return {
                         productId: originalItem.productId,
-                        description: originalItem.description,
+                        description: originalItem.description || originalItem.product?.name,
                         quantity: qty,
                         unitPrice: parseFloat(originalItem.unitPrice),
                         total: qty * parseFloat(originalItem.unitPrice), // Recalculate basic total
@@ -245,25 +256,25 @@ const creditNoteController = {
 
             const docData = {
                 documentNumber: creditNote.number,
-                docType: 'C', // Credit Note
+                docType: '03', // Nota de Crédito
                 items: items.map(i => ({
-                    description: i.description,
-                    quantity: i.quantity,
-                    price: i.unitPrice,
-                    total: i.total,
-                    taxRate: 0.07 // FIXME: Store taxRate in items json or infer
+                    description: i.description || 'Devolución de mercancía',
+                    quantity: parseFloat(i.quantity),
+                    price: parseFloat(i.unitPrice),
+                    total: parseFloat(i.total),
+                    taxRate: 0.07,
+                    uom: 'und',
+                    code: '1234567890',
+                    cpbsAbr: '13',
+                    cpbsCmp: '1310'
                 })),
-                customer: {
-                    name: creditNote.customer.name,
-                    ruc: creditNote.customer.tax_id || 'CONSUMIDOR FINAL',
-                    address: creditNote.customer.address
-                },
+                customer: creditNote.customer.toJSON(),
                 invoiceNumber: originalInvoiceDoc.cufe, // Mandatorio: CUFE de la factura afectada
                 invoiceNumberRefDate: creditNote.salesOrder.issueDate, // Fecha de la factura afectada (YYYY-MM-DD)
                 // Issuer
                 issuer: issuerConfig,
                 totals: {
-                    totalTaxable: creditNote.subtotal, // Assuming stored correctly
+                    totalTaxable: creditNote.subtotal,
                     totalTax: creditNote.tax,
                     totalAmount: creditNote.total
                 }
@@ -280,10 +291,21 @@ const creditNoteController = {
                 creditNote.fiscalNumber = result.feNumber || creditNote.number;
                 await creditNote.save();
 
-                // 6. Save FE_Document Record (Optional but good for tracking history)
-                // We might want to create a FE_Document for the Credit Note too?
-                // The FE_Document model usually links to SalesOrder. warning: we don't have creditNoteId in FE_Document.
-                // For now, we store fiscal info in CreditNote model tables fields `fiscal_cufe`.
+                // 6. Save FE_Document Record (for tracking and CAFE download)
+                await FE_Document.create({
+                    companyId: companyId,
+                    creditNoteId: creditNote.id, // Corrected: Use creditNoteId for NCs
+                    docType: '03', // NC
+                    cufe: result.cufe,
+                    qrUrl: result.url,
+                    xmlSigned: result.xmlSigned,
+                    authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
+                    status: 'AUTHORIZED',
+                    pacName: 'DIGIFACT',
+                    environment: issuerConfig.environment,
+                    htmlContent: result.htmlContent, // Corrected mapping
+                    pdfContent: result.pdfBase64  // Corrected mapping
+                });
 
                 return res.json({ success: true, creditNote });
             } else {
@@ -317,6 +339,52 @@ const creditNoteController = {
         } catch (error) {
             console.error('Error deleteCreditNote:', error);
             return res.status(500).json({ success: false, error: error.message });
+        }
+    },
+
+    // Download CAFE (PDF/HTML) for Credit Note
+    async downloadCafe(req, res) {
+        try {
+            const { id } = req.params;
+            const companyId = req.user.companyId;
+
+            // 1. Find the Credit Note
+            const creditNote = await CreditNote.findOne({
+                where: { id, company_id: companyId }
+            });
+
+            if (!creditNote) return res.status(404).json({ error: 'Nota de crédito no encontrada' });
+            if (!creditNote.fiscalCufe) return res.status(400).json({ error: 'La nota de crédito no ha sido autorizada fiscalmente' });
+
+            // 2. Find associated FE_Document
+            const feDoc = await FE_Document.findOne({
+                where: { 
+                    [Op.or]: [
+                        { creditNoteId: id },
+                        { cufe: creditNote.fiscalCufe }
+                    ],
+                    companyId 
+                }
+            });
+
+            if (!feDoc) return res.status(404).json({ error: 'Documento fiscal no encontrado' });
+
+            // 3. Logic: PDF first, then HTML
+            if (feDoc.pdfContent) {
+                const pdfBuffer = Buffer.from(feDoc.pdfContent, 'base64');
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `attachment; filename=CAFE_${creditNote.number}.pdf`);
+                return res.send(pdfBuffer);
+            } else if (feDoc.htmlContent) {
+                const html = Buffer.from(feDoc.htmlContent, 'base64').toString('utf-8');
+                res.setHeader('Content-Type', 'text/html');
+                return res.send(html);
+            } else {
+                return res.status(404).json({ error: 'No se encontró contenido PDF o HTML para este documento' });
+            }
+        } catch (error) {
+            console.error('Error downloadCafe CN:', error);
+            return res.status(500).json({ error: error.message });
         }
     }
 };
