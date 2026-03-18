@@ -63,7 +63,7 @@ exports.getOrders = async (req, res) => {
             attributes: ['id', 'orderNumber', 'issueDate', 'status', 'total', 'currency', 'customerId'],
             include: [
                 { model: Customer, as: 'customer', attributes: ['name', 'id'] },
-                { model: FE_Document, as: 'feDocument', attributes: ['cufe', 'status', 'auth_date'] },
+                { model: FE_Document, as: 'feDocument', attributes: ['id', 'cufe', 'status', 'auth_date'] },
                 { model: CreditNote, as: 'creditNotes', attributes: ['id'] }
             ],
             limit: parseInt(limit),
