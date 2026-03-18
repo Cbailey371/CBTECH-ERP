@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import * as salesOrderService from '../../services/salesOrderService';
 import { Plus, Search, Eye, FileText, Truck, AlertCircle } from 'lucide-react';

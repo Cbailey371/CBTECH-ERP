@@ -1,5 +1,6 @@
 // Final fix for FileText and Invoicing structure
 import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import * as salesOrderService from '../../services/salesOrderService';
