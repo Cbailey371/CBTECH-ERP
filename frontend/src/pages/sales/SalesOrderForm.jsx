@@ -117,48 +117,35 @@ export default function SalesOrderForm() {
                 const order = response.order;
                 console.log('Order Data:', order);
 
-                // Infer Global Tax Settings
-                // Since backend doesn't store 'taxEnabled' or 'taxRate' explicitly on the Order model,
-                // we infer it. If taxTotal > 0, tax was enabled.
-                // We can try to approximate the rate or default to 7%.
-                const hasTax = parseFloat(order.taxTotal) > 0;
-                // If items have taxRate, pick the first one's rate; otherwise 7.
-                let inferredRate = 7;
-                if (order.items && order.items.length > 0) {
-                    const firstTaxed = order.items.find(i => parseFloat(i.taxRate) > 0);
-                    if (firstTaxed) inferredRate = parseFloat(firstTaxed.taxRate) * 100;
-                }
+                // Derived Balance for UI robustness (use calculated if stored is 0 but total > paid)
+                const storedBalance = parseFloat(order.balance) || 0;
+                const total = parseFloat(order.total) || 0;
+                const paid = parseFloat(order.paidAmount) || 0;
+                const fallbackBalance = Math.max(0, total - paid);
+                const actualBalance = (storedBalance <= 0.01 && fallbackBalance > 0.01) ? fallbackBalance : storedBalance;
 
                 setFormData({
                     ...order,
                     customerId: String(order.customerId || ''),
                     date: order.issueDate,
-                    discountType: order.discountType || 'amount', // Add this
-                    discountValue: parseFloat(order.discountValue) || 0, // Add this
-                    taxEnabled: hasTax, // Add this
-                    taxRate: inferredRate, // Add this
-                    items: order.items.map(i => {
-                        // Infer Item Discount Input
-                        // Backend only stores 'discount' (amount).
-                        // We must set discountType/Value for the UI to match.
-                        // We'll default to 'amount' and value = discount amount.
-                        // (Lossy round-trip but functional)
-                        return {
-                            ...i,
-                            productId: i.productId || '',
-                            description: i.description || i.product?.name,
-                            quantity: i.quantity,
-                            unitPrice: i.unitPrice,
-                            discountType: 'amount', // Defaulting to amount since specific type isn't stored per item
-                            discountValue: parseFloat(i.discount) || 0,
-                            total: i.total
-                        };
-                    }),
-                    // Ensure these are set correct for display
+                    discountType: order.discountType || 'amount',
+                    discountValue: parseFloat(order.discountValue) || 0,
+                    taxEnabled: parseFloat(order.taxTotal) > 0,
+                    taxRate: order.items?.[0] ? (parseFloat(order.items[0].taxRate) * 100) : 7,
+                    items: order.items.map(i => ({
+                        ...i,
+                        productId: i.productId || '',
+                        description: i.description || i.product?.name,
+                        quantity: i.quantity,
+                        unitPrice: i.unitPrice,
+                        discountType: 'amount',
+                        discountValue: parseFloat(i.discount) || 0,
+                        total: i.total
+                    })),
                     paymentStatus: order.paymentStatus || 'unpaid',
-                    paidAmount: parseFloat(order.paidAmount) || 0,
-                    balance: parseFloat(order.balance) || 0,
-                    payments: order.payments || [], // Store payments list
+                    paidAmount: paid,
+                    balance: actualBalance, // USE ROBUST BALANCE
+                    payments: order.payments || [],
                     feDocument: order.feDocument || null
                 });
 
@@ -417,7 +404,7 @@ export default function SalesOrderForm() {
     const handleDownloadCafe = async () => {
         if (!formData.feDocument?.id) return alert('No hay un documento fiscal asociado.');
         const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-        const url = `${baseUrl}/fepa/cafe/${formData.feDocument.id}?token=${token}&companyId=${selectedCompany.id}`;
+        const url = `${baseUrl}/fepa/cafe/${formData.feDocument.id}?token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`;
         window.open(url, '_blank');
     };
 
@@ -889,11 +876,14 @@ export default function SalesOrderForm() {
                                         type="number"
                                         step="0.01"
                                         max={formData.balance}
+                                        min="0.01"
                                         required
                                         value={paymentData.amount}
                                         onChange={(e) => setPaymentData({ ...paymentData, amount: e.target.value })}
                                     />
-                                    <p className="text-xs text-muted-foreground mt-1">Saldo pendiente: ${parseFloat(formData.balance).toFixed(2)}</p>
+                                    <p className="text-xs text-muted-foreground mt-1 text-blue-600">
+                                        Saldo pendiente a pagar: ${parseFloat(formData.balance).toFixed(2)}
+                                    </p>
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium">Método</label>

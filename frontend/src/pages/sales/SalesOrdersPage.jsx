@@ -158,7 +158,7 @@ export default function SalesOrdersPage() {
                                                     size="icon"
                                                     onClick={() => {
                                                         const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
-                                                        const url = `${baseUrl}/fepa/cafe/${order.feDocument.id}?token=${token}&companyId=${selectedCompany.id}`;
+                                                        const url = `${baseUrl}/fepa/cafe/${order.feDocument.id}?token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`;
                                                         window.open(url, '_blank');
                                                     }}
                                                     title="Descargar CAFE (PDF)"
