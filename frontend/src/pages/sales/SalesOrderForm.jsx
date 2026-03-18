@@ -404,7 +404,7 @@ export default function SalesOrderForm() {
     const handleDownloadCafe = async () => {
         if (!formData.feDocument?.id) return alert('No hay un documento fiscal asociado.');
         const baseUrl = import.meta.env.VITE_API_URL || (window.location.origin + '/api');
-        const url = `${baseUrl}/fepa/cafe/${formData.feDocument.id}?token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`;
+        const url = `${baseUrl}/sales-orders/pdf-cafe/${formData.feDocument.id}?token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`;
         console.log('Generating PDF Download URL:', url);
         window.open(url, '_blank');
     };
