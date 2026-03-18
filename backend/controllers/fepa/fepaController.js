@@ -126,6 +126,7 @@ exports.emitDocument = async (req, res) => {
 exports.downloadCafe = async (req, res) => {
     try {
         const { id } = req.params; // FE_Document ID
+        console.log(`[FEPA_DEBUG] Request to download CAFE. Doc ID: ${id}, User: ${req.user?.id}, Company: ${req.user?.companyId}`);
         const feDoc = await FE_Document.findByPk(id, {
             include: [{
                 model: SalesOrder,
