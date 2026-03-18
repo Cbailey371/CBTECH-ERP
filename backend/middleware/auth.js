@@ -7,6 +7,11 @@ const authenticateToken = (req, res, next) => {
   const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
   const companyId = req.headers['x-company-id'] || req.query.companyId; 
 
+  // DEBUG LOG
+  if (req.originalUrl && req.originalUrl.includes('/fepa/cafe')) {
+    console.log(`[AUTH_DEBUG] fepa/cafe request. Token provided: ${!!token}, Company: ${companyId}, Method: ${req.method}, URL: ${req.originalUrl}`);
+  }
+
   if (!token) {
     return res.status(401).json({
       success: false,
