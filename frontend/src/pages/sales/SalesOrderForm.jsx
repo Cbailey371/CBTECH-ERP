@@ -403,7 +403,7 @@ export default function SalesOrderForm() {
     
     const handleDownloadCafe = async () => {
         if (!formData.feDocument?.id) return alert('No hay un documento fiscal asociado.');
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+        const baseUrl = import.meta.env.VITE_API_URL || '/api';
         const url = `${baseUrl}/fepa/cafe/${formData.feDocument.id}?token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`;
         window.open(url, '_blank');
     };
