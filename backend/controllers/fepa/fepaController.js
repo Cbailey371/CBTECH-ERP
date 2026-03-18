@@ -125,8 +125,12 @@ exports.emitDocument = async (req, res) => {
 
 exports.downloadCafe = async (req, res) => {
     try {
-        const { id } = req.params; // FE_Document ID
-        console.log(`[FEPA_DEBUG] Request to download CAFE. Doc ID: ${id}, User: ${req.user?.id}, Company: ${req.user?.companyId}`);
+        const id = req.params.id || req.query.id; // Support both path and query param
+        console.log(`[FE_DOWNLOAD] Request received. ID: ${id}, User: ${req.user?.id}, Method: ${req.method}`);
+        
+        if (!id) {
+            return res.status(400).json({ success: false, message: 'ID de documento requerido' });
+        }
         const feDoc = await FE_Document.findByPk(id, {
             include: [{
                 model: SalesOrder,

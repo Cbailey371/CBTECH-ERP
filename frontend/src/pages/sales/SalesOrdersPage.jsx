@@ -154,7 +154,7 @@ export default function SalesOrdersPage() {
                                             </Button>
                                             {order.feDocument && (
                                                 <a
-                                                    href={`${import.meta.env.VITE_API_URL || (window.location.origin + '/api')}/sales-orders/pdf-cafe/${order.feDocument.id}?token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`}
+                                                    href={`${import.meta.env.VITE_API_URL || (window.location.origin + '/api')}/sales-orders/download-cafe?id=${order.feDocument.id}&token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center justify-center rounded-md p-2 text-emerald-600 hover:bg-emerald-50 transition-colors"

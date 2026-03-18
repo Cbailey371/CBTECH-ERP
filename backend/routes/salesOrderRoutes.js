@@ -11,7 +11,7 @@ router.get('/:id', salesOrderController.getOrderById);
 router.post('/', salesOrderController.createOrder);
 router.post('/from-quotation', salesOrderController.createFromQuotation);
 router.get('/:id/pdf', salesOrderController.downloadPdf);
-router.get('/pdf-cafe/:id', fepaController.downloadCafe);
+router.get('/download-cafe', fepaController.downloadCafe);
 router.delete('/:id', salesOrderController.deleteOrder);
 router.patch('/:id/status', salesOrderController.updateOrderStatus);
 
