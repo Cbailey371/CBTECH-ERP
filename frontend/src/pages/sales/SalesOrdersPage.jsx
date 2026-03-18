@@ -156,7 +156,11 @@ export default function SalesOrdersPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    onClick={() => window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/fepa/download/${order.feDocument.id}`, '_blank')}
+                                                    onClick={() => {
+                                                        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+                                                        const url = `${baseUrl}/fepa/cafe/${order.feDocument.id}?token=${token}&companyId=${selectedCompany.id}`;
+                                                        window.open(url, '_blank');
+                                                    }}
                                                     title="Descargar CAFE (PDF)"
                                                 >
                                                     <FileText className="w-4 h-4 text-emerald-600" />

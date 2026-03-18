@@ -501,7 +501,7 @@ export default function SalesOrderForm() {
                     </h1>
                 </div>
                 <div className="space-x-2">
-                    {isEditMode && formData.status !== 'draft' && formData.balance > 0 && (
+                    {isEditMode && formData.status !== 'draft' && (formData.balance > 0 || (formData.total - formData.paidAmount) > 0.01) && (
                         <Button onClick={() => setShowPaymentModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
                             <CreditCard className="w-4 h-4 mr-2" /> Registrar Pago
                         </Button>
