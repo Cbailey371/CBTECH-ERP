@@ -36,9 +36,12 @@ exports.createPayment = async (req, res) => {
         // Check Balance Overflow (Optional: Allow overpayment? Standard: Block or Treat as Credit)
         // For now, block if amount > balance + epsilon
         // IMPROVEMENT: Use calculated balance instead of stored balance to handle potentially inconsistent DB states
-        const totalAmount = parseFloat(salesOrder.total);
-        const paidAmount = parseFloat(salesOrder.paidAmount);
+        const totalAmount = parseFloat(salesOrder.total || 0);
+        const paidAmount = parseFloat(salesOrder.paidAmount || 0);
         const actualAvailableBalance = Math.max(0, totalAmount - paidAmount);
+
+        // DEBUG LOG FOR PRODUCTION DIAGNOSIS
+        console.log(`[PAYMENT_DEBUG] Invoice ID: ${salesOrderId}, Found Total: ${totalAmount}, Found Paid: ${paidAmount}, Calculated Balance: ${actualAvailableBalance}, Stored Balance: ${salesOrder.balance}`);
 
         if (parseFloat(amount) > actualAvailableBalance + 0.01) {
             await t.rollback();
