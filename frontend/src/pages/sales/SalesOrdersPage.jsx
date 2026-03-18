@@ -153,16 +153,31 @@ export default function SalesOrdersPage() {
                                                 <Eye className="w-4 h-4" />
                                             </Button>
                                             {order.feDocument && (
-                                                <a
-                                                    href={`${import.meta.env.VITE_API_URL || (window.location.origin + '/api')}/sales-orders/download-cafe?id=${order.feDocument.id}&token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center justify-center rounded-md p-2 text-emerald-600 hover:bg-emerald-50 transition-colors"
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={async () => {
+                                                        try {
+                                                            const baseUrl = import.meta.env.VITE_API_URL || (window.location.origin + '/api');
+                                                            const url = `${baseUrl}/sales-orders/download-cafe?id=${order.feDocument.id}`;
+                                                            const response = await api.get(url, { responseType: 'blob' });
+                                                            const blob = new Blob([response.data], { type: 'application/pdf' });
+                                                            const downloadUrl = window.URL.createObjectURL(blob);
+                                                            const link = document.createElement('a');
+                                                            link.href = downloadUrl;
+                                                            link.setAttribute('download', `CAFE_${order.orderNumber}.pdf`);
+                                                            document.body.appendChild(link);
+                                                            link.click();
+                                                            link.remove();
+                                                            window.URL.revokeObjectURL(downloadUrl);
+                                                        } catch (error) {
+                                                            console.error('Error downloading PDF:', error);
+                                                        }
+                                                    }}
                                                     title="Descargar CAFE (PDF)"
-                                                    onClick={(e) => console.log('Downloading PDF from URL:', e.currentTarget.href)}
                                                 >
-                                                    <FileText className="w-4 h-4" />
-                                                </a>
+                                                    <FileText className="w-4 h-4 text-emerald-600" />
+                                                </Button>
                                             )}
                                             <Button
                                                 variant="ghost"

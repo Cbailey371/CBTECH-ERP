@@ -403,10 +403,27 @@ export default function SalesOrderForm() {
     
     const handleDownloadCafe = async () => {
         if (!formData.feDocument?.id) return alert('No hay un documento fiscal asociado.');
-        const baseUrl = import.meta.env.VITE_API_URL || (window.location.origin + '/api');
-        const url = `${baseUrl}/sales-orders/download-cafe?id=${formData.feDocument.id}&token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`;
-        console.log('Generating PDF Download URL:', url);
-        window.open(url, '_blank');
+        
+        try {
+            const baseUrl = import.meta.env.VITE_API_URL || (window.location.origin + '/api');
+            const url = `${baseUrl}/sales-orders/download-cafe?id=${formData.feDocument.id}`;
+            
+            // Usamos axios para mantener el contexto de autenticación (headers, etc.)
+            const response = await api.get(url, { responseType: 'blob' });
+            
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.setAttribute('download', `CAFE_${formData.orderNumber}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error('Error downloading PDF:', error);
+            alert('Error al descargar el PDF. Por favor, intente de nuevo.');
+        }
     };
 
     const handleRegisterPayment = async (e) => {
