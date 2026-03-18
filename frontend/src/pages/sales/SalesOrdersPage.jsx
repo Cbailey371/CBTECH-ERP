@@ -153,18 +153,16 @@ export default function SalesOrdersPage() {
                                                 <Eye className="w-4 h-4" />
                                             </Button>
                                             {order.feDocument && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => {
-                                                        const baseUrl = import.meta.env.VITE_API_URL || '/api';
-                                                        const url = `${baseUrl}/fepa/cafe/${order.feDocument.id}?token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`;
-                                                        window.open(url, '_blank');
-                                                    }}
+                                                <a
+                                                    href={`${import.meta.env.VITE_API_URL || (window.location.origin + '/api')}/fepa/cafe/${order.feDocument.id}?token=${encodeURIComponent(token)}&companyId=${encodeURIComponent(selectedCompany.id)}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center justify-center rounded-md p-2 text-emerald-600 hover:bg-emerald-50 transition-colors"
                                                     title="Descargar CAFE (PDF)"
+                                                    onClick={(e) => console.log('Downloading PDF from URL:', e.currentTarget.href)}
                                                 >
-                                                    <FileText className="w-4 h-4 text-emerald-600" />
-                                                </Button>
+                                                    <FileText className="w-4 h-4" />
+                                                </a>
                                             )}
                                             <Button
                                                 variant="ghost"
