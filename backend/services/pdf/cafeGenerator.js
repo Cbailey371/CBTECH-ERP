@@ -20,7 +20,13 @@ const printer = new PdfPrinter(fonts);
 
 const generateCafePdf = async (data) => {
     try {
-        const qrBuffer = await QRCode.toDataURL(data.qrUrl || 'NO_QR');
+        // Generar QR con Alta Densidad (Error Correction Level H) para que se parezca al oficial
+        const qrBuffer = await QRCode.toDataURL(data.qrUrl || 'NO_QR', { 
+            errorCorrectionLevel: 'H',
+            margin: 1,
+            scale: 8
+        });
+        
         const logoContent = data.logo || null;
         const isNC = data.docType === '03';
         const docTitle = isNC ? 'NOTA DE CRÉDITO ELECTRÓNICA' : 'FACTURA ELECTRÓNICA';
@@ -81,18 +87,27 @@ const generateCafePdf = async (data) => {
                 },
                 { text: '\n' },
 
-                // 3. AUTH BOX (Números y Fechas)
+                // 3. AUTH BOX (RESTAURADA Y CORREGIDA)
                 {
                     columns: [
                         {
-                            width: '*',
+                            width: 150,
                             stack: [
                                 { text: `Número: ${data.documentNumber}`, fontSize: 9, bold: true },
                                 { text: `Fecha de Emisión: ${data.issueDate}`, fontSize: 9 },
                                 { text: `Punto de Facturación: ${data.issuer.puntoDeVenta || '01'}`, fontSize: 9 }
                             ]
                         },
-                        { width: '*', text: '' } // Espacio para el QR que está arriba
+                        {
+                            width: '*',
+                            stack: [
+                                { text: 'Consulte por la clave de acceso en:', fontSize: 7, color: '#555' },
+                                { text: 'https://dgi-fep.mef.gob.pa/Consultas/FacturasPorCUFE', fontSize: 7, color: '#004085', margin: [0, 0, 0, 3] },
+                                { text: 'CUFE:', bold: true, fontSize: 8 },
+                                { text: data.cufe || 'PENDIENTE', fontSize: 8, font: 'Courier', bold: true, noWrap: false },
+                                { text: `\nProtocolo de autorización: ${data.protocol && data.protocol !== 'null' ? data.protocol : 'AUTORIZADO'}`, fontSize: 8, bold: true }
+                            ]
+                        }
                     ]
                 },
                 { text: '\n' },
