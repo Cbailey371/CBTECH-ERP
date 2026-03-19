@@ -81,7 +81,7 @@ const generateCafePdf = async (data) => {
                 },
                 { text: '\n' },
 
-                // 3. AUTH BOX (CUFE, Protocol, etc)
+                // 3. AUTH BOX (Números y Fechas)
                 {
                     columns: [
                         {
@@ -89,17 +89,10 @@ const generateCafePdf = async (data) => {
                             stack: [
                                 { text: `Número: ${data.documentNumber}`, fontSize: 9, bold: true },
                                 { text: `Fecha de Emisión: ${data.issueDate}`, fontSize: 9 },
-                                { text: `Punto de Facturación: ${data.issuer.puntoDeVenta}`, fontSize: 9 }
+                                { text: `Punto de Facturación: ${data.issuer.puntoDeVenta || '01'}`, fontSize: 9 }
                             ]
                         },
-                        {
-                            width: '*',
-                            stack: [
-                                { text: `Consulte por la clave de acceso en: https://dgi-fep.mef.gob.pa/Consultas/FacturasPorCUFE`, fontSize: 7 },
-                                { text: `CUFE: ${data.cufe}`, fontSize: 8, font: 'Courier', bold: true, margin: [0, 2] },
-                                { text: `Protocolo de autorización: ${data.protocol}`, fontSize: 8, bold: true }
-                            ]
-                        }
+                        { width: '*', text: '' } // Espacio para el QR que está arriba
                     ]
                 },
                 { text: '\n' },
@@ -159,7 +152,7 @@ const generateCafePdf = async (data) => {
                                             [{ text: 'Monto Base', bold: true, fontSize: 8 }, { text: '%', bold: true, fontSize: 8, alignment: 'center' }, { text: 'Impuesto', bold: true, fontSize: 8, alignment: 'right' }],
                                             ...Object.keys(data.totals.breakdown || {}).map(rate => [
                                                 { text: data.totals.breakdown[rate].taxable.toFixed(2), fontSize: 8 },
-                                                { text: rate === '0.00' ? 'Exento' : (parseFloat(rate) * 100).toString(), fontSize: 8, alignment: 'center' },
+                                                { text: rate === '0.00' ? 'Exento' : `${(parseFloat(rate) * 100).toFixed(0)}%`, fontSize: 8, alignment: 'center' },
                                                 { text: data.totals.breakdown[rate].tax.toFixed(2), fontSize: 8, alignment: 'right' }
                                             ]),
                                             [{ text: 'Total', bold: true, fontSize: 8 }, { text: '', fontSize: 8 }, { text: data.totals.totalTax.toFixed(2), bold: true, fontSize: 8, alignment: 'right' }]
