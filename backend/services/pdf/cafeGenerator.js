@@ -1,45 +1,7 @@
 const PdfPrinter = require('pdfmake');
 const QRCode = require('qrcode');
-const axios = require('axios');
 
 // Define fonts - standard fonts included in pdfmake
-const fonts = {
-    Roboto: {
-        normal: 'Helvetica',
-        bold: 'Helvetica-Bold',
-        italics: 'Helvetica-Oblique',
-        bolditalics: 'Helvetica-BoldOblique'
-    },
-    Courier: {
-        normal: 'Courier',
-        bold: 'Courier-Bold',
-        italics: 'Courier-Oblique',
-        bolditalics: 'Courier-BoldOblique'
-    }
-};
-
-const printer = new PdfPrinter(fonts);
-
-/**
- * Helper to fetch image buffer from URL or Path
- */
-const getImageBuffer = async (url) => {
-    try {
-        if (!url) return null;
-        if (url.startsWith('http')) {
-            const response = await axios.get(url, { responseType: 'arraybuffer' });
-            return Buffer.from(response.data);
-        }
-        // If it's a local path, you'd handle it with fs.readFileSync
-        return null;
-    } catch (error) {
-        console.error('Error fetching image for PDF:', error);
-        return null;
-    }
-};
-
-/**
- * Generates a CAFE PDF stream.
  * @param {Object} data Document data object
  * @returns {Promise<Buffer>} PDF Buffer
  */

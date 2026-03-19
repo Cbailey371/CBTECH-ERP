@@ -4,6 +4,7 @@ const FE_Document = require('../../models/FE_Document');
 const SalesOrder = require('../../models/SalesOrder');
 const SalesOrderItem = require('../../models/SalesOrderItem');
 const Customer = require('../../models/Customer');
+const Company = require('../../models/Company');
 const PACFactory = require('../../services/fepa/PACFactory');
 const { generateCafePdf } = require('../../services/pdf/cafeGenerator');
 const { calculateTaxes } = require('../../utils/taxCalculations');
