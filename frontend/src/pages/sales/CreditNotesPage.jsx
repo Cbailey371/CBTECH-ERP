@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 import { Plus, Search, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -34,20 +35,16 @@ const CreditNotesPage = () => {
     const fetchCreditNotes = async () => {
         try {
             setLoading(true);
-            const queryParams = new URLSearchParams();
-            if (searchTerm) queryParams.append('search', searchTerm);
-            if (startDate) queryParams.append('startDate', startDate);
-            if (endDate) queryParams.append('endDate', endDate);
-            if (statusFilter && statusFilter !== 'all') queryParams.append('status', statusFilter);
+            const params = {
+                search: searchTerm || undefined,
+                startDate: startDate || undefined,
+                endDate: endDate || undefined,
+                status: (statusFilter && statusFilter !== 'all') ? statusFilter : undefined
+            };
 
-            const baseUrl = import.meta.env.VITE_API_URL || '';
-            const response = await fetch(`${baseUrl}/api/credit-notes?${queryParams}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'x-company-id': selectedCompany.id
-                }
-            });
-            const data = await response.json();
+            const response = await api.get('/credit-notes', { params });
+            const data = response.data;
+            
             if (data.success) {
                 setCreditNotes(data.creditNotes);
             }
