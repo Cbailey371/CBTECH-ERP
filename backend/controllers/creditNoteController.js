@@ -431,14 +431,25 @@ const creditNoteController = {
                 name: creditNote.customer.name,
                 ruc: creditNote.customer.taxId,
                 address: creditNote.customer.address,
-                email: creditNote.customer.email
+                email: creditNote.customer.email,
+                phone: creditNote.customer.phone
             },
             items: formattedItems,
             issuer: issuerConfig,
             logo: logoBuffer,
-            referencedInvoices,
-            totals
+            totals: totals,
+            referencedInvoices: referencedInvoices
         };
+
+        // Reconstrucción del QR dinámico
+        let finalQrUrl = feDoc.qrUrl;
+        if (!finalQrUrl && creditNote.fiscalCufe && issuerConfig) {
+            const rucStr = issuerConfig.ruc || '';
+            const fechaStr = data.issueDate;
+            const montoStr = totals.totalAmount.toFixed(2);
+            finalQrUrl = `https://dgi-fep.mef.gob.pa/Consultas/FacturasPorCUFE?cufe=${creditNote.fiscalCufe}&ruc=${rucStr}&fecha=${fechaStr}&monto=${montoStr}`;
+        }
+        data.qrUrl = finalQrUrl;
 
         const { generateCafePdf } = require('../services/pdf/cafeGenerator');
         const pdfBuffer = await generateCafePdf(data);

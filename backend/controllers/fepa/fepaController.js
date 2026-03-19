@@ -85,7 +85,6 @@ exports.emitDocument = async (req, res) => {
                 cpbsCmp: i.product ? i.product.cpbsCmp : '1310'
             })),
             customer: order.customer.toJSON(),
-            documentNumber: order.orderNumber, // Incluir el número original para AI04
             // Metadata for PDF
             issuer: issuerConfig,
             totals: calculateTaxes(items.map(i => ({ ...i.toJSON(), taxRate: parseFloat(i.taxRate) || 0 }))) // Recalculate using real tax rate
@@ -163,22 +162,17 @@ exports.downloadCafe = async (req, res) => {
             if (company.documentLogo.startsWith('data:image')) {
                 logoBuffer = company.documentLogo;
             } else if (company.documentLogo.startsWith('http')) {
-                // Si es URL, intentamos obtener el base64 simple (opcionalmente podríamos usar una librería, 
-                // pero para evitar dependencias, si es URL la pasamos tal cual si pdfmake la soporta o la ignoramos)
-                // pdfmake NO soporta URLs directamente en node de forma confiable sin axios/fetch.
-                // Como tenemos node-fetch en package.json, usémoslo.
                 try {
                     const fetch = require('node-fetch');
-                    const response = await fetch(company.documentLogo);
+                                        const response = await fetch(company.documentLogo);
                     const buffer = await response.buffer();
                     logoBuffer = `data:image/png;base64,${buffer.toString('base64')}`;
                 } catch (e) {
-                    console.error('Error fetching terminal logo:', e.message);
+                    console.error('Error fetching logo:', e.message);
                 }
             }
         }
 
-        // Si no hay HTML (PACs antiguos o errores), generamos el PDF interno como fallback
         const formattedItems = items.map((i, index) => ({
             no: index + 1,
             description: i.description || (i.product ? i.product.name : 'Producto'),
@@ -191,13 +185,14 @@ exports.downloadCafe = async (req, res) => {
             discount: parseFloat(i.discount) || 0
         }));
 
+        const totals = calculateTaxes(formattedItems);
+
         const data = {
             docType: feDoc.docType || '01',
             documentNumber: order.orderNumber,
             issueDate: (feDoc.authDate || new Date()).toISOString().split('T')[0],
             cufe: feDoc.cufe || 'PENDIENTE DE AUTORIZACIÓN',
-            qrUrl: feDoc.qrUrl,
-            protocol: feDoc.protocol || feDoc.rejectionReason, 
+            protocol: feDoc.protocol || 'AUTORIZADO',
             customer: {
                 name: order.customer.name,
                 ruc: order.customer.taxId,
@@ -208,8 +203,18 @@ exports.downloadCafe = async (req, res) => {
             items: formattedItems,
             issuer: issuerConfig,
             logo: logoBuffer,
-            totals: calculateTaxes(formattedItems)
+            totals: totals
         };
+
+        // Reconstrucción del QR si no existe en la DB (para facturas antiguas)
+        let finalQrUrl = feDoc.qrUrl;
+        if (!finalQrUrl && feDoc.cufe && issuerConfig) {
+            const rucStr = issuerConfig.ruc || '';
+            const fechaStr = data.issueDate;
+            const montoStr = totals.totalAmount.toFixed(2);
+            finalQrUrl = `https://dgi-fep.mef.gob.pa/Consultas/FacturasPorCUFE?cufe=${feDoc.cufe}&ruc=${rucStr}&fecha=${fechaStr}&monto=${montoStr}`;
+        }
+        data.qrUrl = finalQrUrl;
 
         const pdfBuffer = await generateCafePdf(data);
 
