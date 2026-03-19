@@ -44,7 +44,7 @@ const generateCafePdf = async (data) => {
 
         const docDefinition = {
             pageSize: 'LETTER',
-            pageMargins: [40, 40, 40, 60],
+            pageMargins: [50, 50, 50, 70],
             content: [
                 { text: 'COMPROBANTE AUXILIAR DE FACTURA ELECTRÓNICA', style: 'dgiHeader', alignment: 'center' },
                 { text: '\n' },
@@ -55,9 +55,7 @@ const generateCafePdf = async (data) => {
                             width: 100,
                             stack: logoContent ? [
                                 { image: logoContent, width: 80 }
-                            ] : [
-                                { text: 'LOGO', style: 'placeholderLogo' }
-                            ]
+                            ] : []
                         },
                         {
                             width: '*',
@@ -139,11 +137,13 @@ const generateCafePdf = async (data) => {
                         ]
                     },
                     layout: {
-                        hLineWidth: (i, node) => (i === 0 || i === node.table.body.length) ? 2 : 1,
+                        hLineWidth: (i, node) => (i === 0 || i === 1 || i === node.table.body.length) ? 1 : 0.5,
                         vLineWidth: () => 0,
-                        hLineColor: (i) => i === 1 ? '#000000' : '#dee2e6',
+                        hLineColor: (i) => i === 1 ? '#000000' : '#eeeeee',
                         paddingLeft: () => 5,
-                        paddingRight: () => 5
+                        paddingRight: () => 5,
+                        paddingTop: (i) => i === 0 ? 3 : 6,
+                        paddingBottom: (i) => i === 0 ? 3 : 6
                     }
                 },
                 { text: '\n' },
