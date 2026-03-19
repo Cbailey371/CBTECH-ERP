@@ -72,9 +72,13 @@ const FE_Document = sequelize.define('FE_Document', {
         field: 'rejection_reason'
     },
     pacName: {
-        type: DataTypes.STRING(50),
-        allowNull: true,
+        type: DataTypes.STRING,
         field: 'pac_name'
+    },
+    protocol: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        comment: 'Número de Protocolo de Autorización del PAC'
     },
     environment: {
         type: DataTypes.ENUM('TEST', 'PROD'),

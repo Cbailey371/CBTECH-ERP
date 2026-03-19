@@ -302,6 +302,7 @@ const creditNoteController = {
                     authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
                     status: 'AUTHORIZED',
                     pacName: 'DIGIFACT',
+                    protocol: result.protocol,
                     environment: issuerConfig.environment,
                     htmlContent: result.htmlContent, // Corrected mapping
                     pdfContent: result.pdfBase64  // Corrected mapping
@@ -369,19 +370,60 @@ const creditNoteController = {
 
             if (!feDoc) return res.status(404).json({ error: 'Documento fiscal no encontrado' });
 
-            // 3. Logic: PDF first, then HTML
-            if (feDoc.pdfContent) {
-                const pdfBuffer = Buffer.from(feDoc.pdfContent, 'base64');
-                res.setHeader('Content-Type', 'application/pdf');
-                res.setHeader('Content-Disposition', `attachment; filename=CAFE_${creditNote.number}.pdf`);
-                return res.send(pdfBuffer);
-            } else if (feDoc.htmlContent) {
-                const html = Buffer.from(feDoc.htmlContent, 'base64').toString('utf-8');
-                res.setHeader('Content-Type', 'text/html');
-                return res.send(html);
-            } else {
-                return res.status(404).json({ error: 'No se encontró contenido PDF o HTML para este documento' });
+        // 3. Obtener datos para el generador Premium
+        const issuerConfig = await FE_IssuerConfig.findOne({ where: { companyId } });
+        const company = await Company.findByPk(companyId);
+
+        // Referenced invoice info (Mandatory for NC)
+        const referencedInvoices = [{
+            number: creditNote.salesOrder?.orderNumber || 'N/A',
+            date: creditNote.salesOrder?.issueDate || 'N/A'
+        }];
+
+        const formattedItems = (creditNote.items || []).map(i => ({
+            description: i.description,
+            quantity: parseFloat(i.quantity) || 0,
+            price: parseFloat(i.unitPrice) || 0,
+            total: parseFloat(i.total) || 0,
+            taxRate: parseFloat(i.taxRate || 0.07),
+            discount: parseFloat(i.discount || 0)
+        }));
+
+        let logoBuffer = null;
+        if (company && company.documentLogo) {
+            if (company.documentLogo.startsWith('data:image')) {
+                logoBuffer = company.documentLogo;
             }
+        }
+
+        const data = {
+            docType: '03', // NC
+            documentNumber: creditNote.number,
+            issueDate: creditNote.date ? new Date(creditNote.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+            cufe: creditNote.fiscalCufe,
+            qrUrl: feDoc.qrUrl,
+            customer: {
+                name: creditNote.customer.name,
+                ruc: creditNote.customer.taxId,
+                address: creditNote.customer.address
+            },
+            items: formattedItems,
+            issuer: issuerConfig,
+            logo: logoBuffer,
+            referencedInvoices,
+            totals: {
+                totalTaxable: creditNote.subtotal,
+                totalTax: creditNote.tax,
+                totalAmount: creditNote.total
+            }
+        };
+
+        const { generateCafePdf } = require('../services/pdf/cafeGenerator');
+        const pdfBuffer = await generateCafePdf(data);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=CAFE_${creditNote.number}.pdf`);
+        return res.send(pdfBuffer);
         } catch (error) {
             console.error('Error downloadCafe CN:', error);
             return res.status(500).json({ error: error.message });

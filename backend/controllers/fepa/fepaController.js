@@ -96,16 +96,16 @@ exports.emitDocument = async (req, res) => {
             companyId,
             salesOrderId: order.id,
             docType: '01',
-            status: result.status,
             cufe: result.cufe,
             qrUrl: result.qr,
             xmlSigned: result.xmlSigned,
             htmlContent: result.htmlContent, // Guardamos el HTML oficial de Digifact
             pdfContent: result.pdfBase64,  // Guardamos el PDF oficial de Digifact
-            authDate: result.authDate,
-            rejectionReason: result.error,
-            pacName: issuerConfig.pacProvider,
-            environment: issuerConfig.environment
+            authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
+            status: 'AUTHORIZED',
+            pacName: 'DIGIFACT',
+            protocol: result.protocol,
+            environment: issuerConfig.environment,
         });
 
         // 5. Update Sales Order Status if Authorized
@@ -148,21 +148,14 @@ exports.downloadCafe = async (req, res) => {
         const order = feDoc.salesOrder;
         const items = order ? (order.items || []) : [];
 
-        // PRIORIDAD 1: PDF ORIGINAL DE DIGIFACT (CUALQUIER PAC QUE DE PDF REAL)
-        if (feDoc.pdfContent) {
-            const buffer = Buffer.from(feDoc.pdfContent, 'base64');
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=CAFE-${feDoc.cufe}.pdf`);
-            return res.send(buffer);
-        }
-
-        // PRIORIDAD 2: HTML ORIGINAL DE DIGIFACT (DECODIFICADO)
-        if (feDoc.htmlContent) {
-            // Digifact devuelve el HTML codificado en Base64 en responseData2
-            const decodedHtml = Buffer.from(feDoc.htmlContent, 'base64').toString('utf-8');
-            res.setHeader('Content-Type', 'text/html; charset=utf-8');
-            res.setHeader('Content-Disposition', `inline; filename=CAFE-${feDoc.cufe}.html`);
-            return res.send(decodedHtml);
+        // Obtener logo de la compañía si existe
+        const company = await Company.findByPk(feDoc.companyId);
+        let logoBuffer = null;
+        if (company && company.documentLogo) {
+            // DocumentLogo suele ser una URL o Base64. Si es base64 prefijo data:image...
+            if (company.documentLogo.startsWith('data:image')) {
+                logoBuffer = company.documentLogo; // pdfmake acepta dataUrls
+            }
         }
 
         // Si no hay HTML (PACs antiguos o errores), generamos el PDF interno como fallback
@@ -171,14 +164,17 @@ exports.downloadCafe = async (req, res) => {
             quantity: parseFloat(i.quantity) || 0,
             price: parseFloat(i.unitPrice) || 0,
             total: parseFloat(i.total) || 0,
-            taxRate: parseFloat(i.taxRate) || 0
+            taxRate: parseFloat(i.taxRate) || 0,
+            discount: parseFloat(i.discount) || 0
         }));
 
         const data = {
+            docType: feDoc.docType || '01',
             documentNumber: order.orderNumber,
             issueDate: (feDoc.authDate || new Date()).toISOString().split('T')[0],
             cufe: feDoc.cufe || 'PENDIENTE DE AUTORIZACIÓN',
             qrUrl: feDoc.qrUrl,
+            protocol: feDoc.protocol || feDoc.rejectionReason, // Fallback to reason if no protocol
             customer: {
                 name: order.customer.name,
                 ruc: order.customer.taxId,
@@ -186,6 +182,7 @@ exports.downloadCafe = async (req, res) => {
             },
             items: formattedItems,
             issuer: issuerConfig,
+            logo: logoBuffer,
             totals: calculateTaxes(formattedItems)
         };
 
