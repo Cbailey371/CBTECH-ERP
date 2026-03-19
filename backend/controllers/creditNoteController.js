@@ -349,13 +349,17 @@ const creditNoteController = {
             const { id } = req.params;
             const companyId = req.user.companyId;
 
-            // 1. Find the Credit Note
+            // 1. Find the Credit Note with associations
+            const { Customer, SalesOrder, SalesOrderItem, Product } = require('../models');
             const creditNote = await CreditNote.findOne({
-                where: { id, companyId: companyId },
+                where: { id, company_id: companyId },
                 include: [
                     { model: Customer, as: 'customer' },
-                    { model: SalesOrder, as: 'salesOrder' },
-                    { model: SalesOrderItem, as: 'items', include: [{ model: Product, as: 'product' }] }
+                    { 
+                        model: SalesOrder, 
+                        as: 'salesOrder',
+                        include: [{ model: SalesOrderItem, as: 'items', include: [{ model: Product, as: 'product' }] }]
+                    }
                 ]
             });
 
@@ -385,19 +389,31 @@ const creditNoteController = {
             date: creditNote.salesOrder?.issueDate || 'N/A'
         }];
 
-        const formattedItems = (creditNote.items || []).map(i => ({
-            description: i.product?.name || i.description || 'Sin descripción',
-            quantity: parseFloat(i.quantity) || 0,
-            price: parseFloat(i.unitPrice) || parseFloat(i.unit_price) || 0,
-            total: parseFloat(i.total) || parseFloat(i.total_price) || 0,
-            taxRate: parseFloat(i.tax_rate || 0.07),
-            discount: parseFloat(i.discount || 0)
-        }));
+        const formattedItems = (creditNote.items || []).map(i => {
+            // En CreditNote, items suele ser un JSON con los datos capturados en el momento
+            return {
+                description: i.description || i.productName || 'Producto',
+                quantity: parseFloat(i.quantity) || 0,
+                price: parseFloat(i.unitPrice || i.price) || 0,
+                total: parseFloat(i.total) || 0,
+                taxRate: parseFloat(i.taxRate || 0.07),
+                discount: parseFloat(i.discount || 0)
+            };
+        });
 
         let logoBuffer = null;
         if (company && company.documentLogo) {
             if (company.documentLogo.startsWith('data:image')) {
                 logoBuffer = company.documentLogo;
+            } else if (company.documentLogo.startsWith('http')) {
+                try {
+                    const fetch = require('node-fetch');
+                    const response = await fetch(company.documentLogo);
+                    const buffer = await response.buffer();
+                    logoBuffer = `data:image/png;base64,${buffer.toString('base64')}`;
+                } catch (e) {
+                    console.error('Error fetching NC logo:', e.message);
+                }
             }
         }
 

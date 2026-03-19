@@ -5,7 +5,8 @@ const {
     SalesOrder, 
     SalesOrderItem, 
     Customer, 
-    Company 
+    Company,
+    Product 
 } = require('../../models');
 const PACFactory = require('../../services/fepa/PACFactory');
 const { generateCafePdf } = require('../../services/pdf/cafeGenerator');
@@ -140,7 +141,11 @@ exports.downloadCafe = async (req, res) => {
                 as: 'salesOrder',
                 include: [
                     { model: Customer, as: 'customer' },
-                    { model: SalesOrderItem, as: 'items' }
+                    { 
+                        model: SalesOrderItem, 
+                        as: 'items',
+                        include: [{ model: Product, as: 'product' }]
+                    }
                 ]
             }]
         });
@@ -155,15 +160,27 @@ exports.downloadCafe = async (req, res) => {
         const company = await Company.findByPk(feDoc.companyId);
         let logoBuffer = null;
         if (company && company.documentLogo) {
-            // DocumentLogo suele ser una URL o Base64. Si es base64 prefijo data:image...
             if (company.documentLogo.startsWith('data:image')) {
-                logoBuffer = company.documentLogo; // pdfmake acepta dataUrls
+                logoBuffer = company.documentLogo;
+            } else if (company.documentLogo.startsWith('http')) {
+                // Si es URL, intentamos obtener el base64 simple (opcionalmente podríamos usar una librería, 
+                // pero para evitar dependencias, si es URL la pasamos tal cual si pdfmake la soporta o la ignoramos)
+                // pdfmake NO soporta URLs directamente en node de forma confiable sin axios/fetch.
+                // Como tenemos node-fetch en package.json, usémoslo.
+                try {
+                    const fetch = require('node-fetch');
+                    const response = await fetch(company.documentLogo);
+                    const buffer = await response.buffer();
+                    logoBuffer = `data:image/png;base64,${buffer.toString('base64')}`;
+                } catch (e) {
+                    console.error('Error fetching terminal logo:', e.message);
+                }
             }
         }
 
         // Si no hay HTML (PACs antiguos o errores), generamos el PDF interno como fallback
         const formattedItems = items.map(i => ({
-            description: i.description,
+            description: i.description || (i.product ? i.product.name : 'Producto'),
             quantity: parseFloat(i.quantity) || 0,
             price: parseFloat(i.unitPrice) || 0,
             total: parseFloat(i.total) || 0,
