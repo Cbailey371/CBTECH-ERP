@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import api from '../../services/api';
 import { ArrowLeft, Save, Send, AlertTriangle, FileText, Trash2 } from 'lucide-react'; // Icons
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -59,24 +60,8 @@ const CreditNoteForm = () => {
     const fetchEligibleOrders = async () => {
         try {
             console.log('Fetching eligible orders for company:', selectedCompany?.id);
-
-            // Fix URL construction: Check if VITE_API_URL already contains '/api'
-            const envUrl = import.meta.env.VITE_API_URL || '';
-            // If envUrl is defined and ends with /api, don't duplicate it. 
-            // If it's empty (dev proxy) or just domain, append /api.
-            const urlPath = envUrl.endsWith('/api') ? '/sales-orders' : '/api/sales-orders';
-            const url = `${envUrl}${urlPath}?status=fulfilled&limit=100`;
-
-            console.log('Fetch URL:', url);
-
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'x-company-id': selectedCompany.id
-                }
-            });
-
-            const data = await response.json();
+            const response = await api.get('/sales-orders?status=fulfilled&limit=100');
+            const data = response.data;
 
             if (data.success) {
                 setOrders(data.orders);
@@ -96,14 +81,8 @@ const CreditNoteForm = () => {
     const fetchCreditNote = async () => {
         try {
             setLoading(true);
-            const baseUrl = import.meta.env.VITE_API_URL || '';
-            const response = await fetch(`${baseUrl}/api/credit-notes/${id}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'x-company-id': selectedCompany.id
-                }
-            });
-            const data = await response.json();
+            const response = await api.get(`/credit-notes/${id}`);
+            const data = response.data;
             if (data.success) {
                 const cn = data.creditNote;
                 setFormData({
@@ -119,18 +98,16 @@ const CreditNoteForm = () => {
                     tax: cn.tax,
                     total: cn.total
                 });
-                // Also set totals state for consistency if we reused the calculate logic, 
-                // but for view mode we might just read from formData.
-                // Let's update the check:
+                
                 setTotals({
                     subtotal: parseFloat(cn.subtotal),
                     tax: parseFloat(cn.tax),
                     total: parseFloat(cn.total),
-                    globalDiscount: 0 // If we stored it? logic needed if we want to show it.
+                    globalDiscount: 0
                 });
                 setItems(cn.items); // Items from JSONB
                 setSelectedOrder(cn.salesOrder);
-                setViewMode(true); // Always view mode if loading existing
+                setViewMode(true);
             }
         } catch (err) {
             setError(err.message);
@@ -141,32 +118,24 @@ const CreditNoteForm = () => {
 
     // When Invoice is Selected
     const handleOrderSelect = async (orderId) => {
-        const order = orders.find(o => o.id == orderId); // careful with types
+        const order = orders.find(o => o.id == orderId);
         if (!order) return;
 
         setFormData(prev => ({ ...prev, salesOrderId: orderId }));
 
-        // Fetch full order details to get items
         try {
-            const baseUrl = import.meta.env.VITE_API_URL || '';
-            const response = await fetch(`${baseUrl}/api/sales-orders/${orderId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'x-company-id': selectedCompany.id
-                }
-            });
-            const data = await response.json();
+            const response = await api.get(`/sales-orders/${orderId}`);
+            const data = response.data;
             if (data.success) {
                 const fullOrder = data.order;
                 setSelectedOrder(fullOrder);
 
-                // Map items
                 const mappedItems = fullOrder.items.map(item => ({
                     originalItemId: item.id,
                     productId: item.productId,
                     description: item.description || item.product?.name,
                     originalQuantity: parseFloat(item.quantity),
-                    quantity: parseFloat(item.quantity), // Default to full
+                    quantity: parseFloat(item.quantity),
                     unitPrice: parseFloat(item.unitPrice),
                     discount: parseFloat(item.discount || 0),
                     total: parseFloat(item.total),
@@ -176,6 +145,7 @@ const CreditNoteForm = () => {
             }
         } catch (err) {
             console.error(err);
+            setError('Error al cargar detalles de la factura: ' + err.message);
         }
     };
 
@@ -254,7 +224,7 @@ const CreditNoteForm = () => {
         });
     };
 
-    const handleSubmit = async (action = 'create') => { // 'create' (draft) or 'emit'
+    const handleSubmit = async (action = 'create') => {
         setError('');
         if (!formData.salesOrderId) {
             setError('Seleccione una factura original');
@@ -268,40 +238,22 @@ const CreditNoteForm = () => {
         try {
             setLoading(true);
 
-            // 1. Create Draft
             const payload = {
                 salesOrderId: formData.salesOrderId,
                 refundType: formData.refundType,
                 reason: formData.reason,
-                items: items.filter(i => i.quantity > 0) // Only send positive items if partial
+                items: items.filter(i => i.quantity > 0)
             };
 
-            const baseUrl = import.meta.env.VITE_API_URL || '';
-            const response = await fetch(`${baseUrl}/api/credit-notes`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'x-company-id': selectedCompany.id
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
+            const response = await api.post('/credit-notes', payload);
+            const data = response.data;
             if (!data.success) throw new Error(data.error);
 
             const creditNoteId = data.creditNote.id;
 
-            // 2. If Emit action
             if (action === 'emit') {
-                const emitResponse = await fetch(`${baseUrl}/api/credit-notes/${creditNoteId}/emit`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'x-company-id': selectedCompany.id
-                    }
-                });
-                const emitData = await emitResponse.json();
+                const emitResponse = await api.post(`/credit-notes/${creditNoteId}/emit`);
+                const emitData = emitResponse.data;
                 if (!emitData.success) throw new Error(emitData.error);
 
                 alert('Nota de Crédito emitida exitosamente');
@@ -312,7 +264,7 @@ const CreditNoteForm = () => {
             navigate('/credit-notes');
 
         } catch (err) {
-            setError(err.message);
+            setError(err.response?.data?.error || err.message);
         } finally {
             setLoading(false);
         }
@@ -323,25 +275,14 @@ const CreditNoteForm = () => {
 
         try {
             setLoading(true);
-            // Fix URL construction: Check if VITE_API_URL already contains '/api'
-            const envUrl = import.meta.env.VITE_API_URL || '';
-            const urlPath = envUrl.endsWith('/api') ? '/credit-notes' : '/api/credit-notes';
-            const url = `${envUrl}${urlPath}/${id}`;
-
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'x-company-id': selectedCompany.id
-                }
-            });
-            const data = await response.json();
+            const response = await api.delete(`/credit-notes/${id}`);
+            const data = response.data;
             if (!data.success) throw new Error(data.error);
 
             alert('Nota de crédito eliminada');
             navigate('/credit-notes');
         } catch (err) {
-            setError(err.message);
+            setError(err.response?.data?.error || err.message);
             setLoading(false);
         }
     };
@@ -349,22 +290,11 @@ const CreditNoteForm = () => {
     const handleDownloadPDF = async () => {
         try {
             setLoading(true);
-            const baseUrl = import.meta.env.VITE_API_URL || '';
-            const url = `${baseUrl}/api/credit-notes/${id}/download`;
-
-            const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                    'x-company-id': selectedCompany.id
-                }
+            const response = await api.get(`/credit-notes/${id}/download`, {
+                responseType: 'blob'
             });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Error al descargar el PDF');
-            }
-
-            const blob = await response.blob();
+            const blob = new Blob([response.data], { type: 'application/pdf' });
             const downloadUrl = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = downloadUrl;
@@ -374,7 +304,7 @@ const CreditNoteForm = () => {
             window.URL.revokeObjectURL(downloadUrl);
             document.body.removeChild(a);
         } catch (err) {
-            alert('Error al descargar: ' + err.message);
+            alert('Error al descargar: ' + (err.response?.data?.error || err.message));
         } finally {
             setLoading(false);
         }
