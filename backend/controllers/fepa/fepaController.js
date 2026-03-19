@@ -1,10 +1,12 @@
-const { sequelize } = require('../../config/database');
-const FE_IssuerConfig = require('../../models/FE_IssuerConfig');
-const FE_Document = require('../../models/FE_Document');
-const SalesOrder = require('../../models/SalesOrder');
-const SalesOrderItem = require('../../models/SalesOrderItem');
-const Customer = require('../../models/Customer');
-const Company = require('../../models/Company');
+const { 
+    sequelize, 
+    FE_IssuerConfig, 
+    FE_Document, 
+    SalesOrder, 
+    SalesOrderItem, 
+    Customer, 
+    Company 
+} = require('../../models');
 const PACFactory = require('../../services/fepa/PACFactory');
 const { generateCafePdf } = require('../../services/pdf/cafeGenerator');
 const { calculateTaxes } = require('../../utils/taxCalculations');
