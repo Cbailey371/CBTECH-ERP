@@ -116,7 +116,7 @@ const generateCafePdf = async (data) => {
                 {
                     table: {
                         headerRows: 1,
-                        widths: ['*', 50, 60, 60, 60, 50, 65],
+                        widths: ['*', 35, 55, 55, 55, 45, 60],
                         body: [
                             [
                                 { text: 'Descripción', style: 'tableHeader' },
