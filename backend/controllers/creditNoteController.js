@@ -351,7 +351,12 @@ const creditNoteController = {
 
             // 1. Find the Credit Note
             const creditNote = await CreditNote.findOne({
-                where: { id, company_id: companyId }
+                where: { id, companyId: companyId },
+                include: [
+                    { model: Customer, as: 'customer' },
+                    { model: SalesOrder, as: 'salesOrder' },
+                    { model: SalesOrderItem, as: 'items', include: [{ model: Product, as: 'product' }] }
+                ]
             });
 
             if (!creditNote) return res.status(404).json({ error: 'Nota de crédito no encontrada' });
@@ -381,11 +386,11 @@ const creditNoteController = {
         }];
 
         const formattedItems = (creditNote.items || []).map(i => ({
-            description: i.description,
+            description: i.product?.name || i.description || 'Sin descripción',
             quantity: parseFloat(i.quantity) || 0,
-            price: parseFloat(i.unitPrice) || 0,
-            total: parseFloat(i.total) || 0,
-            taxRate: parseFloat(i.taxRate || 0.07),
+            price: parseFloat(i.unitPrice) || parseFloat(i.unit_price) || 0,
+            total: parseFloat(i.total) || parseFloat(i.total_price) || 0,
+            taxRate: parseFloat(i.tax_rate || 0.07),
             discount: parseFloat(i.discount || 0)
         }));
 
