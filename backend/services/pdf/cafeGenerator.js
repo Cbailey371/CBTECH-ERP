@@ -46,6 +46,8 @@ const generateCafePdf = async (data) => {
             pageSize: 'LETTER',
             pageMargins: [40, 40, 40, 60],
             content: [
+                { text: 'COMPROBANTE AUXILIAR DE FACTURA ELECTRÓNICA', style: 'dgiHeader', alignment: 'center' },
+                { text: '\n' },
                 // Header: Logo & Issuer Info
                 {
                     columns: [
@@ -184,6 +186,13 @@ const generateCafePdf = async (data) => {
                                             ]
                                         }
                                     ]
+                                },
+                                { text: '\n' },
+                                { 
+                                    text: 'Documento validado por DIGIFACT SERVICIOS, S.A. con RUC: 155704849-2-2021 D.V. 32, es Proveedor Autorizado Calificado (PAC), RESOLUCIÓN: 201-4219, de 29/06/2022.',
+                                    fontSize: 6,
+                                    color: '#777',
+                                    italics: true
                                 }
                             ]
                         },
@@ -208,7 +217,7 @@ const generateCafePdf = async (data) => {
                         { canvas: [{ type: 'line', x1: 40, y1: 0, x2: 572, y2: 0, lineWidth: 0.5, color: '#dee2e6' }] },
                         {
                             columns: [
-                                { text: 'Generado por CBTECH ERP', fontSize: 7, color: '#999', margin: [40, 5] },
+                                { text: 'Este documento es una representación gráfica de una factura electrónica.', fontSize: 6, color: '#999', margin: [40, 5] },
                                 { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 7, color: '#999', margin: [0, 5, 40, 0] }
                             ]
                         }
@@ -216,6 +225,7 @@ const generateCafePdf = async (data) => {
                 };
             },
             styles: {
+                dgiHeader: { fontSize: 8, bold: true, color: '#666' },
                 headerIssuer: { fontSize: 12, bold: true, color: '#000' },
                 subHeaderIssuer: { fontSize: 9, bold: true, color: '#333' },
                 placeholderLogo: { fontSize: 20, bold: true, color: '#ddd', margin: [0, 10] },
