@@ -179,9 +179,12 @@ exports.downloadCafe = async (req, res) => {
         }
 
         // Si no hay HTML (PACs antiguos o errores), generamos el PDF interno como fallback
-        const formattedItems = items.map(i => ({
+        const formattedItems = items.map((i, index) => ({
+            no: index + 1,
             description: i.description || (i.product ? i.product.name : 'Producto'),
             quantity: parseFloat(i.quantity) || 0,
+            uom: i.product?.unitOfMeasure || 'und',
+            code: i.product?.itemCode || '',
             price: parseFloat(i.unitPrice) || 0,
             total: parseFloat(i.total) || 0,
             taxRate: parseFloat(i.taxRate) || 0,
@@ -194,11 +197,13 @@ exports.downloadCafe = async (req, res) => {
             issueDate: (feDoc.authDate || new Date()).toISOString().split('T')[0],
             cufe: feDoc.cufe || 'PENDIENTE DE AUTORIZACIÓN',
             qrUrl: feDoc.qrUrl,
-            protocol: feDoc.protocol || feDoc.rejectionReason, // Fallback to reason if no protocol
+            protocol: feDoc.protocol || feDoc.rejectionReason, 
             customer: {
                 name: order.customer.name,
                 ruc: order.customer.taxId,
-                address: order.customer.address
+                address: order.customer.address,
+                email: order.customer.email,
+                phone: order.customer.phone
             },
             items: formattedItems,
             issuer: issuerConfig,

@@ -417,26 +417,27 @@ const creditNoteController = {
             }
         }
 
+        const { calculateTaxes } = require('../utils/taxCalculations');
+        const totals = calculateTaxes(formattedItems);
+
         const data = {
             docType: '03', // NC
             documentNumber: creditNote.number,
             issueDate: creditNote.date ? new Date(creditNote.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             cufe: creditNote.fiscalCufe,
             qrUrl: feDoc.qrUrl,
+            protocol: feDoc.protocol || 'AUTORIZADO',
             customer: {
                 name: creditNote.customer.name,
                 ruc: creditNote.customer.taxId,
-                address: creditNote.customer.address
+                address: creditNote.customer.address,
+                email: creditNote.customer.email
             },
             items: formattedItems,
             issuer: issuerConfig,
             logo: logoBuffer,
             referencedInvoices,
-            totals: {
-                totalTaxable: creditNote.subtotal,
-                totalTax: creditNote.tax,
-                totalAmount: creditNote.total
-            }
+            totals
         };
 
         const { generateCafePdf } = require('../services/pdf/cafeGenerator');

@@ -1,7 +1,6 @@
 const PdfPrinter = require('pdfmake');
 const QRCode = require('qrcode');
 
-// Define fonts - standard fonts included in pdfmake
 const fonts = {
     Roboto: {
         normal: 'Helvetica',
@@ -19,194 +18,210 @@ const fonts = {
 
 const printer = new PdfPrinter(fonts);
 
-/**
- * Generates a CAFE PDF stream.
- * @param {Object} data Document data object
- * @returns {Promise<Buffer>} PDF Buffer
- */
 const generateCafePdf = async (data) => {
     try {
-        // 1. Prepare QR Code
-        const qrCodeUrl = data.qrUrl || 'NO_QR_DATA';
-        const qrBuffer = await QRCode.toDataURL(qrCodeUrl);
-
-        // 2. Prepare Logo (if any)
-        // We assume docData.issuer (from FE_IssuerConfig) doesn't have logo, 
-        // but maybe we pass it in docData.logo
-        let logoContent = null;
-        if (data.logo) {
-            // If data.logo is already a buffer or base64
-            logoContent = data.logo;
-        }
-
+        const qrBuffer = await QRCode.toDataURL(data.qrUrl || 'NO_QR');
+        const logoContent = data.logo || null;
         const isNC = data.docType === '03';
         const docTitle = isNC ? 'NOTA DE CRÉDITO ELECTRÓNICA' : 'FACTURA ELECTRÓNICA';
+        const opType = isNC ? 'Nota de crédito referente a una o varias FE' : 'Factura de operación interna';
 
         const docDefinition = {
             pageSize: 'LETTER',
-            pageMargins: [50, 50, 50, 70],
+            pageMargins: [40, 40, 40, 40],
             content: [
-                { text: 'COMPROBANTE AUXILIAR DE FACTURA ELECTRÓNICA', style: 'dgiHeader', alignment: 'center' },
-                { text: '\n' },
-                // Header: Logo & Issuer Info
+                // 1. TOP HEADER (Logo, DGI Center, QR Right)
                 {
                     columns: [
                         {
-                            width: 100,
-                            stack: logoContent ? [
-                                { image: logoContent, width: 80 }
-                            ] : []
+                            width: 120,
+                            stack: logoContent ? [{ image: logoContent, width: 100 }] : []
                         },
                         {
                             width: '*',
-                            margin: [10, 0, 0, 0],
                             stack: [
-                                { text: (data.issuer.razonSocial || 'EMPRESA').toUpperCase(), style: 'headerIssuer' },
-                                { text: `RUC: ${data.issuer.ruc}   DV: ${data.issuer.dv}`, style: 'subHeaderIssuer' },
-                                { text: `Dirección: ${data.issuer.direccion}`, style: 'small' },
-                                { text: `Sucursal: ${data.issuer.sucursal || '0000'} | P. Venta: ${data.issuer.puntoDeVenta || '01'}`, style: 'small' }
+                                { text: 'DGI', alignment: 'center', bold: true, fontSize: 14 },
+                                { text: 'Comprobante Auxiliar de Factura Electrónica', alignment: 'center', bold: true, fontSize: 10 },
+                                { text: opType, alignment: 'center', fontSize: 11, bold: true, margin: [0, 5] }
                             ]
                         },
                         {
-                            width: 180,
+                            width: 120,
                             stack: [
-                                { text: docTitle, style: 'docTitle', alignment: 'right' },
-                                { text: `No. ${data.documentNumber}`, style: 'docNumber', alignment: 'right' },
-                                { text: `Fecha: ${data.issueDate}`, style: 'small', alignment: 'right', margin: [0, 5, 0, 0] }
+                                { image: qrBuffer, width: 100, alignment: 'right' }
                             ]
                         }
                     ]
                 },
                 { text: '\n' },
 
-                // Gray Info Box (Datos Generales)
-                {
-                    table: {
-                        widths: ['*'],
-                        body: [
-                            [{
-                                fillColor: '#f8f9fa',
-                                border: [false, true, false, true],
-                                margin: [5, 5, 5, 5],
-                                columns: [
-                                    {
-                                        width: '*',
-                                        stack: [
-                                            { text: 'DATOS DEL RECEPTOR', style: 'sectionHeader' },
-                                            { text: data.customer.name, bold: true, fontSize: 11 },
-                                            { text: `RUC/Cédula: ${data.customer.ruc || 'N/A'}`, fontSize: 9 },
-                                            { text: `Dirección: ${data.customer.address || 'N/A'}`, fontSize: 8, color: '#666' }
-                                        ]
-                                    },
-                                    {
-                                        width: 150,
-                                        stack: [
-                                            { text: 'DETALLES DE PAGO', style: 'sectionHeader' },
-                                            { text: `Condición: ${data.paymentMethod || 'Contado'}`, fontSize: 9 },
-                                            { text: `Moneda: ${data.currency || 'USD'}`, fontSize: 9 }
-                                        ]
-                                    }
-                                ]
-                            }]
-                        ]
-                    },
-                    layout: { hLineColor: '#dee2e6', hLineWidth: () => 1 }
-                },
-                { text: '\n' },
-
-                // Items Table
-                {
-                    table: {
-                        headerRows: 1,
-                        widths: ['auto', '*', 'auto', 'auto', 'auto'],
-                        body: [
-                            [
-                                { text: 'Cant', style: 'tableHeader' },
-                                { text: 'Descripción', style: 'tableHeader' },
-                                { text: 'Precio', style: 'tableHeader', alignment: 'right' },
-                                { text: 'Desc.', style: 'tableHeader', alignment: 'right' },
-                                { text: 'Total', style: 'tableHeader', alignment: 'right' }
-                            ],
-                            ...data.items.map(item => [
-                                { text: item.quantity, fontSize: 9, margin: [0, 3] },
-                                { text: item.description, fontSize: 9, margin: [0, 3] },
-                                { text: Number(item.price).toFixed(2), alignment: 'right', fontSize: 9, margin: [0, 3] },
-                                { text: Number(item.discount || 0).toFixed(2), alignment: 'right', fontSize: 9, margin: [0, 3] },
-                                { text: Number(item.total).toFixed(2), alignment: 'right', fontSize: 9, margin: [0, 3], bold: true }
-                            ])
-                        ]
-                    },
-                    layout: {
-                        hLineWidth: (i, node) => (i === 0 || i === 1 || i === node.table.body.length) ? 1 : 0.5,
-                        vLineWidth: () => 0,
-                        hLineColor: (i) => i === 1 ? '#000000' : '#eeeeee',
-                        paddingLeft: () => 5,
-                        paddingRight: () => 5,
-                        paddingTop: (i) => i === 0 ? 3 : 6,
-                        paddingBottom: (i) => i === 0 ? 3 : 6
-                    }
-                },
-                { text: '\n' },
-
-                // Totals & QR Section
+                // 2. ISSUER & CUSTOMER INFO
                 {
                     columns: [
                         {
                             width: '*',
                             stack: [
-                                isNC && data.referencedInvoices ? [
-                                    { text: 'DOCUMENTOS REFERENCIADOS', style: 'sectionHeader' },
-                                    {
-                                        table: {
-                                            widths: ['*', 'auto'],
-                                            body: [
-                                                [{ text: 'Factura No.', style: 'smallBold' }, { text: 'Fecha', style: 'smallBold' }],
-                                                ...data.referencedInvoices.map(ref => [
-                                                    { text: ref.number, fontSize: 8 },
-                                                    { text: ref.date, fontSize: 8 }
-                                                ])
-                                            ]
-                                        },
-                                        layout: 'lightHorizontalLines'
-                                    },
-                                    { text: '\n' }
-                                ] : [],
-                                {
-                                    columns: [
-                                        { width: 80, image: qrBuffer, fit: [80, 80] },
-                                        {
-                                            width: '*',
-                                            margin: [10, 5, 0, 0],
-                                            stack: [
-                                                { text: 'CUFE:', bold: true, fontSize: 7 },
-                                                { text: data.cufe || 'PENDIENTE', fontSize: 7, font: 'Courier', color: '#444' },
-                                                { text: '\nProtocolo de Autorización:', bold: true, fontSize: 7 },
-                                                { text: data.protocol || 'Ver portal DGI', fontSize: 7 },
-                                                { text: '\nConsulte la validez escaneando el QR.', fontSize: 7, italics: true, color: '#666' }
-                                            ]
-                                        }
-                                    ]
-                                },
-                                { text: '\n' },
-                                { 
-                                    text: 'Documento validado por DIGIFACT SERVICIOS, S.A. con RUC: 155704849-2-2021 D.V. 32, es Proveedor Autorizado Calificado (PAC), RESOLUCIÓN: 201-4219, de 29/06/2022.',
-                                    fontSize: 6,
-                                    color: '#777',
-                                    italics: true
-                                }
+                                { text: `Emisor: ${data.issuer.razonSocial}`, bold: true, fontSize: 9 },
+                                { text: `RUC: ${data.issuer.ruc}   DV: ${data.issuer.dv}`, fontSize: 9 },
+                                { text: `E-Mail: ${data.issuer.email || 'n/a'}   Teléfono: ${data.issuer.phone || 'n/a'}`, fontSize: 9 },
+                                { text: `Dirección: ${data.issuer.direccion}`, fontSize: 9 }
+                            ]
+                        }
+                    ]
+                },
+                { text: '\n' },
+                {
+                    stack: [
+                        { text: `Tipo de Receptor: Contribuyente`, fontSize: 9 },
+                        { text: `Cliente: ${data.customer.name}`, bold: true, fontSize: 9 },
+                        { text: `RUC/Cédula/Pasaporte: ${data.customer.ruc}   DV: ${data.customer.dv || ''}`, fontSize: 9 },
+                        { text: `E-Mail: ${data.customer.email || 'n/a'}`, fontSize: 9 },
+                        { text: `Dirección: ${data.customer.address}`, fontSize: 9 }
+                    ]
+                },
+                { text: '\n' },
+
+                // 3. AUTH BOX (CUFE, Protocol, etc)
+                {
+                    columns: [
+                        {
+                            width: '*',
+                            stack: [
+                                { text: `Número: ${data.documentNumber}`, fontSize: 9, bold: true },
+                                { text: `Fecha de Emisión: ${data.issueDate}`, fontSize: 9 },
+                                { text: `Punto de Facturación: ${data.issuer.puntoDeVenta}`, fontSize: 9 }
                             ]
                         },
                         {
-                            width: 180,
+                            width: '*',
+                            stack: [
+                                { text: `Consulte por la clave de acceso en: https://dgi-fep.mef.gob.pa/Consultas/FacturasPorCUFE`, fontSize: 7 },
+                                { text: `CUFE: ${data.cufe}`, fontSize: 8, font: 'Courier', bold: true, margin: [0, 2] },
+                                { text: `Protocolo de autorización: ${data.protocol}`, fontSize: 8, bold: true }
+                            ]
+                        }
+                    ]
+                },
+                { text: '\n' },
+
+                // 4. ITEMS TABLE
+                {
+                    table: {
+                        headerRows: 1,
+                        widths: [20, '*', 50, 40, 50, 50, 50, 40, 55],
+                        body: [
+                            [
+                                { text: 'No.', style: 'tableHeader' },
+                                { text: 'Descripción', style: 'tableHeader' },
+                                { text: 'Cantidad', style: 'tableHeader', alignment: 'center' },
+                                { text: 'Unidad', style: 'tableHeader', alignment: 'center' },
+                                { text: 'Valor Unitario', style: 'tableHeader', alignment: 'right' },
+                                { text: 'Descuento Unitario', style: 'tableHeader', alignment: 'right' },
+                                { text: 'Monto', style: 'tableHeader', alignment: 'right' },
+                                { text: 'ITBMS', style: 'tableHeader', alignment: 'right' },
+                                { text: 'Valor Item', style: 'tableHeader', alignment: 'right' }
+                            ],
+                            ...data.items.map(item => [
+                                { text: item.no || '1', fontSize: 8 },
+                                { text: item.description, fontSize: 8 },
+                                { text: item.quantity, alignment: 'center', fontSize: 8 },
+                                { text: item.uom || 'und', alignment: 'center', fontSize: 8 },
+                                { text: item.price.toFixed(2), alignment: 'right', fontSize: 8 },
+                                { text: (item.discount / item.quantity || 0).toFixed(2), alignment: 'right', fontSize: 8 },
+                                { text: (item.quantity * item.price).toFixed(2), alignment: 'right', fontSize: 8 },
+                                { text: (item.total - (item.quantity * item.price) + item.discount).toFixed(2), alignment: 'right', fontSize: 8 },
+                                { text: item.total.toFixed(2), alignment: 'right', fontSize: 8, bold: true }
+                            ])
+                        ]
+                    },
+                    layout: 'lightHorizontalLines'
+                },
+                {
+                    columns: [
+                        { width: '*', text: '' },
+                        { width: 100, text: 'Valor Total', bold: true, alignment: 'right', fontSize: 9, margin: [0, 5] },
+                        { width: 55, text: data.totals.totalAmount.toFixed(2), bold: true, alignment: 'right', fontSize: 9, margin: [0, 5] }
+                    ]
+                },
+                { text: '\n' },
+
+                // 5. TAX BREAKDOWN & TOTALS
+                {
+                    columns: [
+                        {
+                            width: 250,
+                            stack: [
+                                { text: 'Desglose ITBMS', alignment: 'center', bold: true, fontSize: 9, background: '#f0f0f0', margin: [0, 5] },
+                                {
+                                    table: {
+                                        widths: ['*', '*', '*'],
+                                        body: [
+                                            [{ text: 'Monto Base', bold: true, fontSize: 8 }, { text: '%', bold: true, fontSize: 8, alignment: 'center' }, { text: 'Impuesto', bold: true, fontSize: 8, alignment: 'right' }],
+                                            ...Object.keys(data.totals.breakdown || {}).map(rate => [
+                                                { text: data.totals.breakdown[rate].taxable.toFixed(2), fontSize: 8 },
+                                                { text: rate === '0.00' ? 'Exento' : (parseFloat(rate) * 100).toString(), fontSize: 8, alignment: 'center' },
+                                                { text: data.totals.breakdown[rate].tax.toFixed(2), fontSize: 8, alignment: 'right' }
+                                            ]),
+                                            [{ text: 'Total', bold: true, fontSize: 8 }, { text: '', fontSize: 8 }, { text: data.totals.totalTax.toFixed(2), bold: true, fontSize: 8, alignment: 'right' }]
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        { width: 50, text: '' },
+                        {
+                            width: '*',
                             table: {
-                                widths: ['*', 'auto'],
+                                widths: ['*', 60],
                                 body: [
-                                    [{ text: 'Subtotal:', fontSize: 10, alignment: 'right', margin: [0, 2] }, { text: Number(data.totals.totalTaxable || 0).toFixed(2), alignment: 'right', fontSize: 10, margin: [0, 2] }],
-                                    [{ text: 'ITBMS (7%):', fontSize: 10, alignment: 'right', margin: [0, 2] }, { text: Number(data.totals.totalTax || 0).toFixed(2), alignment: 'right', fontSize: 10, margin: [0, 2] }],
-                                    [{ text: 'Total a Pagar:', style: 'totalLabel' }, { text: Number(data.totals.totalAmount || 0).toFixed(2), style: 'totalValue' }]
+                                    [{ text: 'Total Neto', fontSize: 9, alignment: 'right' }, { text: data.totals.totalTaxable.toFixed(2), alignment: 'right', fontSize: 9 }],
+                                    [{ text: 'Monto Exento ITBMS', fontSize: 9, alignment: 'right' }, { text: (data.totals.breakdown['0.00']?.taxable || 0).toFixed(2), alignment: 'right', fontSize: 9 }],
+                                    [{ text: 'Monto Gravado ITBMS', fontSize: 9, alignment: 'right' }, { text: (data.totals.totalTaxable - (data.totals.breakdown['0.00']?.taxable || 0)).toFixed(2), alignment: 'right', fontSize: 9 }],
+                                    [{ text: 'ITBMS', fontSize: 9, alignment: 'right' }, { text: data.totals.totalTax.toFixed(2), alignment: 'right', fontSize: 9 }],
+                                    [{ text: 'Total Impuesto', fontSize: 9, alignment: 'right' }, { text: data.totals.totalTax.toFixed(2), alignment: 'right', fontSize: 9 }],
+                                    [{ text: 'Total', bold: true, fontSize: 11, alignment: 'right' }, { text: data.totals.totalAmount.toFixed(2), bold: true, alignment: 'right', fontSize: 11 }]
                                 ]
                             },
                             layout: 'noBorders'
+                        }
+                    ]
+                },
+                { text: '\n' },
+
+                // 6. PAYMENT INFO
+                {
+                    columns: [
+                        {
+                            width: 250,
+                            stack: [
+                                { text: 'Información de Pago a Plazo', alignment: 'center', bold: true, fontSize: 9, background: '#f0f0f0', margin: [0, 5] },
+                                {
+                                    table: {
+                                        widths: [40, '*', 50],
+                                        body: [
+                                            [{ text: 'Cuota', bold: true, fontSize: 8 }, { text: 'Fecha de Vencimiento', bold: true, fontSize: 8 }, { text: 'Valor', bold: true, fontSize: 8, alignment: 'right' }],
+                                            [{ text: '1', fontSize: 8 }, { text: data.dueDate || data.issueDate, fontSize: 8 }, { text: data.totals.totalAmount.toFixed(2), fontSize: 8, alignment: 'right' }]
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        { width: 50, text: '' },
+                        {
+                            width: '*',
+                            stack: [
+                                { text: 'Forma de Pago', alignment: 'center', bold: true, fontSize: 9, background: '#f0f0f0', margin: [0, 5] },
+                                {
+                                    table: {
+                                        widths: ['*', 60],
+                                        body: [
+                                            [{ text: 'Crédito', fontSize: 9, alignment: 'right' }, { text: data.totals.totalAmount.toFixed(2), alignment: 'right', fontSize: 9 }],
+                                            [{ text: 'TOTAL PAGADO', bold: true, fontSize: 9, alignment: 'right' }, { text: data.totals.totalAmount.toFixed(2), bold: true, alignment: 'right', fontSize: 9 }],
+                                            [{ text: 'Vuelto', fontSize: 9, alignment: 'right' }, { text: '0.00', alignment: 'right', fontSize: 9 }]
+                                        ]
+                                    }
+                                }
+                            ]
                         }
                     ]
                 }
@@ -217,7 +232,7 @@ const generateCafePdf = async (data) => {
                         { canvas: [{ type: 'line', x1: 40, y1: 0, x2: 572, y2: 0, lineWidth: 0.5, color: '#dee2e6' }] },
                         {
                             columns: [
-                                { text: 'Este documento es una representación gráfica de una factura electrónica.', fontSize: 6, color: '#999', margin: [40, 5] },
+                                { text: 'Documento validado por DIGIFACT SERVICIOS, S.A. con RUC: 155704849-2-2021 D.V. 32, es PAC, RESOLUCIÓN: 201-4219, de 29/06/2022.', fontSize: 6, color: '#999', margin: [40, 5] },
                                 { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 7, color: '#999', margin: [0, 5, 40, 0] }
                             ]
                         }
@@ -225,18 +240,7 @@ const generateCafePdf = async (data) => {
                 };
             },
             styles: {
-                dgiHeader: { fontSize: 8, bold: true, color: '#666' },
-                headerIssuer: { fontSize: 12, bold: true, color: '#000' },
-                subHeaderIssuer: { fontSize: 9, bold: true, color: '#333' },
-                placeholderLogo: { fontSize: 20, bold: true, color: '#ddd', margin: [0, 10] },
-                docTitle: { fontSize: 14, bold: true, color: '#000' },
-                docNumber: { fontSize: 14, bold: true, color: '#004085' },
-                sectionHeader: { fontSize: 8, bold: true, color: '#495057', margin: [0, 0, 0, 3], characterSpacing: 1 },
-                tableHeader: { bold: true, fontSize: 9, color: 'white', fillColor: '#000000', margin: [0, 3] },
-                totalLabel: { fontSize: 12, bold: true, alignment: 'right', margin: [0, 5, 0, 0] },
-                totalValue: { fontSize: 14, bold: true, alignment: 'right', color: '#000', margin: [0, 3, 0, 0] },
-                small: { fontSize: 8, color: '#444' },
-                smallBold: { fontSize: 8, bold: true }
+                tableHeader: { bold: true, fontSize: 8, fillColor: '#f0f0f0' }
             },
             defaultStyle: {
                 font: 'Roboto',
