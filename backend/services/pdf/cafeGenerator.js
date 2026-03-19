@@ -116,13 +116,11 @@ const generateCafePdf = async (data) => {
                 {
                     table: {
                         headerRows: 1,
-                        widths: [20, '*', 50, 40, 50, 50, 50, 40, 55],
+                        widths: ['*', 50, 60, 60, 60, 50, 65],
                         body: [
                             [
-                                { text: 'No.', style: 'tableHeader' },
                                 { text: 'Descripción', style: 'tableHeader' },
                                 { text: 'Cantidad', style: 'tableHeader', alignment: 'center' },
-                                { text: 'Unidad', style: 'tableHeader', alignment: 'center' },
                                 { text: 'Valor Unitario', style: 'tableHeader', alignment: 'right' },
                                 { text: 'Descuento Unitario', style: 'tableHeader', alignment: 'right' },
                                 { text: 'Monto', style: 'tableHeader', alignment: 'right' },
@@ -130,10 +128,8 @@ const generateCafePdf = async (data) => {
                                 { text: 'Valor Item', style: 'tableHeader', alignment: 'right' }
                             ],
                             ...data.items.map(item => [
-                                { text: item.no || '1', fontSize: 8 },
                                 { text: item.description, fontSize: 8 },
                                 { text: item.quantity, alignment: 'center', fontSize: 8 },
-                                { text: item.uom || 'und', alignment: 'center', fontSize: 8 },
                                 { text: item.price.toFixed(2), alignment: 'right', fontSize: 8 },
                                 { text: (item.discount / item.quantity || 0).toFixed(2), alignment: 'right', fontSize: 8 },
                                 { text: (item.quantity * item.price).toFixed(2), alignment: 'right', fontSize: 8 },
