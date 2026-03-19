@@ -409,10 +409,11 @@ class DigifactAdapter extends PACAdapter {
                 return {
                     success: true,
                     cufe: result.authNumber,
+                    qr: result.qrCodeUrl, // Retornamos el QR oficial del PAC
                     xmlSigned: result.responseData1,
                     htmlContent: result.responseData2,
                     pdfBase64: result.responseData3,
-                    authDate: new Date(),
+                    authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
                     status: 'AUTHORIZED'
                 };
             } else {
