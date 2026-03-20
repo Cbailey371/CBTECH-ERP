@@ -52,8 +52,8 @@ exports.getOrders = async (req, res) => {
         }
         if (search) {
             whereClause[Op.or] = [
-                { orderNumber: { [Op.iLike]: `% ${search}% ` } },
-                { '$customer.name$': { [Op.iLike]: `% ${search}% ` } }
+                { orderNumber: { [Op.iLike]: `%${search}%` } },
+                { '$customer.name$': { [Op.iLike]: `%${search}%` } }
             ];
         }
 
