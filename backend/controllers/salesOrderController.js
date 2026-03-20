@@ -69,7 +69,8 @@ exports.getOrders = async (req, res) => {
             limit: parseInt(limit),
             offset: parseInt(offset),
             order: [['issueDate', 'DESC'], ['id', 'DESC']],
-            distinct: true
+            distinct: true,
+            subQuery: false
         });
 
         res.json({
