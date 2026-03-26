@@ -189,7 +189,8 @@ exports.downloadCafe = async (req, res) => {
 
         const data = {
             docType: feDoc.docType || '01',
-            documentNumber: order.orderNumber,
+            // El usuario solicita el número de factura completo (10 dígitos)
+            documentNumber: String(order.orderNumber || '1').replace(/\D/g, '').slice(-10).padStart(10, '0'),
             issueDate: (feDoc.authDate || new Date()).toISOString().split('T')[0],
             cufe: feDoc.cufe || 'PENDIENTE DE AUTORIZACIÓN',
             protocol: feDoc.protocol || 'AUTORIZADO',
@@ -201,9 +202,14 @@ exports.downloadCafe = async (req, res) => {
                 phone: order.customer.phone
             },
             items: formattedItems,
-            issuer: issuerConfig,
+            // El usuario solicita el punto de facturación completo (usualmente 3 dígitos)
+            issuer: {
+                ...issuerConfig.toJSON(),
+                puntoDeVenta: String(issuerConfig.puntoDeVenta || '001').padStart(3, '0')
+            },
             logo: logoBuffer,
-            totals: totals
+            totals: totals,
+            isExtranjero: order.customer.tipoReceptor === '04' || (order.customer.paisReceptor && order.customer.paisReceptor !== 'PA')
         };
 
         // Reconstrucción del QR si no existe en la DB (para facturas antiguas)

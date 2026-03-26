@@ -217,9 +217,9 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
                     { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },
                     { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad },
-                    { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },
+                    { "Name": "NaturalezaOperacion", "Data": null, "Value": isExtranjero ? "11" : "01" },
                     { "Name": "TipoOperacion", "Data": null, "Value": "1" },
-                    { "Name": "DestinoOperacion", "Data": null, "Value": "1" },
+                    { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
                     { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
                     { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
                     { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
@@ -406,15 +406,32 @@ class DigifactAdapter extends PACAdapter {
 
             const result = JSON.parse(resultText);
             if (result && result.authNumber) {
+                // Intentar extraer el contenido del QR del XML si es posible, 
+                // ya que el usuario indica que la URL de consulta no es suficiente.
+                let finalQr = result.qrCodeUrl;
+                if (result.responseData1) {
+                    try {
+                        const xmlDecoded = Buffer.from(result.responseData1, 'base64').toString('utf8');
+                        const qrMatch = xmlDecoded.match(/<CodigoQR>([^<]+)<\/CodigoQR>/);
+                        if (qrMatch && qrMatch[1]) {
+                            finalQr = qrMatch[1];
+                        }
+                    } catch (e) {
+                        console.error("Error extrayendo QR del XML:", e);
+                    }
+                }
+
                 return {
                     success: true,
                     cufe: result.authNumber,
-                    qr: result.qrCodeUrl, // Retornamos el QR oficial del PAC
+                    qr: finalQr, 
                     xmlSigned: result.responseData1,
                     htmlContent: result.responseData2,
                     pdfBase64: result.responseData3,
                     authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
-                    status: 'AUTHORIZED'
+                    status: 'AUTHORIZED',
+                    protocol: result.authProtocol || result.authorizationProtocol || null,
+                    numeroDF: numeroDF // Retornamos el número de 10 dígitos usado
                 };
             } else {
                 return {

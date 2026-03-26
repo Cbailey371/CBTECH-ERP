@@ -28,9 +28,11 @@ const generateCafePdf = async (data) => {
         });
         
         const logoContent = data.logo || null;
-        const isNC = data.docType === '03';
+        const isNC = data.docType === '03' || data.docType === '04';
         const docTitle = isNC ? 'NOTA DE CRÉDITO ELECTRÓNICA' : 'FACTURA ELECTRÓNICA';
-        const opType = isNC ? 'Nota de crédito referente a una o varias FE' : 'Factura de operación interna';
+        const opType = isNC 
+            ? 'Nota de crédito referente a una o varias FE' 
+            : (data.isExtranjero ? 'Factura de operación extranjera' : 'Factura de operación interna');
 
         const docDefinition = {
             pageSize: 'LETTER',
@@ -95,7 +97,7 @@ const generateCafePdf = async (data) => {
                             stack: [
                                 { text: `Número: ${data.documentNumber}`, fontSize: 9, bold: true },
                                 { text: `Fecha de Emisión: ${data.issueDate}`, fontSize: 9 },
-                                { text: `Punto de Facturación: ${data.issuer.puntoDeVenta || '01'}`, fontSize: 9 }
+                                { text: `Punto de Facturación: ${data.issuer.puntoDeVenta}`, fontSize: 9 }
                             ]
                         },
                         {
@@ -105,7 +107,7 @@ const generateCafePdf = async (data) => {
                                 { text: 'https://dgi-fep.mef.gob.pa/Consultas/FacturasPorCUFE', fontSize: 7, color: '#004085', margin: [0, 0, 0, 3] },
                                 { text: 'CUFE:', bold: true, fontSize: 8 },
                                 { text: data.cufe || 'PENDIENTE', fontSize: 8, font: 'Courier', bold: true, noWrap: false },
-                                { text: `\nProtocolo de autorización: ${data.protocol && data.protocol !== 'null' ? data.protocol : 'AUTORIZADO'}`, fontSize: 8, bold: true }
+                                { text: `\nProtocolo de autorización: ${data.protocol && data.protocol !== 'null' && data.protocol !== 'AUTORIZADO' ? data.protocol : 'PENDIENTE'}`, fontSize: 8, bold: true }
                             ]
                         }
                     ]
