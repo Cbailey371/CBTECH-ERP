@@ -13,7 +13,9 @@ import { Combobox } from '../../components/ui/Combobox';
 import { Textarea } from '../../components/ui/Textarea';
 import { generateQuotationPDF } from '../../utils/QuotationPDF';
 
-const DEFAULT_NOTES = `Forma de pago: Cheque o contado a nombre de CBTECH Consulting Solutions Systems
+const DEFAULT_NOTES = `Término de pago: 50% contra orden de compra y restantes 50% contra entrega
+
+Forma de pago: Cheque o contado a nombre de CBTECH Consulting Solutions Systems
 
 CARLOS BAILEY / CBTECH CONSULTING SOLUTIONS SYSTEMS
 BANCO GENERAL
