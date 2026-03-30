@@ -42,7 +42,11 @@ const getNextOrderNumber = async (companyId, transaction) => {
 exports.getOrders = async (req, res) => {
     try {
         const { page = 1, limit = 10, search = '', status, startDate, endDate } = req.query;
-        const companyId = req.user.companyId;
+        const companyId = req.user?.companyId;
+
+        if (!companyId) {
+            return res.status(401).json({ error: 'Sesión inválida o empresa no identificada' });
+        }
 
         const whereClause = { companyId };
 

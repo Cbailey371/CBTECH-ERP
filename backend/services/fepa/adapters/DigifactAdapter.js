@@ -160,9 +160,6 @@ class DigifactAdapter extends PACAdapter {
             buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
         }
 
-        // Siempre informar TipoReceptor seguin Catalogo DGI
-        buyerTaxIDAdditionalInfo.push({ "Name": "TipoReceptor", "Data": null, "Value": docData.customer.tipoReceptor || "01" });
-
         if (docData.customer.objetoRetencion) {
             buyerTaxIDAdditionalInfo.push({ "Name": "ObjetoRetencion", "Data": null, "Value": docData.customer.objetoRetencion });
         }

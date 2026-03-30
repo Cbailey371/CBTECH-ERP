@@ -42,13 +42,15 @@ const Customer = sequelize.define('Customer', {
   email: {
     type: DataTypes.STRING(255),
     allowNull: true,
-    validate: {
-      isEmail: true,
-      notEmpty(value) {
-        if (value === '') {
-          this.email = null;
-        }
+    set(value) {
+      if (value === '') {
+        this.setDataValue('email', null);
+      } else {
+        this.setDataValue('email', value);
       }
+    },
+    validate: {
+      isEmail: true
     }
   },
   phone: {
