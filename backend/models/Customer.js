@@ -144,17 +144,18 @@ const Customer = sequelize.define('Customer', {
     hooks: {
       beforeValidate: (customer) => {
         if (customer.email === '') {
-          customer.email = null;
+          console.log('--- HOOK: CLEANING EMAIL ---');
+          customer.set('email', null);
         }
       },
       beforeCreate: (customer) => {
         if (customer.email === '') {
-          customer.email = null;
+          customer.set('email', null);
         }
       },
       beforeUpdate: (customer) => {
         if (customer.email === '') {
-          customer.email = null;
+          customer.set('email', null);
         }
       }
     }

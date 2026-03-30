@@ -180,8 +180,8 @@ class DigifactAdapter extends PACAdapter {
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
             "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente Sin Nombre"),
             "Contact": null,
-            "AdditionlInfo": [
-                { "Name": "PaisReceptorFE", "Data": null, "Value": "PA" }
+            "AdditionalInfo": [
+                { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" }
             ]
         };
 
@@ -228,9 +228,9 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
                     { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },
                     { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad },
-                    { "Name": "NaturalezaOperacion", "Data": null, "Value": (isExtranjero && !isLocalCountry) ? "11" : "01" },
+                    { "Name": "NaturalezaOperacion", "Data": null, "Value": isExtranjero ? "02" : "01" },
                     { "Name": "TipoOperacion", "Data": null, "Value": "1" },
-                    { "Name": "DestinoOperacion", "Data": null, "Value": isLocalCountry ? "1" : (isExtranjero ? "2" : "1") },
+                    { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
                     { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
                     { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
                     { "Name": "EnvioContenedor", "Data": null, "Value": "1" },

@@ -19,15 +19,25 @@ const authenticateToken = (req, res, next) => {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
+      console.log('-- AUTH TRACE: Token verify failed --', err.message);
       return res.status(403).json({
         success: false,
         message: 'Token inválido'
       });
     }
     req.user = user;
-    if (companyId) {
-      req.user.companyId = parseInt(companyId); // Attach to user object for easy access in controllers
+    
+    // TRACING COMPANY ID
+    const finalCompanyId = companyId || user.companyId;
+    console.log(`-- AUTH TRACE -- Method: ${req.method} URL: ${req.originalUrl}`);
+    console.log(`-- AUTH TRACE -- Header/Query CompanyId: ${companyId}`);
+    console.log(`-- AUTH TRACE -- Token CompanyId: ${user.companyId}`);
+    console.log(`-- AUTH TRACE -- Final CompanyId: ${finalCompanyId}`);
+
+    if (finalCompanyId) {
+      req.user.companyId = parseInt(finalCompanyId);
     }
+    
     next();
   });
 };
