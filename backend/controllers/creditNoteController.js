@@ -270,7 +270,15 @@ const creditNoteController = {
                 })),
                 customer: creditNote.customer.toJSON(),
                 invoiceNumber: originalInvoiceDoc.cufe, // Mandatorio: CUFE de la factura afectada
-                invoiceNumberRefDate: String(originalInvoiceDoc.authDate || creditNote.salesOrder.issueDate).split('T')[0], // Forzar YYYY-MM-DD
+                invoiceNumberRefDate: (() => {
+                    const d = originalInvoiceDoc.authDate || creditNote.salesOrder.issueDate;
+                    try {
+                        const dateObj = new Date(d);
+                        return isNaN(dateObj.getTime()) ? String(d).split('T')[0] : dateObj.toISOString().split('T')[0];
+                    } catch (e) {
+                        return String(d).split('T')[0];
+                    }
+                })(), // Forzar YYYY-MM-DD robustamente
                 
                 // Nuevos campos para referencia robusta (Digifact)
                 originalDocNumber: creditNote.salesOrder.orderNumber, // F - 2026 - 0050

@@ -355,9 +355,16 @@ class DigifactAdapter extends PACAdapter {
                     {
                         "Info": [
                             { "Name": "NombEmRef", "Data": null, "Value": emisorName },
-                            { "Name": "FechaDFRef", "Data": null, "Value": (docData.invoiceNumberRefDate instanceof Date ? docData.invoiceNumberRefDate.toISOString().split('T')[0] : String(docData.invoiceNumberRefDate).split('T')[0]) },
+                            { "Name": "FechaDFRef", "Data": null, "Value": (() => {
+                                try {
+                                    const d = new Date(docData.invoiceNumberRefDate || docData.originalDate);
+                                    return isNaN(d.getTime()) ? String(docData.invoiceNumberRefDate).split('T')[0] : d.toISOString().split('T')[0];
+                                } catch (e) {
+                                    return String(docData.invoiceNumberRefDate).split('T')[0];
+                                }
+                            })() },
                             { "Name": "CUFERef", "Data": null, "Value": cufeClean },
-                            { "Name": "TipoDocumentoRef", "Data": null, "Value": "01" },
+                           { "Name": "TipoDocumentoRef", "Data": null, "Value": "01" },
                             { "Name": "SerieDocRef", "Data": null, "Value": refPOS },
                             { "Name": "NumeroDocRef", "Data": null, "Value": refNumber }
                         ],
