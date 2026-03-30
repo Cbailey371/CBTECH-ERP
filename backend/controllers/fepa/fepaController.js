@@ -222,6 +222,19 @@ exports.downloadCafe = async (req, res) => {
         }
         data.qrUrl = finalQrUrl;
 
+        const { generateCafePdf } = require('../../services/pdf/cafeGenerator');
+        
+        // --- PRIORIDAD: Usar PDF oficial del proveedor (Digifact) si existe ---
+        if (feDoc.pdfContent) {
+            console.log(`[FE_DOWNLOAD] Usando PDF original del proveedor para: ${feDoc.cufe}`);
+            const pdfBuffer = Buffer.from(feDoc.pdfContent, 'base64');
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=CAFE-${feDoc.cufe}.pdf`);
+            return res.send(pdfBuffer);
+        }
+
+        // --- FALLBACK: Solo si no hay PDF guardado (documentos antiguos) ---
+        console.log(`[FE_DOWNLOAD] PDF del proveedor no encontrado, generando formato local para: ${feDoc.cufe}`);
         const pdfBuffer = await generateCafePdf(data);
 
         res.setHeader('Content-Type', 'application/pdf');
