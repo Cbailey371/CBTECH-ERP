@@ -453,17 +453,24 @@ const creditNoteController = {
 
         const { generateCafePdf } = require('../services/pdf/cafeGenerator');
         
-        // --- PRIORIDAD: Usar PDF oficial del proveedor (Digifact) si existe ---
+        // --- PRIORIDAD: Usar PDF oficial del proveedor (responseData3) ---
         if (feDoc.pdfContent) {
-            console.log(`[NC_DOWNLOAD] Usando PDF original del proveedor para: ${feDoc.cufe}`);
+            console.log(`[NC_DOWNLOAD] Usando PDF (responseData3) del proveedor para: ${feDoc.cufe}`);
             const pdfBuffer = Buffer.from(feDoc.pdfContent, 'base64');
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `attachment; filename=CAFE_${creditNote.number}.pdf`);
             return res.send(pdfBuffer);
         }
 
-        // --- FALLBACK: Solo si no hay PDF guardado ---
-        console.log(`[NC_DOWNLOAD] PDF del proveedor no encontrado, generando formato local para: ${feDoc.cufe}`);
+        // --- SEGUNDA OPCIÓN: Usar HTML oficial si no hay PDF ---
+        if (feDoc.htmlContent) {
+            console.log(`[NC_DOWNLOAD] Usando HTML (responseData2) del proveedor para: ${feDoc.cufe}`);
+            res.setHeader('Content-Type', 'text/html');
+            return res.send(feDoc.htmlContent);
+        }
+
+        // --- FALLBACK: Solo si no hay nada guardado ---
+        console.log(`[NC_DOWNLOAD] No se encontró contenido del proveedor, generando formato local para: ${feDoc.cufe}`);
         const pdfBuffer = await generateCafePdf(data);
 
         res.setHeader('Content-Type', 'application/pdf');
