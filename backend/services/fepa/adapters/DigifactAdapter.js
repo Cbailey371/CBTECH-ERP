@@ -128,8 +128,8 @@ class DigifactAdapter extends PACAdapter {
             .slice(-10)         // Tomar los últimos 10
             .padStart(10, '0'); // Rellenar con ceros a la izquierda
 
-        // DocType: 01=Factura, 02=Nota de Crédito, 03=Nota de Débito (Para Digifact NUC)
-        const docType = (docData.docType === '03' || docData.docType === 'C') ? '02' : (docData.docType === '04' ? '03' : '01');
+        // DocType: 01=Factura, 03=Nota de Crédito, 04=Nota de Débito (Para Digifact NUC)
+        const docType = (docData.docType === '03' || docData.docType === 'C') ? '03' : (docData.docType === '04' ? '04' : '01');
 
         // PtoFactDF: Para pruebas debe ser mayor a 599 (ej: 987)
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
