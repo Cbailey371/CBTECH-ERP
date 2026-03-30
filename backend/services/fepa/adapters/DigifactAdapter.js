@@ -329,7 +329,7 @@ class DigifactAdapter extends PACAdapter {
             "AdditionalDocumentInfo": {
                 "AdditionalInfo": [
                     {
-                        "AdditionalInfo": [
+                        "AditionalInfo": [
                             { "Name": "TiempoPago", "Data": null, "Value": "1" }
                         ]
                     }
@@ -338,7 +338,7 @@ class DigifactAdapter extends PACAdapter {
         };
 
         if (['C', '03', '04', '05'].includes(docData.docType) && docData.invoiceNumber) {
-            nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AdditionalData = {
+            nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
                 "Data": [
                     {
                         "Info": [
