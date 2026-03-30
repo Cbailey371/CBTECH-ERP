@@ -140,11 +140,15 @@ class DigifactAdapter extends PACAdapter {
         ];
 
         // Manejo específico para Extranjeros
-        const customerCountry = String(docData.customer.paisReceptor || docData.customer.country || 'PA').trim().toUpperCase();
-        const isLocalCountry = ['PA', 'PANAMA', 'PANAMÁ', 'PANAMA '].includes(customerCountry);
+        // Manejo robusto para detectar si es una operación local (Panamá)
+        const rawCountry = (docData.customer.paisReceptor || docData.customer.country || 'PA').trim().toUpperCase();
+        // Eliminar tildes y ruidos comunes para comparar
+        const normalizedCountry = rawCountry.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z]/g, "");
+        
+        const isLocalCountry = ['PA', 'PANAMA', 'RP', 'REPUBLICADEPANAMA'].includes(normalizedCountry) || rawCountry === 'PA';
         
         const isExtranjero = docData.customer.tipoReceptor === '04' || 
-                            (!isLocalCountry && customerCountry !== '') || 
+                            (!isLocalCountry && rawCountry !== '') || 
                             docData.customer.taxId === 'EXTRANJERO';
         
         if (isExtranjero) {
@@ -220,9 +224,9 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
                     { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },
                     { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad },
-                    { "Name": "NaturalezaOperacion", "Data": null, "Value": isExtranjero ? "11" : "01" },
+                    { "Name": "NaturalezaOperacion", "Data": null, "Value": (isExtranjero && !isLocalCountry) ? "11" : "01" },
                     { "Name": "TipoOperacion", "Data": null, "Value": "1" },
-                    { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
+                    { "Name": "DestinoOperacion", "Data": null, "Value": isLocalCountry ? "1" : (isExtranjero ? "2" : "1") },
                     { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
                     { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
                     { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
