@@ -18,239 +18,303 @@ const fonts = {
 
 const printer = new PdfPrinter(fonts);
 
+const formatIssueDateStr = (dateStr) => {
+    try {
+        if (!dateStr) return { date: 'N/A', time: 'N/A' };
+        
+        if (dateStr.includes(' de ')) {
+             const parts = dateStr.split(' ');
+             if (parts.length >= 6) {
+                  return {
+                      date: parts.slice(0, 5).join(' '),
+                      time: parts[5] || ''
+                  };
+             }
+        }
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return { date: dateStr, time: '' };
+        const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        const timeStr = d.toTimeString().split(' ')[0];
+        return {
+            date: `${d.getDate()} de ${months[d.getMonth()]} de ${d.getFullYear()}`,
+            time: timeStr
+        };
+    } catch(e) {
+         return { date: dateStr || 'N/A', time: '' };
+    }
+};
+
+const blueColor = '#0066cc';
+
+const blueLayoutDashedInner = {
+    hLineWidth: function (i, node) { return (i === 0 || i === node.table.body.length) ? 1.5 : 1; },
+    vLineWidth: function (i, node) { return (i === 0 || i === node.table.widths.length) ? 1.5 : 1; },
+    hLineColor: function () { return blueColor; },
+    vLineColor: function () { return blueColor; },
+    hLineStyle: function (i, node) { return (i === 0 || i === node.table.body.length) ? null : {dash: {length: 2, space: 2}}; },
+    vLineStyle: function (i, node) { return (i === 0 || i === node.table.widths.length) ? null : {dash: {length: 2, space: 2}}; },
+    paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3
+};
+
+const itemsLayout = {
+    hLineWidth: function (i, node) { 
+        if (i === 0 || i === node.table.body.length) return 1.5; 
+        if (i === 1) return 1.5; 
+        return 1; 
+    },
+    vLineWidth: function (i, node) { return (i === 0 || i === node.table.widths.length) ? 1.5 : 1; },
+    hLineColor: function () { return blueColor; },
+    vLineColor: function () { return blueColor; },
+    hLineStyle: function (i, node) { 
+        if (i === 0 || i === 1 || i === node.table.body.length) return null; 
+        return {dash: {length: 2, space: 2}}; 
+    },
+    vLineStyle: function (i, node) { 
+        if (i === 0 || i === node.table.widths.length) return null; 
+        return {dash: {length: 2, space: 2}}; 
+    },
+    paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 3, paddingBottom: () => 3
+};
+
+const validationBoxLayout = {
+    hLineWidth: () => 1.5,
+    vLineWidth: () => 1.5,
+    hLineColor: () => blueColor,
+    vLineColor: () => blueColor,
+    paddingLeft: () => 8, paddingRight: () => 8, paddingTop: () => 6, paddingBottom: () => 6
+};
+
 const generateCafePdf = async (data) => {
     try {
-        // Generar QR con Alta Densidad (Error Correction Level H) para que se parezca al oficial
         const qrBuffer = await QRCode.toDataURL(data.qrUrl || 'NO_QR', { 
             errorCorrectionLevel: 'H',
             margin: 1,
-            scale: 8
+            scale: 6
         });
         
         const logoContent = data.logo || null;
+        const logoOrEmpty = logoContent 
+            ? { image: logoContent, width: 120, alignment: 'center', margin: [0, 20, 0, 0] } 
+            : { text: '', width: 120 };
+
         const isNC = data.docType === '03' || data.docType === '04';
         const docTitle = isNC ? 'NOTA DE CRÉDITO ELECTRÓNICA' : 'FACTURA ELECTRÓNICA';
         const opType = isNC 
-            ? 'Nota de crédito referente a una o varias FE' 
-            : (data.isExtranjero ? 'Factura de operación extranjera' : 'Factura de operación interna');
+            ? 'Nota de crédito' 
+            : (data.isExtranjero ? 'Factura de Operación Extranjera' : 'Factura de Operación Interna');
 
+        const { date: iDate, time: iTime } = formatIssueDateStr(data.issueDate);
+        
+        let protocolStr = data.protocol && data.protocol !== 'null' && data.protocol !== 'AUTORIZADO' ? data.protocol : '00000000000-0-000000000000000000000';
+        
         const docDefinition = {
             pageSize: 'LETTER',
-            pageMargins: [40, 40, 40, 40],
+            pageMargins: [30, 20, 30, 60],
             content: [
-                // 1. TOP HEADER (Logo, DGI Center, QR Right)
+                { text: 'DGI\nCOMPROBANTE AUXILIAR DE FACTURA ELECTRÓNICA', alignment: 'center', bold: true, fontSize: 10, margin: [0, 0, 0, 5] },
+                
+                // BOX 1: Emisor & Receptor
                 {
-                    columns: [
-                        {
-                            width: 120,
-                            stack: logoContent ? [{ image: logoContent, width: 100 }] : []
-                        },
-                        {
-                            width: '*',
-                            stack: [
-                                { text: 'DGI', alignment: 'center', bold: true, fontSize: 14 },
-                                { text: 'Comprobante Auxiliar de Factura Electrónica', alignment: 'center', bold: true, fontSize: 10 },
-                                { text: opType, alignment: 'center', fontSize: 11, bold: true, margin: [0, 5] }
+                    table: {
+                        widths: [150, '*'],
+                        body: [
+                            [
+                                {
+                                    ...logoOrEmpty,
+                                    border: [false, false, true, false] 
+                                },
+                                {
+                                    table: {
+                                        widths: ['*'],
+                                        body: [
+                                            [{ text: [{text: 'Nombre Emisor: ', bold: true}, data.issuer.razonSocial || ''], margin: [0, 0] }],
+                                            [{ text: [{text: 'Ruc Emisor: ', bold: true}, `${data.issuer.ruc || ''} `, {text: 'DV: ', bold: true}, data.issuer.dv || ''], margin: [0, 0] }],
+                                            [{ text: [{text: 'Dirección Emisor: ', bold: true}, data.issuer.direccion || ''], margin: [0, 0] }],
+                                            [{ text: [{text: 'Tipo de Receptor: ', bold: true}, data.customer.tipoReceptor || 'Contribuyente'], margin: [0, 0] }],
+                                            [{ text: [{text: 'Razón Social: ', bold: true}, data.customer.name || ''], margin: [0, 0] }],
+                                            [{ text: [{text: 'Ruc: ', bold: true}, `${data.customer.ruc || ''} `, {text: 'DV: ', bold: true}, data.customer.dv || ''], margin: [0, 0] }],
+                                            [{ text: [{text: 'Dirección: ', bold: true}, data.customer.address || ''], margin: [0, 0] }]
+                                        ]
+                                    },
+                                    layout: {
+                                        hLineWidth: (i) => (i === 3) ? 1.5 : 0, 
+                                        vLineWidth: () => 0,
+                                        hLineColor: () => blueColor,
+                                        paddingLeft: () => 0, paddingRight: () => 0, paddingTop: () => 4, paddingBottom: () => 4
+                                    },
+                                    border: [false, false, false, false]
+                                }
                             ]
-                        },
-                        {
-                            width: 120,
-                            stack: [
-                                { image: qrBuffer, width: 100, alignment: 'right' }
-                            ]
-                        }
-                    ]
+                        ]
+                    },
+                    layout: {
+                        hLineWidth: function (i, node) { return (i === 0 || i === node.table.body.length) ? 1.5 : 0; },
+                        vLineWidth: function (i, node) { return (i === 0 || i === node.table.widths.length) ? 1.5 : 1.5; },
+                        hLineColor: function () { return blueColor; },
+                        vLineColor: function () { return blueColor; },
+                        paddingLeft: () => 4, paddingRight: () => 4, paddingTop: () => 4, paddingBottom: () => 4
+                    }
                 },
-                { text: '\n' },
+                { text: '\n', fontSize: 6 },
 
-                // 2. ISSUER & CUSTOMER INFO
+                // BOX 2: Auth Info
                 {
-                    columns: [
-                        {
-                            width: '*',
-                            stack: [
-                                { text: `Emisor: ${data.issuer.razonSocial}`, bold: true, fontSize: 9 },
-                                { text: `RUC: ${data.issuer.ruc}   DV: ${data.issuer.dv}`, fontSize: 9 },
-                                { text: `E-Mail: ${data.issuer.email || 'n/a'}   Teléfono: ${data.issuer.phone || 'n/a'}`, fontSize: 9 },
-                                { text: `Dirección: ${data.issuer.direccion}`, fontSize: 9 }
+                    table: {
+                        widths: [150, 110, '*'],
+                        body: [
+                            [
+                                { text: [{text: 'Tipo: ', bold: true}, opType] },
+                                { text: [{text: 'Número: ', bold: true}, data.documentNumber || ''] },
+                                { text: [
+                                    {text: 'Autorización de Uso Previa, operación normal\n', bold: true},
+                                    {text: 'Protocolo de Autorización : ', bold: true}, `${protocolStr}, de\n${iDate} ${iTime}`
+                                ]}
+                            ],
+                            [
+                                { text: [{text: 'Fecha: ', bold: true}, iDate] },
+                                { text: [{text: 'Hora: ', bold: true}, iTime] },
+                                { 
+                                    rowSpan: 2, 
+                                    text: [
+                                        {text: 'Consulte por la clave de acceso en\n', bold: true},
+                                        {text: 'https://dgi-fep.mef.gob.pa/Consultas/FacturasPorCUFE\n'},
+                                        {text: data.cufe || 'PENDIENTE'}
+                                    ]
+                                }
+                            ],
+                            [
+                                { text: [{text: 'Sucursal: ', bold: true}, data.issuer.sucursal || '0000'] },
+                                { text: [{text: 'Caja/Pto Fact: ', bold: true}, data.issuer.puntoDeVenta || '001'] },
+                                ''
+                            ],
+                            [
+                                { colSpan: 3, text: [{text: 'Observaciones: ', bold: true}, data.observaciones || ''] },
+                                '',
+                                ''
                             ]
-                        }
-                    ]
+                        ]
+                    },
+                    layout: blueLayoutDashedInner
                 },
-                { text: '\n' },
-                {
-                    stack: [
-                        { text: `Tipo de Receptor: Contribuyente`, fontSize: 9 },
-                        { text: `Cliente: ${data.customer.name}`, bold: true, fontSize: 9 },
-                        { text: `RUC/Cédula/Pasaporte: ${data.customer.ruc}   DV: ${data.customer.dv || ''}`, fontSize: 9 },
-                        { text: `E-Mail: ${data.customer.email || 'n/a'}`, fontSize: 9 },
-                        { text: `Dirección: ${data.customer.address}`, fontSize: 9 }
-                    ]
-                },
-                { text: '\n' },
+                { text: '\n', fontSize: 6 },
 
-                // 3. AUTH BOX (RESTAURADA Y CORREGIDA)
-                {
-                    columns: [
-                        {
-                            width: 150,
-                            stack: [
-                                { text: `Número: ${data.documentNumber}`, fontSize: 9, bold: true },
-                                { text: `Fecha de Emisión: ${data.issueDate}`, fontSize: 9 },
-                                { text: `Punto de Facturación: ${data.issuer.puntoDeVenta}`, fontSize: 9 }
-                            ]
-                        },
-                        {
-                            width: '*',
-                            stack: [
-                                { text: 'Consulte por la clave de acceso en:', fontSize: 7, color: '#555' },
-                                { text: 'https://dgi-fep.mef.gob.pa/Consultas/FacturasPorCUFE', fontSize: 7, color: '#004085', margin: [0, 0, 0, 3] },
-                                { text: 'CUFE:', bold: true, fontSize: 8 },
-                                { text: data.cufe || 'PENDIENTE', fontSize: 8, font: 'Courier', bold: true, noWrap: false },
-                                { text: `\nProtocolo de autorización: ${data.protocol && data.protocol !== 'null' && data.protocol !== 'AUTORIZADO' ? data.protocol : 'PENDIENTE'}`, fontSize: 8, bold: true }
-                            ]
-                        }
-                    ]
-                },
-                { text: '\n' },
-
-                // 4. ITEMS TABLE
+                // BOX 3: Items
                 {
                     table: {
                         headerRows: 1,
-                        widths: ['*', 25, 48, 48, 48, 38, 55],
+                        widths: ['auto', '*', 'auto', 'auto', 70, 60, 70],
                         body: [
                             [
-                                { text: 'Descripción', style: 'tableHeader' },
-                                { text: 'Cantidad', style: 'tableHeader', alignment: 'center' },
-                                { text: 'Valor Unitario', style: 'tableHeader', alignment: 'right' },
-                                { text: 'Descuento Unitario', style: 'tableHeader', alignment: 'right' },
-                                { text: 'Monto', style: 'tableHeader', alignment: 'right' },
-                                { text: 'ITBMS', style: 'tableHeader', alignment: 'right' },
-                                { text: 'Valor Item', style: 'tableHeader', alignment: 'right' }
+                                { text: 'Código', bold: true, alignment: 'center' },
+                                { text: 'Descripción', bold: true, alignment: 'center' },
+                                { text: 'Cantidad', bold: true, alignment: 'center' },
+                                { text: 'Unidad', bold: true, alignment: 'center' },
+                                { text: 'Valor Unitario', bold: true, alignment: 'center' },
+                                { text: '% Impuesto', bold: true, alignment: 'center' },
+                                { text: 'Valor Total', bold: true, alignment: 'center' }
                             ],
                             ...data.items.map(item => [
+                                { text: item.code || '047', alignment: 'center', fontSize: 8 },
                                 { text: item.description, fontSize: 8 },
-                                { text: item.quantity, alignment: 'center', fontSize: 8 },
-                                { text: item.price.toFixed(2), alignment: 'right', fontSize: 8 },
-                                { text: (item.discount / item.quantity || 0).toFixed(2), alignment: 'right', fontSize: 8 },
-                                { text: (item.quantity * item.price).toFixed(2), alignment: 'right', fontSize: 8 },
-                                { text: (item.total - (item.quantity * item.price) + item.discount).toFixed(2), alignment: 'right', fontSize: 8 },
-                                { text: item.total.toFixed(2), alignment: 'right', fontSize: 8, bold: true }
+                                { text: Number(item.quantity).toFixed(4), alignment: 'center', fontSize: 8 },
+                                { text: item.unit || 'und', alignment: 'center', fontSize: 8 },
+                                { text: Number(item.price).toFixed(2), alignment: 'right', fontSize: 8 },
+                                { text: (item.total - (item.quantity * item.price) + (item.discount || 0)).toFixed(2), alignment: 'right', fontSize: 8 },
+                                { text: Number(item.total).toFixed(2), alignment: 'right', fontSize: 8 }
                             ])
                         ]
                     },
-                    layout: 'lightHorizontalLines'
+                    layout: itemsLayout
                 },
-                {
-                    columns: [
-                        { width: '*', text: '' },
-                        { width: 100, text: 'Valor Total', bold: true, alignment: 'right', fontSize: 9, margin: [0, 5] },
-                        { width: 55, text: data.totals.totalAmount.toFixed(2), bold: true, alignment: 'right', fontSize: 9, margin: [0, 5] }
-                    ]
-                },
-                { text: '\n' },
+                { text: `Cantidad Items: ${data.items.length}`, fontSize: 9, margin: [5, 4, 0, 10] },
 
-                // 5. TAX BREAKDOWN & TOTALS
+                // BOX 4: Totals & QR & Desglose
                 {
                     columns: [
                         {
-                            width: 250,
-                            stack: [
-                                { text: 'Desglose ITBMS', alignment: 'center', bold: true, fontSize: 9, background: '#f0f0f0', margin: [0, 5] },
-                                {
-                                    table: {
-                                        widths: ['*', '*', '*'],
-                                        body: [
-                                            [{ text: 'Monto Base', bold: true, fontSize: 8 }, { text: '%', bold: true, fontSize: 8, alignment: 'center' }, { text: 'Impuesto', bold: true, fontSize: 8, alignment: 'right' }],
-                                            ...Object.keys(data.totals.breakdown || {}).map(rate => [
-                                                { text: data.totals.breakdown[rate].taxable.toFixed(2), fontSize: 8 },
-                                                { text: rate === '0.00' ? 'Exento' : `${(parseFloat(rate) * 100).toFixed(0)}%`, fontSize: 8, alignment: 'center' },
-                                                { text: data.totals.breakdown[rate].tax.toFixed(2), fontSize: 8, alignment: 'right' }
-                                            ]),
-                                            [{ text: 'Total', bold: true, fontSize: 8 }, { text: '', fontSize: 8 }, { text: data.totals.totalTax.toFixed(2), bold: true, fontSize: 8, alignment: 'right' }]
-                                        ]
-                                    }
-                                }
-                            ]
-                        },
-                        { width: 50, text: '' },
-                        {
-                            width: '*',
+                            width: 170,
                             table: {
-                                widths: ['*', 60],
+                                widths: ['*', 'auto', 'auto'],
                                 body: [
-                                    [{ text: 'Total Neto', fontSize: 9, alignment: 'right' }, { text: data.totals.totalTaxable.toFixed(2), alignment: 'right', fontSize: 9 }],
-                                    [{ text: 'Monto Exento ITBMS', fontSize: 9, alignment: 'right' }, { text: (data.totals.breakdown['0.00']?.taxable || 0).toFixed(2), alignment: 'right', fontSize: 9 }],
-                                    [{ text: 'Monto Gravado ITBMS', fontSize: 9, alignment: 'right' }, { text: (data.totals.totalTaxable - (data.totals.breakdown['0.00']?.taxable || 0)).toFixed(2), alignment: 'right', fontSize: 9 }],
-                                    [{ text: 'ITBMS', fontSize: 9, alignment: 'right' }, { text: data.totals.totalTax.toFixed(2), alignment: 'right', fontSize: 9 }],
-                                    [{ text: 'Total Impuesto', fontSize: 9, alignment: 'right' }, { text: data.totals.totalTax.toFixed(2), alignment: 'right', fontSize: 9 }],
-                                    [{ text: 'Total', bold: true, fontSize: 11, alignment: 'right' }, { text: data.totals.totalAmount.toFixed(2), bold: true, alignment: 'right', fontSize: 11 }]
+                                    [{ text: 'Desglose ITBMS', colSpan: 3, alignment: 'center', bold: true }, '', ''],
+                                    [{ text: 'Monto Base', bold: true, alignment: 'center', fontSize: 8 }, { text: '%', bold: true, alignment: 'center', fontSize: 8 }, { text: 'Impuesto', bold: true, alignment: 'center', fontSize: 8 }],
+                                    ...Object.keys(data.totals.breakdown || {}).map(rate => [
+                                        { text: data.totals.breakdown[rate].taxable.toFixed(2), alignment: 'center', fontSize: 8 },
+                                        { text: rate === '0.00' ? 'EXENTO' : `${(parseFloat(rate) * 100).toFixed(0)}%`, alignment: 'center', fontSize: 8 },
+                                        { text: data.totals.breakdown[rate].tax.toFixed(2), alignment: 'center', fontSize: 8 }
+                                    ]),
+                                    [{ text: 'Total', bold: true, alignment: 'right', fontSize: 8, colSpan: 2 }, '', { text: data.totals.totalTax.toFixed(2), alignment: 'center', fontSize: 8 }]
                                 ]
                             },
-                            layout: 'noBorders'
-                        }
-                    ]
-                },
-                { text: '\n' },
-
-                // 6. PAYMENT INFO
-                {
-                    columns: [
-                        {
-                            width: 250,
-                            stack: [
-                                { text: 'Información de Pago a Plazo', alignment: 'center', bold: true, fontSize: 9, background: '#f0f0f0', margin: [0, 5] },
-                                {
-                                    table: {
-                                        widths: [40, '*', 50],
-                                        body: [
-                                            [{ text: 'Cuota', bold: true, fontSize: 8 }, { text: 'Fecha de Vencimiento', bold: true, fontSize: 8 }, { text: 'Valor', bold: true, fontSize: 8, alignment: 'right' }],
-                                            [{ text: '1', fontSize: 8 }, { text: data.dueDate || data.issueDate, fontSize: 8 }, { text: data.totals.totalAmount.toFixed(2), fontSize: 8, alignment: 'right' }]
-                                        ]
-                                    }
-                                }
-                            ]
+                            layout: blueLayoutDashedInner
                         },
-                        { width: 50, text: '' },
                         {
                             width: '*',
                             stack: [
-                                { text: 'Forma de Pago', alignment: 'center', bold: true, fontSize: 9, background: '#f0f0f0', margin: [0, 5] },
+                                { image: qrBuffer, width: 90, alignment: 'center', margin: [0, 5] }
+                            ]
+                        },
+                        {
+                            width: 170,
+                            stack: [
                                 {
                                     table: {
                                         widths: ['*', 60],
                                         body: [
-                                            [{ text: 'Crédito', fontSize: 9, alignment: 'right' }, { text: data.totals.totalAmount.toFixed(2), alignment: 'right', fontSize: 9 }],
-                                            [{ text: 'TOTAL PAGADO', bold: true, fontSize: 9, alignment: 'right' }, { text: data.totals.totalAmount.toFixed(2), bold: true, alignment: 'right', fontSize: 9 }],
-                                            [{ text: 'Vuelto', fontSize: 9, alignment: 'right' }, { text: '0.00', alignment: 'right', fontSize: 9 }]
+                                            [{ text: 'SubTotal', bold: true, fontSize: 8 }, { text: data.totals.totalTaxable.toFixed(2), alignment: 'center', fontSize: 8 }],
+                                            [{ text: 'Monto Exento', bold: true, fontSize: 8 }, { text: (data.totals.breakdown['0.00']?.taxable || 0).toFixed(2), alignment: 'center', fontSize: 8 }],
+                                            [{ text: 'Monto Gravado', bold: true, fontSize: 8 }, { text: (data.totals.totalTaxable - (data.totals.breakdown['0.00']?.taxable || 0)).toFixed(2), alignment: 'center', fontSize: 8 }],
+                                            [{ text: 'Total Impuesto', bold: true, fontSize: 8 }, { text: data.totals.totalTax.toFixed(2), alignment: 'center', fontSize: 8 }],
+                                            [{ text: 'Total Recibido', bold: true, fontSize: 8 }, { text: data.totals.totalAmount.toFixed(2), alignment: 'center', fontSize: 8 }],
+                                            [{ text: 'Total', bold: true, fontSize: 8 }, { text: data.totals.totalAmount.toFixed(2), alignment: 'center', fontSize: 8 }]
                                         ]
-                                    }
+                                    },
+                                    layout: blueLayoutDashedInner,
+                                    margin: [0, 0, 0, 5]
+                                },
+                                {
+                                    table: {
+                                        widths: ['*', 60],
+                                        body: [
+                                            [{ text: 'Forma Pago', colSpan: 2, alignment: 'center', bold: true }, ''],
+                                            [{ text: 'Transf./Depósito a cta.\nBancaria', bold: true, fontSize: 8, alignment: 'center' }, { text: data.totals.totalAmount.toFixed(2), alignment: 'center', fontSize: 8, margin: [0,4,0,0] }]
+                                        ]
+                                    },
+                                    layout: blueLayoutDashedInner
                                 }
                             ]
                         }
                     ]
+                },
+                { text: '\n\n' },
+                
+                // BOX Validation
+                {
+                    table: {
+                        widths: ['*'],
+                        body: [
+                            [{text: 'Documento validado por DIGIFACT SERVICIOS, S.A. con RUC: 155704849-2-2021 D.V. 32, es Proveedor Autorizado Calificado, RESOLUCIÓN: 201-4219, de 29/06/2022', margin: [2, 2], fontSize: 9}]
+                        ]
+                    },
+                    layout: validationBoxLayout
                 }
             ],
-            footer: (currentPage, pageCount) => {
+            footer: function(currentPage, pageCount) {
                 return {
-                    stack: [
-                        { canvas: [{ type: 'line', x1: 40, y1: 0, x2: 572, y2: 0, lineWidth: 0.5, color: '#dee2e6' }] },
-                        {
-                            columns: [
-                                { text: 'Documento validado por DIGIFACT SERVICIOS, S.A. con RUC: 155704849-2-2021 D.V. 32, es PAC, RESOLUCIÓN: 201-4219, de 29/06/2022.', fontSize: 6, color: '#999', margin: [40, 5] },
-                                { text: `Página ${currentPage} de ${pageCount}`, alignment: 'right', fontSize: 7, color: '#999', margin: [0, 5, 40, 0] }
-                            ]
+                    columns: [
+                        { text: `EMISOR: ${data.issuer.razonSocial}`, alignment: 'left', fontSize: 7, margin: [30, 0, 0, 0] },
+                        { 
+                            text: `SERIE: ${data.documentNumber || ''}\nFOLIO: ${(data.cufe || 'PENDIENTE').substring(0, 10)}\n\nPágina ${currentPage} de ${pageCount}`, 
+                            alignment: 'right', 
+                            fontSize: 8,
+                            margin: [0, -10, 30, 0]
                         }
                     ]
                 };
             },
-            styles: {
-                tableHeader: { bold: true, fontSize: 8, fillColor: '#f0f0f0' }
-            },
             defaultStyle: {
                 font: 'Roboto',
-                fontSize: 10
+                fontSize: 9
             }
         };
 
