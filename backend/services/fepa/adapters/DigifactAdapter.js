@@ -147,9 +147,9 @@ class DigifactAdapter extends PACAdapter {
         
         const isLocalCountry = ['PA', 'PANAMA', 'RP', 'REPUBLICADEPANAMA'].includes(normalizedCountry) || rawCountry === 'PA';
         
-        const isExtranjero = docData.customer.tipoReceptor === '04' || 
-                            (!isLocalCountry && rawCountry !== '') || 
-                            docData.customer.taxId === 'EXTRANJERO';
+        // REGLA: Si la operación es local (isLocalCountry), NUNCA lo tratamos como "Extranjero" 
+        // para efectos de Digifact/DGI, incluso si su tipoReceptor es '04'.
+        const isExtranjero = !isLocalCountry && (docData.customer.tipoReceptor === '04' || rawCountry !== '' || docData.customer.taxId === 'EXTRANJERO');
         
         if (isExtranjero) {
             if (docData.customer.taxId) {
@@ -159,6 +159,9 @@ class DigifactAdapter extends PACAdapter {
         } else if (!isConsumidorFinal && receptorDv) {
             buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
         }
+
+        // Siempre informar TipoReceptor seguin Catalogo DGI
+        buyerTaxIDAdditionalInfo.push({ "Name": "TipoReceptor", "Data": null, "Value": docData.customer.tipoReceptor || "01" });
 
         if (docData.customer.objetoRetencion) {
             buyerTaxIDAdditionalInfo.push({ "Name": "ObjetoRetencion", "Data": null, "Value": docData.customer.objetoRetencion });
@@ -380,6 +383,9 @@ class DigifactAdapter extends PACAdapter {
                 ]
             };
         }
+
+        console.log("== SENDING TO DIGIFACT NUC PA ==");
+        console.log(JSON.stringify(nucJson, null, 2));
 
         return nucJson;
     }
