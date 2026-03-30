@@ -128,8 +128,8 @@ class DigifactAdapter extends PACAdapter {
             .slice(-10)         // Tomar los últimos 10
             .padStart(10, '0'); // Rellenar con ceros a la izquierda
 
-        // DocType: 01=Factura, 04=Nota de Crédito, 05=Nota de Débito
-        const docType = (docData.docType === '04' || docData.docType === '03' || docData.docType === 'C') ? '04' : '01';
+        // DocType: 01=Factura, 03=Nota de Crédito, 04=Nota de Débito
+        const docType = (docData.docType === '03' || docData.docType === 'C') ? '03' : (docData.docType === '04' ? '04' : '01');
 
         // PtoFactDF: Para pruebas debe ser mayor a 599 (ej: 987)
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
@@ -343,13 +343,17 @@ class DigifactAdapter extends PACAdapter {
             const refNumber = origNumMatch ? origNumMatch[0].padStart(10, '0') : '0000000001';
             const refPOS = String(docData.originalPOS || this.config.puntoDeVenta || '001').padStart(3, '0');
 
+            // Limpiar CUFE de prefijos (FE) y guiones para la referencia (DGI espera solo digitos)
+            const cufeRaw = docData.cufeRef || docData.invoiceNumber || '';
+            const cufeClean = cufeRaw.replace(/\D/g, ''); // Solo digitos
+
             nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
                 "Data": [
                     {
                         "Info": [
                             { "Name": "NombEmRef", "Data": null, "Value": emisorName },
                             { "Name": "FechaDFRef", "Data": null, "Value": (docData.invoiceNumberRefDate instanceof Date ? docData.invoiceNumberRefDate.toISOString().split('T')[0] : String(docData.invoiceNumberRefDate).split('T')[0]) },
-                            { "Name": "CUFERef", "Data": null, "Value": docData.cufeRef || docData.invoiceNumber },
+                            { "Name": "CUFERef", "Data": null, "Value": cufeClean },
                             { "Name": "TipoDocumentoRef", "Data": null, "Value": "01" },
                             { "Name": "SerieDocRef", "Data": null, "Value": refPOS },
                             { "Name": "NumeroDocRef", "Data": null, "Value": refNumber }
