@@ -271,6 +271,11 @@ const creditNoteController = {
                 customer: creditNote.customer.toJSON(),
                 invoiceNumber: originalInvoiceDoc.cufe, // Mandatorio: CUFE de la factura afectada
                 invoiceNumberRefDate: String(originalInvoiceDoc.authDate || creditNote.salesOrder.issueDate).split('T')[0], // Forzar YYYY-MM-DD
+                
+                // Nuevos campos para referencia robusta (Digifact)
+                originalDocNumber: creditNote.salesOrder.orderNumber, // F - 2026 - 0050
+                originalPOS: issuerConfig.puntoDeVenta, // El punto de venta de la factura original
+                
                 // Issuer
                 issuer: issuerConfig,
                 totals: {

@@ -338,13 +338,21 @@ class DigifactAdapter extends PACAdapter {
         };
 
         if (['C', '03', '04', '05'].includes(docData.docType) && docData.invoiceNumber) {
+            // Extraer el numero correlativo de la factura original (ej: "0050" de "F - 2026 - 0050")
+            const origNumMatch = (docData.originalDocNumber || docData.invoiceNumber).match(/(\d+)$/);
+            const refNumber = origNumMatch ? origNumMatch[0].padStart(10, '0') : '0000000001';
+            const refPOS = String(docData.originalPOS || this.config.puntoDeVenta || '001').padStart(3, '0');
+
             nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
                 "Data": [
                     {
                         "Info": [
                             { "Name": "NombEmRef", "Data": null, "Value": emisorName },
                             { "Name": "FechaDFRef", "Data": null, "Value": (docData.invoiceNumberRefDate instanceof Date ? docData.invoiceNumberRefDate.toISOString().split('T')[0] : String(docData.invoiceNumberRefDate).split('T')[0]) },
-                            { "Name": "CUFERef", "Data": null, "Value": docData.cufeRef || docData.invoiceNumber }
+                            { "Name": "CUFERef", "Data": null, "Value": docData.cufeRef || docData.invoiceNumber },
+                            { "Name": "TipoDocumentoRef", "Data": null, "Value": "01" },
+                            { "Name": "SerieDocRef", "Data": null, "Value": refPOS },
+                            { "Name": "NumeroDocRef", "Data": null, "Value": refNumber }
                         ],
                         "Name": null
                     }
