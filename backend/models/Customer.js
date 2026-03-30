@@ -117,30 +117,47 @@ const Customer = sequelize.define('Customer', {
     type: DataTypes.TEXT,
     allowNull: true
   }
-}, {
-  tableName: 'customers',
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-  indexes: [
-    {
-      fields: ['company_id'],
-      name: 'customers_company_id_idx'
-    },
-    {
-      unique: true,
-      fields: ['company_id', 'tax_id', 'dv'],
-      name: 'customers_company_taxid_dv_unique'
-    },
-    {
-      fields: ['company_id', 'email'],
-      name: 'customers_company_email_idx'
-    },
-    {
-      fields: ['company_id', 'is_active'],
-      name: 'customers_company_active_idx'
+  }, {
+    tableName: 'customers',
+    timestamps: true,
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    indexes: [
+      {
+        fields: ['company_id'],
+        name: 'customers_company_id_idx'
+      },
+      {
+        unique: true,
+        fields: ['company_id', 'tax_id', 'dv'],
+        name: 'customers_company_taxid_dv_unique'
+      },
+      {
+        fields: ['company_id', 'email'],
+        name: 'customers_company_email_idx'
+      },
+      {
+        fields: ['company_id', 'is_active'],
+        name: 'customers_company_active_idx'
+      }
+    ],
+    hooks: {
+      beforeValidate: (customer) => {
+        if (customer.email === '') {
+          customer.email = null;
+        }
+      },
+      beforeCreate: (customer) => {
+        if (customer.email === '') {
+          customer.email = null;
+        }
+      },
+      beforeUpdate: (customer) => {
+        if (customer.email === '') {
+          customer.email = null;
+        }
+      }
     }
-  ]
-});
+  });
 
-module.exports = Customer;
+  module.exports = Customer;

@@ -41,6 +41,8 @@ const getNextOrderNumber = async (companyId, transaction) => {
 
 exports.getOrders = async (req, res) => {
     try {
+        console.log('-- TRACING SESSION [getOrders] --');
+        console.log('User:', JSON.stringify(req.user, null, 2));
         const { page = 1, limit = 10, search = '', status, startDate, endDate } = req.query;
         const companyId = req.user?.companyId;
 

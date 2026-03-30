@@ -156,8 +156,12 @@ class DigifactAdapter extends PACAdapter {
                 buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId });
             }
             buyerTaxIDAdditionalInfo.push({ "Name": "PaisExt", "Data": null, "Value": docData.customer.paisReceptor || "US" });
-        } else if (!isConsumidorFinal && receptorDv) {
-            buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
+        } else {
+            // REGLA DE EMERGENCIA: Si NO es extranjero, asegurar que NO se envíen campos de extranjero
+            // que puedan activar el modo exportación accidentalmente.
+            if (!isConsumidorFinal && receptorDv) {
+                buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
+            }
         }
 
         if (docData.customer.objetoRetencion) {
@@ -381,8 +385,10 @@ class DigifactAdapter extends PACAdapter {
             };
         }
 
-        console.log("== SENDING TO DIGIFACT NUC PA ==");
-        console.log(JSON.stringify(nucJson, null, 2));
+        console.log("== SENDING TO DIGIFACT NUC Header ==");
+        console.log(JSON.stringify(nucJson.Header, null, 2));
+        console.log("== SENDING TO DIGIFACT NUC Buyer ==");
+        console.log(JSON.stringify(nucJson.Buyer, null, 2));
 
         return nucJson;
     }
