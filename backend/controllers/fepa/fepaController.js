@@ -94,29 +94,36 @@ exports.emitDocument = async (req, res) => {
         const pacAdapter = PACFactory.getAdapter(issuerConfig);
         const result = await pacAdapter.signAndSend(docData);
 
-        // 4. Save FE_Document
-        const feDoc = await FE_Document.create({
-            companyId,
-            salesOrderId: order.id,
-            docType: '01',
-            cufe: result.cufe,
-            qrUrl: result.qr,
-            xmlSigned: result.xmlSigned,
-            htmlContent: result.htmlContent, // Guardamos el HTML oficial de Digifact
-            pdfContent: result.pdfBase64,  // Guardamos el PDF oficial de Digifact
-            authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
-            status: 'AUTHORIZED',
-            pacName: 'DIGIFACT',
-            protocol: result.protocol,
-            environment: issuerConfig.environment,
-        });
+        // 4. Save FE_Document if Successful
+        if (result.success && result.status === 'AUTHORIZED') {
+            const feDoc = await FE_Document.create({
+                companyId,
+                salesOrderId: order.id,
+                docType: '01',
+                cufe: result.cufe,
+                qrUrl: result.qr,
+                xmlSigned: result.xmlSigned,
+                htmlContent: result.htmlContent, // Guardamos el HTML oficial de Digifact
+                pdfContent: result.pdfBase64,  // Guardamos el PDF oficial de Digifact
+                authDate: result.authDate || new Date(),
+                status: 'AUTHORIZED',
+                pacName: 'DIGIFACT',
+                protocol: result.protocol,
+                environment: issuerConfig.environment,
+            });
 
-        // 5. Update Sales Order Status if Authorized
-        if (result.status === 'AUTHORIZED') {
+            // 5. Update Sales Order Status
             await order.update({ status: 'fulfilled' });
-        }
 
-        res.json({ success: result.success, document: feDoc });
+            return res.json({ success: true, document: feDoc });
+        } else {
+            // Document Rejected by PAC
+            return res.status(400).json({ 
+                success: false, 
+                status: 'REJECTED',
+                error: result.error || 'Documento rechazado por el PAC sin motivo específico'
+            });
+        }
 
     } catch (error) {
         console.error(error);

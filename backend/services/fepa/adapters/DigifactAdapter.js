@@ -430,8 +430,7 @@ class DigifactAdapter extends PACAdapter {
                     pdfBase64: result.responseData3,
                     authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
                     status: 'AUTHORIZED',
-                    protocol: result.authProtocol || result.authorizationProtocol || null,
-                    numeroDF: numeroDF // Retornamos el número de 10 dígitos usado
+                    protocol: result.authProtocol || result.authorizationProtocol || null
                 };
             } else {
                 return {
