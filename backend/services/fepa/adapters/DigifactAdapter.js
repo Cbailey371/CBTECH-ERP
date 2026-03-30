@@ -180,7 +180,7 @@ class DigifactAdapter extends PACAdapter {
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
             "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente Sin Nombre"),
             "Contact": null,
-            "AdditionalInfo": [
+            "AdditionlInfo": [
                 { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" }
             ]
         };
@@ -236,7 +236,8 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
                     { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
                     { "Name": "TipoTransaccion", "Data": null, "Value": "1" },
-                    { "Name": "TipoSucursal", "Data": null, "Value": "2" }
+                    { "Name": "TipoSucursal", "Data": null, "Value": "2" },
+                    { "Name": "AdditionlInfo", "Data": null, "Value": [] }
                 ]
             },
             "Seller": {
@@ -318,7 +319,7 @@ class DigifactAdapter extends PACAdapter {
 
                 if (docData.customer.tipoReceptor === '03') {
                     itemObj.Codes.push({ "Name": "UnidadCPBS", "Data": null, "Value": item.uom === 'ud' || item.uom === 'UND' ? 'und' : (item.uom || "und") });
-                    itemObj.AdditionalInfo = [
+                    itemObj.AdditionlInfo = [
                         { "Name": "InfEmFE", "Data": null, "Value": item.description || "ITEM" },
                         { "Name": "PrSegItem", "Data": null, "Value": String(unitPrice) }
                     ];
@@ -338,7 +339,7 @@ class DigifactAdapter extends PACAdapter {
                 { "Type": "01", "Amount": Number(totalAmount.toFixed(2)) }
             ],
             "AdditionalDocumentInfo": {
-                "AdditionalInfo": [
+                "AdditionlInfo": [
                     {
                         "AditionalInfo": [
                             { "Name": "TiempoPago", "Data": null, "Value": "1" }
