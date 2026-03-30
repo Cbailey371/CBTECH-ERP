@@ -329,7 +329,7 @@ class DigifactAdapter extends PACAdapter {
             "AdditionalDocumentInfo": {
                 "AdditionalInfo": [
                     {
-                        "AditionalInfo": [
+                        "AdditionalInfo": [
                             { "Name": "TiempoPago", "Data": null, "Value": "1" }
                         ]
                     }
@@ -338,12 +338,12 @@ class DigifactAdapter extends PACAdapter {
         };
 
         if (['C', '03', '04', '05'].includes(docData.docType) && docData.invoiceNumber) {
-            nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
+            nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AdditionalData = {
                 "Data": [
                     {
                         "Info": [
                             { "Name": "NombEmRef", "Data": null, "Value": emisorName },
-                            { "Name": "FechaDFRef", "Data": null, "Value": docData.invoiceNumberRefDate || new Date().toISOString().replace('Z', '-05:00') },
+                            { "Name": "FechaDFRef", "Data": null, "Value": (docData.invoiceNumberRefDate instanceof Date ? docData.invoiceNumberRefDate.toISOString().split('T')[0] : String(docData.invoiceNumberRefDate).split('T')[0]) },
                             { "Name": "CUFERef", "Data": null, "Value": docData.cufeRef || docData.invoiceNumber }
                         ],
                         "Name": null

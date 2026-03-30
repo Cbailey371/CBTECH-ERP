@@ -270,7 +270,7 @@ const creditNoteController = {
                 })),
                 customer: creditNote.customer.toJSON(),
                 invoiceNumber: originalInvoiceDoc.cufe, // Mandatorio: CUFE de la factura afectada
-                invoiceNumberRefDate: creditNote.salesOrder.issueDate, // Fecha de la factura afectada (YYYY-MM-DD)
+                invoiceNumberRefDate: String(originalInvoiceDoc.authDate || creditNote.salesOrder.issueDate).split('T')[0], // Forzar YYYY-MM-DD
                 // Issuer
                 issuer: issuerConfig,
                 totals: {
@@ -284,7 +284,7 @@ const creditNoteController = {
             const pacAdapter = PACFactory.getAdapter(issuerConfig);
             const result = await pacAdapter.signAndSend(docData);
 
-            if (result.success) {
+            if (result.success && result.status === 'AUTHORIZED') {
                 // 5. Update Credit Note
                 creditNote.status = 'authorized';
                 creditNote.fiscalCufe = result.cufe;
@@ -292,25 +292,30 @@ const creditNoteController = {
                 await creditNote.save();
 
                 // 6. Save FE_Document Record (for tracking and CAFE download)
-                await FE_Document.create({
+                const feDoc = await FE_Document.create({
                     companyId: companyId,
-                    creditNoteId: creditNote.id, // Corrected: Use creditNoteId for NCs
+                    creditNoteId: creditNote.id,
                     docType: '03', // NC
                     cufe: result.cufe,
-                    qrUrl: result.url,
+                    qrUrl: result.qr,
                     xmlSigned: result.xmlSigned,
-                    authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
+                    htmlContent: result.htmlContent, // Guardamos el HTML oficial de Digifact
+                    pdfContent: result.pdfBase64,  // Guardamos el PDF oficial de Digifact
+                    authDate: result.authDate || new Date(),
                     status: 'AUTHORIZED',
                     pacName: 'DIGIFACT',
                     protocol: result.protocol,
                     environment: issuerConfig.environment,
-                    htmlContent: result.htmlContent, // Corrected mapping
-                    pdfContent: result.pdfBase64  // Corrected mapping
                 });
 
-                return res.json({ success: true, creditNote });
+                return res.json({ success: true, creditNote, document: feDoc });
             } else {
-                return res.status(400).json({ error: 'Error del PAC: ' + result.error });
+                // Document Rejected by PAC
+                return res.status(400).json({ 
+                    success: false, 
+                    status: 'REJECTED',
+                    error: result.error || 'La Nota de Crédito fue rechazada por el PAC sin motivo específico'
+                });
             }
 
         } catch (error) {
