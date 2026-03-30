@@ -341,7 +341,10 @@ class DigifactAdapter extends PACAdapter {
             // Extraer el numero correlativo de la factura original (ej: "0050" de "F - 2026 - 0050")
             const origNumMatch = (docData.originalDocNumber || docData.invoiceNumber).match(/(\d+)$/);
             const refNumber = origNumMatch ? origNumMatch[0].padStart(10, '0') : '0000000001';
-            const refPOS = String(docData.originalPOS || this.config.puntoDeVenta || '001').padStart(3, '0');
+            
+            // EL POS de referencia DEBE coincidir con el POS de la factura original
+            // En TEST, Digifact fuerza 987.
+            const refPOS = this.environment === 'TEST' ? "987" : String(docData.originalPOS || this.config.puntoDeVenta || '001').padStart(3, '0');
 
             // Limpiar CUFE de prefijos (FE) y guiones para la referencia (DGI espera solo digitos)
             const cufeRaw = docData.cufeRef || docData.invoiceNumber || '';
