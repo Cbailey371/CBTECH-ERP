@@ -196,6 +196,11 @@ class DigifactAdapter extends PACAdapter {
             });
         }
 
+        // 3.5 LÓGICA DE RETENCIÓN (Para Gobierno 100%)
+        const hasRetention = isGobierno && docData.customer.objetoRetencion;
+        const totalRetention = hasRetention ? totalTax : 0;
+        const finalInvoiceTotal = Number((totalDocument - totalRetention).toFixed(2));
+
         const additionalIssueDocInfo = [
             { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },
             { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
@@ -204,13 +209,18 @@ class DigifactAdapter extends PACAdapter {
             { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },
             { "Name": "TipoOperacion", "Data": null, "Value": "1" },
             { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
-            { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
+            { "Name": "FormatoGeneracion", "Data": null, "Value": "3" }, // Formato 3 suele ser el moderno
             { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
             { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
             { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
             { "Name": "TipoTransaccion", "Data": null, "Value": "1" },
             { "Name": "TipoSucursal", "Data": null, "Value": "2" }
         ];
+
+        // Si hay logo configurado, podemos intentar activarlo (algunas plantillas lo requieren)
+        if (this.config.logo) {
+            additionalIssueDocInfo.push({ "Name": "Logo", "Data": null, "Value": "1" });
+        }
 
         if (isExtranjero) {
             additionalIssueDocInfo.push({ "Name": "CondEntr", "Data": null, "Value": "EXW" });
@@ -290,7 +300,10 @@ class DigifactAdapter extends PACAdapter {
             "Totals": {
                 "QtyItems": docData.items.length,
                 "GrandTotal": (() => {
-                    const common = { "InvoiceTotal": totalDocument };
+                    const common = { "InvoiceTotal": finalInvoiceTotal };
+                    if (hasRetention) {
+                        common["TotalRetenciones"] = totalRetention;
+                    }
                     if (docType === '04') { // NC usa campos Discount en GrandTotal
                         return {
                             ...common,
@@ -306,7 +319,7 @@ class DigifactAdapter extends PACAdapter {
                 })()
             },
             "Payments": [
-                { "Type": "01", "Amount": totalDocument }
+                { "Type": "01", "Amount": finalInvoiceTotal }
             ],
             "AdditionalDocumentInfo": {
                 "AdditionalInfo": [
