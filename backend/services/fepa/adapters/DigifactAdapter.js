@@ -241,7 +241,10 @@ class DigifactAdapter extends PACAdapter {
                 "AdditionalIssueType": additionalIssueType,
                 "Currency": null,
                 "AdditionalIssueDocInfo": additionalIssueDocInfo,
-                "AditionalInfo": isExtranjero ? [{ "Name": "CondEntr", "Data": null, "Value": "EXW" }] : null
+                "AditionalInfo": [
+                    { "Name": "FormatoGeneracion", "Data": null, "Value": "3" },
+                    ...(isExtranjero ? [{ "Name": "CondEntr", "Data": null, "Value": "EXW" }] : [])
+                ]
             },
             "Seller": {
                 "TaxID": authRuc,
@@ -361,10 +364,9 @@ class DigifactAdapter extends PACAdapter {
             };
         }
 
-        console.log("== SENDING TO DIGIFACT NUC Header ==");
-        console.log(JSON.stringify(nucJson.Header, null, 2));
-        console.log("== SENDING TO DIGIFACT NUC Buyer ==");
-        console.log(JSON.stringify(nucJson.Buyer, null, 2));
+        console.log("== SENDING TO DIGIFACT FULL NUC JSON ==");
+        console.log(JSON.stringify(nucJson, null, 2));
+        console.log("========================================");
 
         return nucJson;
     }
