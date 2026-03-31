@@ -97,6 +97,11 @@ const SalesOrder = sequelize.define('SalesOrder', {
     allowNull: false,
     defaultValue: 0
   },
+  retention: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    defaultValue: 0
+  },
   paymentStatus: {
     type: DataTypes.ENUM('unpaid', 'partial', 'paid'),
     allowNull: false,

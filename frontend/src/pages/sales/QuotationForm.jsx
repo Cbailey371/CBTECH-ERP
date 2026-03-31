@@ -392,6 +392,7 @@ export default function QuotationForm() {
                 discount: totals.discount, // Monto calculado del descuento global
                 subtotal: totals.subtotal,
                 tax: totals.tax,
+                retention: totals.retention,
                 total: totals.total,
                 taxRate: formData.taxEnabled ? (parseFloat(formData.taxRate) / 100) : 0
             };

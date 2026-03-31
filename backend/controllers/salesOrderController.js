@@ -114,7 +114,7 @@ exports.createOrder = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const companyId = req.user.companyId;
-        const { customerId, issueDate, notes, items, currency = 'USD', discountType, discountValue } = req.body;
+        const { customerId, issueDate, notes, items, currency = 'USD', discountType, discountValue, retention = 0 } = req.body;
 
         // Validations
         if (!items || items.length === 0) throw new Error("La orden debe tener al menos un ítem.");
@@ -199,6 +199,7 @@ exports.createOrder = async (req, res) => {
             discount: globalDiscountAmt, // Store the calculated/derived amount
             discountType: discountType || 'amount',
             discountValue: discountValue || 0,
+            retention: retention,
             notes,
             createdBy: req.user.id
         }, { transaction: t });
@@ -258,6 +259,7 @@ exports.createFromQuotation = async (req, res) => {
             subtotal: parseFloat(quotation.subtotal),
             taxTotal: parseFloat(quotation.tax),
             total: parseFloat(quotation.total),
+            retention: parseFloat(quotation.retention || 0),
             notes: `Generado desde Cotización ${quotation.number}. ${quotation.notes || ''} `,
             createdBy: req.user.id
         };

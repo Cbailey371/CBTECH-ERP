@@ -38,7 +38,8 @@ const CreditNoteForm = () => {
     });
 
     const [items, setItems] = useState([]);
-    const [totals, setTotals] = useState({ subtotal: 0, tax: 0, total: 0 });
+    const [totals, setTotals] = useState({ subtotal: 0, tax: 0, retention: 0, total: 0 });
+    const [customerObjetoRetencion, setCustomerObjetoRetencion] = useState(null);
     const [error, setError] = useState('');
     const [viewMode, setViewMode] = useState(false); // If true, read-only view of existing CN
 
@@ -102,6 +103,7 @@ const CreditNoteForm = () => {
                 setTotals({
                     subtotal: parseFloat(cn.subtotal),
                     tax: parseFloat(cn.tax),
+                    retention: parseFloat(cn.retention || 0),
                     total: parseFloat(cn.total),
                     globalDiscount: 0
                 });
@@ -129,6 +131,7 @@ const CreditNoteForm = () => {
             if (data.success) {
                 const fullOrder = data.order;
                 setSelectedOrder(fullOrder);
+                setCustomerObjetoRetencion(fullOrder.customer?.objeto_retencion_dgi);
 
                 const mappedItems = fullOrder.items.map(item => ({
                     originalItemId: item.id,
@@ -216,11 +219,21 @@ const CreditNoteForm = () => {
             globalDiscount = parseFloat(selectedOrder.discount) * ratio;
         }
 
+        // ITBMS RETENTION logic
+        let retention = 0;
+        const objRet = String(customerObjetoRetencion);
+        if (objRet === '1' || objRet === '3') {
+            retention = tax; // 100% Retention
+        } else if (['2', '4', '7'].includes(objRet)) {
+            retention = tax * 0.5; // 50% Retention
+        }
+
         setTotals({
             subtotal: sub,
             tax: tax,
+            retention: retention,
             globalDiscount: globalDiscount,
-            total: sub + tax - globalDiscount
+            total: sub + tax - globalDiscount - retention
         });
     };
 
@@ -242,7 +255,8 @@ const CreditNoteForm = () => {
                 salesOrderId: formData.salesOrderId,
                 refundType: formData.refundType,
                 reason: formData.reason,
-                items: items.filter(i => i.quantity > 0)
+                items: items.filter(i => i.quantity > 0),
+                retention: totals.retention
             };
 
             const response = await api.post('/credit-notes', payload);
@@ -397,10 +411,13 @@ const CreditNoteForm = () => {
                         </div>
 
                         {/* Totals */}
-                        <div className="flex justify-end space-x-8 text-lg font-bold border-t border-border pt-4 px-4">
-                            <div className="text-muted-foreground">Subtotal: <span className="text-foreground">${totals.subtotal?.toFixed(2)}</span></div>
-                            <div className="text-muted-foreground">ITBMS: <span className="text-foreground">${totals.tax?.toFixed(2)}</span></div>
-                            <div className="text-primary">Total: ${totals.total?.toFixed(2)}</div>
+                        <div className="flex justify-end space-x-8 text-lg font-bold border-t border-border pt-4 px-4 overflow-x-auto">
+                            <div className="text-muted-foreground whitespace-nowrap">Subtotal: <span className="text-foreground">${totals.subtotal?.toFixed(2)}</span></div>
+                            <div className="text-muted-foreground whitespace-nowrap">ITBMS: <span className="text-foreground">${totals.tax?.toFixed(2)}</span></div>
+                            {totals.retention > 0 && (
+                                <div className="text-amber-600 whitespace-nowrap">Retención ITBMS (-): <span className="font-mono">-${totals.retention.toFixed(2)}</span></div>
+                            )}
+                            <div className="text-primary whitespace-nowrap">{totals.retention > 0 ? 'Total a Devolver (Neto):' : 'Total:'} ${totals.total?.toFixed(2)}</div>
                         </div>
                     </CardContent>
                 </Card>
@@ -534,14 +551,18 @@ const CreditNoteForm = () => {
                                     </Table>
                                 </div>
 
-                                <div className="flex justify-end space-x-8 text-lg font-bold border-t border-border pt-4 px-4">
+                                <div className="flex flex-wrap justify-end gap-x-8 gap-y-2 text-lg font-bold border-t border-border pt-4 px-4">
                                     <div className="text-muted-foreground">Subtotal: <span className="text-foreground">${totals.subtotal.toFixed(2)}</span></div>
                                     <div className="text-muted-foreground">ITBMS: <span className="text-foreground">${totals.tax.toFixed(2)}</span></div>
+                                    {/* Retention row */}
+                                    {totals.retention > 0 && (
+                                        <div className="text-amber-600">Retención ITBMS (-): <span className="font-mono">-${totals.retention.toFixed(2)}</span></div>
+                                    )}
                                     {/* Global Discount Display */}
                                     {totals.globalDiscount > 0 && (
                                         <div className="text-red-500">Desc. General: -${totals.globalDiscount.toFixed(2)}</div>
                                     )}
-                                    <div className="text-primary">Total: ${totals.total.toFixed(2)}</div>
+                                    <div className="text-primary">{totals.retention > 0 ? 'Total a Devolver (Neto):' : 'Total:'} ${totals.total.toFixed(2)}</div>
                                 </div>
 
                                 <div className="flex justify-end space-x-3 pt-6">

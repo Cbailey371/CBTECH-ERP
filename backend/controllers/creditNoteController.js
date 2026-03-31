@@ -90,7 +90,7 @@ const creditNoteController = {
         try {
             const companyId = req.user.companyId;
             const userId = req.user.id;
-            const { salesOrderId, refundType, items, reason, notes } = req.body;
+            const { salesOrderId, refundType, items, reason, notes, retention = 0 } = req.body;
 
             // 1. Validate Sales Order
             const salesOrder = await SalesOrder.findOne({
@@ -164,7 +164,7 @@ const creditNoteController = {
                 tax = parseFloat(salesOrder.taxTotal) * ratio;
             }
 
-            const total = subtotal + tax; // ignoring discounts for simplicity in this draft
+            const total = subtotal + tax - parseFloat(retention || 0);
 
 
 
@@ -201,6 +201,7 @@ const creditNoteController = {
                 reason: reason || 'Devolución',
                 subtotal,
                 tax,
+                retention: parseFloat(retention || 0),
                 total,
                 status: 'draft',
                 items: finalItems,

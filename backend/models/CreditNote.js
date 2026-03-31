@@ -55,6 +55,10 @@ CreditNote.init({
         type: DataTypes.DECIMAL(10, 2),
         defaultValue: 0
     },
+    retention: {
+        type: DataTypes.DECIMAL(10, 2),
+        defaultValue: 0
+    },
     status: {
         type: DataTypes.ENUM('draft', 'authorized', 'cancelled'),
         defaultValue: 'draft'

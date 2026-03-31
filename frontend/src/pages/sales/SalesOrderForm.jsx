@@ -335,6 +335,7 @@ export default function SalesOrderForm() {
                 discountValue: formData.discountValue,
                 subtotal: totals.subtotal,
                 taxTotal: totals.tax, // Note: backend expects taxTotal not tax
+                retention: totals.retention,
                 total: totals.total
             };
 

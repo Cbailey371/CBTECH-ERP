@@ -125,7 +125,8 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       items,
       discountType = 'amount',
       discountValue = 0,
-      taxRate = 0.07 // Default 7%
+      taxRate = 0.07,
+      retention = 0
     } = req.body;
 
     // Generar número secuencial (simple por ahora)
@@ -175,7 +176,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
     const taxable = Math.max(0, subtotalItems - globalDiscountAmount);
     const effectiveTaxRate = parseFloat(taxRate);
     const tax = taxable * effectiveTaxRate;
-    const total = taxable + tax;
+    const total = taxable + tax - parseFloat(retention || 0);
 
     // Crear cabecera
     const quotation = await Quotation.create({
@@ -191,6 +192,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       discountValue: globalDiscountVal,
       tax,
       taxRate: effectiveTaxRate,
+      retention,
       total,
       notes,
       createdBy: req.user.id
@@ -259,7 +261,8 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       discountType = 'amount',
       discountValue = 0,
       taxRate = 0.07,
-      status
+      status,
+      retention
     } = req.body;
 
     const quotation = await Quotation.findOne({
@@ -323,7 +326,8 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       const taxable = Math.max(0, subtotalItems - globalDiscountAmount);
       const effectiveTaxRate = parseFloat(taxRate);
       const tax = taxable * effectiveTaxRate;
-      const total = taxable + tax;
+      const calculatedRetention = parseFloat(retention !== undefined ? retention : quotation.retention || 0);
+      const total = taxable + tax - calculatedRetention;
 
       updateData = {
         subtotal: subtotalItems,
@@ -332,6 +336,7 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
         discountValue: globalDiscountVal,
         tax,
         taxRate: effectiveTaxRate,
+        retention: parseFloat(retention !== undefined ? retention : quotation.retention),
         total,
         notes,
         date,
