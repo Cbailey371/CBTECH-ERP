@@ -113,8 +113,8 @@ class DigifactAdapter extends PACAdapter {
         
         let docType = '01';
         if (docTypeBase === 'FAC') docType = '01'; 
-        if (docTypeBase === 'NC') docType = '03';
-        if (docTypeBase === 'ND') docType = '04';
+        if (docTypeBase === 'NC') docType = '04';
+        if (docTypeBase === 'ND') docType = '05';
 
         const tipoEmision = isConsumidorFinal ? '03' : '01';
         const additionalIssueType = this.environment === 'TEST' ? 2 : 1;
@@ -245,11 +245,21 @@ class DigifactAdapter extends PACAdapter {
             }),
             "Totals": {
                 "QtyItems": docData.items.length,
-                "GrandTotal": {
-                    "TotalBTaxes": Number(totalTaxable.toFixed(2)),
-                    "TotalWTaxes": totalDocument,
-                    "InvoiceTotal": totalDocument
-                }
+                "GrandTotal": (() => {
+                    const common = { "InvoiceTotal": totalDocument };
+                    if (docType === '04') { // NC usa campos Discount en GrandTotal
+                        return {
+                            ...common,
+                            "TotalBDiscounts": Number(totalTaxable.toFixed(2)),
+                            "TotalWDiscounts": totalDocument
+                        };
+                    }
+                    return {
+                        ...common,
+                        "TotalBTaxes": Number(totalTaxable.toFixed(2)),
+                        "TotalWTaxes": totalDocument
+                    };
+                })()
             },
             "Payments": [
                 { "Type": "01", "Amount": totalDocument }
@@ -265,8 +275,8 @@ class DigifactAdapter extends PACAdapter {
             }
         };
 
-        // 6. REFERENCIA PARA NOTA DE CRÉDITO (REFINADO SEGÚN NUC 2)
-        if (docType === '03') {
+        // 6. REFERENCIA PARA NOTA DE CRÉDITO (REFINADO SEGÚN NUC 2: NC=04, ND=05)
+        if (docType === '04' || docType === '05') {
             const cufeFinal = (docData.cufeRef || docData.invoiceNumber || '').trim();
             nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
                 "Data": [{
