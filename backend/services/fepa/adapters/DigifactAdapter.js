@@ -119,7 +119,7 @@ class DigifactAdapter extends PACAdapter {
         const tipoEmision = isConsumidorFinal ? '03' : '01';
         const additionalIssueType = this.environment === 'TEST' ? 2 : 1;
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
-        const numeroDF = this.environment === 'TEST' ? "0020269999" : String(docData.documentNumber || '1').replace(/\D/g, '').slice(-10).padStart(10, '0');
+        const numeroDF = String(docData.documentNumber || '1').replace(/\D/g, '').slice(-10).padStart(10, '0');
         const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
 
         // 3. DATOS DEL EMISOR Y RECEPTOR (REGLAS TEST)
@@ -129,6 +129,7 @@ class DigifactAdapter extends PACAdapter {
 
         const taxIdType = isExtranjero ? null : "2"; 
         const finalTaxId = isExtranjero ? "EXTRANJERO" : (isConsumidorFinal ? "CF" : docData.customer.taxId?.replace(/\s/g, ''));
+        const buyerName = (isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente")).substring(0, 100);
         
         let buyerTaxIDAdditionalInfo = [{ "Name": "TipoReceptor", "Data": null, "Value": receptorTipo }];
 
@@ -146,15 +147,15 @@ class DigifactAdapter extends PACAdapter {
             "TaxID": finalTaxId,
             "TaxIDType": taxIdType,
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
-            "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente"),
+            "Name": buyerName,
             "AdditionlInfo": [ // Nota: misspelling "AdditionlInfo" es intencional según ejemplos
                 { "Name": "PaisReceptorFE", "Data": null, "Value": "PA" }
             ],
             "AddressInfo": {
-                "Address": docData.customer.address || "CIUDAD DE PANAMA",
-                "City": docData.customer.city || "PANAMA",
-                "District": docData.customer.district || "PANAMA",
-                "State": docData.customer.state || "PANAMA",
+                "Address": (docData.customer.address || "CIUDAD DE PANAMA").substring(0, 100),
+                "City": (docData.customer.city || "PANAMA").substring(0, 100),
+                "District": (docData.customer.district || "PANAMA").substring(0, 100),
+                "State": (docData.customer.state || "PANAMA").substring(0, 100),
                 "Country": "PA"
             }
         };
@@ -194,7 +195,7 @@ class DigifactAdapter extends PACAdapter {
                 "TaxIDAdditionalInfo": [
                     { "Name": "DigitoVerificador", "Data": null, "Value": authDv }
                 ],
-                "Name": emisorName,
+                "Name": emisorName.substring(0, 100),
                 "Contact": {
                     "PhoneList": { "Phone": [this.config.telefono || "6000-0000"] },
                     "EmailList": null
@@ -203,10 +204,10 @@ class DigifactAdapter extends PACAdapter {
                     "Code": "0001",
                     "Name": null,
                     "AddressInfo": {
-                        "Address": (this.config.direccion || "Ciudad de Panama"),
-                        "City": (this.config.corregimiento || "Panama"),
-                        "District": (this.config.distrito || "Panama"),
-                        "State": (this.config.provincia || "Panama"),
+                        "Address": (this.config.direccion || "Ciudad de Panama").substring(0, 100),
+                        "City": (this.config.corregimiento || "Panama").substring(0, 100),
+                        "District": (this.config.distrito || "Panama").substring(0, 100),
+                        "State": (this.config.provincia || "Panama").substring(0, 100),
                         "Country": "PA"
                     },
                     "AdditionalBranchInfo": [
