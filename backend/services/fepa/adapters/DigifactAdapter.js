@@ -129,8 +129,9 @@ class DigifactAdapter extends PACAdapter {
         const numericPart = String(docData.documentNumber || '1').replace(/\D/g, '');
         const prefix = (docType === '04' || docType === '03') ? '4' : (docType === '05' ? '5' : '1');
         
-        // En ambiente de TEST, usamos Minutos + Segundos para evitar colisiones con documentos previos o anulados.
-        const testSuffix = this.environment === 'TEST' ? String(new Date().getMinutes()).padStart(2, '0') + String(new Date().getSeconds()).padStart(2, '0') : '';
+        // En ambiente de TEST, si reseteamos la BD local, los números colisionan en el PAC.
+        // Añadimos un pequeño offset basado en la hora/minuto actual para pruebas rápidas.
+        const testSuffix = this.environment === 'TEST' ? String(new Date().getHours()) + String(new Date().getMinutes()) : '';
         let numeroDF = (prefix + testSuffix + numericPart).slice(-10).padStart(10, '0');
 
         if (numeroDF === '0000000000') numeroDF = '1000000001'; 
@@ -167,7 +168,6 @@ class DigifactAdapter extends PACAdapter {
         } else {
             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-2" });
             buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId || "PASAPORTE" });
-            buyerTaxIDAdditionalInfo.push({ "Name": "IdentificacionReceptor", "Data": null, "Value": docData.customer.taxId || "" });
             buyerTaxIDAdditionalInfo.push({ "Name": "PaisExt", "Data": null, "Value": docData.customer.paisReceptor || "US" });
         }
 
@@ -178,9 +178,7 @@ class DigifactAdapter extends PACAdapter {
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
             "Name": buyerName,
             "AdditionlInfo": [ 
-                { "Name": "PaisReceptorFE", "Data": null, "Value": isExtranjero ? (docData.customer.paisReceptor || "US") : "PA" },
-                { "Name": "IdReceptor", "Data": null, "Value": isExtranjero ? (docData.customer.taxId || "") : "" },
-                { "Name": "NumPasaporte", "Data": null, "Value": isExtranjero ? (docData.customer.taxId || "") : "" }
+                { "Name": "PaisReceptorFE", "Data": null, "Value": isExtranjero ? (docData.customer.paisReceptor || "US") : "PA" }
             ],
             "AddressInfo": {
                 "Address": (docData.customer.address || "CIUDAD DE PANAMA").substring(0, 100),
@@ -286,8 +284,7 @@ class DigifactAdapter extends PACAdapter {
                 const unitPrice = parseFloat(Number(item.price || item.unitPrice || 0).toFixed(6));
                 const qty = parseFloat(Number(item.quantity || 1).toFixed(2));
                 const subtotal = parseFloat((unitPrice * qty).toFixed(2));
-                // Exportaciones (TipDocFE 02) SIEMPRE deben ser exentas (0% ITBMS)
-                const taxRate = docType === '02' ? 0 : Number(item.taxRate || 0);
+                const taxRate = Number(item.taxRate || 0);
                 const taxAmount = parseFloat((subtotal * taxRate).toFixed(6));
                 const totalWTaxes = parseFloat((subtotal + taxAmount).toFixed(6));
 
