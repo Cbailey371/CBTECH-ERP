@@ -261,19 +261,8 @@ exports.downloadCafe = async (req, res) => {
 
         const { generateCafePdf } = require('../../services/pdf/cafeGenerator');
         
-        // --- REGLA DE NEGOCIO: Para Extranjeros y Gobierno, usamos siempre nuestro generador local ---
-        // Esto asegura que la etiqueta "Pasaporte:" y otros formatos premium se apliquen correctamente.
-        const isSpecialCase = data.docType === '02' || data.customer.tipoReceptor === '03' || data.customer.tipoReceptor === '04';
-
-        if (isSpecialCase) {
-            console.log(`[FE_DOWNLOAD] Forzando generador local para caso especial (Ext/Gob): ${feDoc.cufe}`);
-            const pdfBuffer = await generateCafePdf(data);
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=CAFE-${feDoc.cufe}.pdf`);
-            return res.send(pdfBuffer);
-        }
-
-        // --- PRIORIDAD ESTÁNDAR (Local): Usar PDF oficial del proveedor if available ---
+        // --- PRIORIDAD ESTÁNDAR: Usar PDF oficial del proveedor if available ---
+        // Eliminamos el forzado del generador local para que use el formato Negro/CAFE de Digifact
         if (feDoc.pdfContent) {
             console.log(`[FE_DOWNLOAD] Usando PDF oficial de Digifact para: ${feDoc.cufe}`);
             const pdfBuffer = Buffer.from(feDoc.pdfContent, 'base64');
