@@ -209,7 +209,7 @@ class DigifactAdapter extends PACAdapter {
             { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },
             { "Name": "TipoOperacion", "Data": null, "Value": "1" },
             { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
-            { "Name": "FormatoGeneracion", "Data": null, "Value": "3" }, // Formato 3 suele ser el moderno
+            { "Name": "FormatoGeneracion", "Data": null, "Value": "1" }, // Formato 1 es el Clásico
             { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
             { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
             { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
@@ -284,7 +284,7 @@ class DigifactAdapter extends PACAdapter {
                         { "Name": "CodCPBSabr", "Data": null, "Value": "13" }, 
                         { "Name": "CodCPBScmp", "Data": null, "Value": "1310" }
                     ],
-                    "Description": (item.description || item.name || "Producto/Servicio").trim().substring(0, 150) || "Producto/Servicio",
+                    "Description": (item.description || item.name || "Producto/Servicio").trim().substring(0, 500) || "Producto/Servicio",
                     "Qty": qty,
                     "UnitOfMeasure": "und",
                     "Price": unitPrice,
