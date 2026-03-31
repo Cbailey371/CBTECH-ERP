@@ -56,6 +56,11 @@ const Product = sequelize.define('Product', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     field: 'is_active'
+  },
+  isTaxExempt: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'is_tax_exempt'
   }
 }, {
   tableName: 'products',

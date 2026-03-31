@@ -227,10 +227,15 @@ export default function QuotationForm() {
     };
 
     const calculateTotals = () => {
+        const customerMatch = String(formData.customerId);
+        const customer = customers.find(c => String(c.id) === customerMatch);
+        const isCustomerExempt = customer?.isTaxExempt === true;
+
         let grossItemsTotal = 0;
         let totalItemDiscounts = 0;
+        let itemsTaxableBase = 0;
 
-        // 1. Calcular totales de línea y descuentos de línea
+        // 1. Calcular totales de línea, descuentos y base imponible por ítem
         formData.items.forEach(item => {
             const qty = parseFloat(item.quantity) || 0;
             const price = parseFloat(item.unitPrice) || 0;
@@ -243,8 +248,18 @@ export default function QuotationForm() {
                 itemDiscount = parseFloat(item.discountValue || 0);
             }
 
+            const itemNet = itemGross - itemDiscount;
             grossItemsTotal += itemGross;
             totalItemDiscounts += itemDiscount;
+
+            // Verificar si el producto es exento
+            const product = products.find(p => String(p.id) === String(item.productId));
+            const isProductExempt = product?.isTaxExempt === true;
+
+            // Si ni el cliente ni el producto son exentos, se suma a la base imponible
+            if (!isCustomerExempt && !isProductExempt) {
+                itemsTaxableBase += itemNet;
+            }
         });
 
         // Net Items Total (Base for Global Discount)
@@ -259,17 +274,17 @@ export default function QuotationForm() {
         }
 
         // 3. Totales Finales
-        // Total Discount = Item Discounts + Global Discount
         const totalDiscount = totalItemDiscounts + globalDiscount;
 
-        // Taxable = Gross - Total Discount (or NetItems - Global)
-        const taxable = Math.max(0, netItemsTotal - globalDiscount);
+        // Prorratear descuento global sobre la base imponible si hay ítems mixtos
+        // Esto asegura que el descuento se aplique proporcionalmente a la parte que paga impuestos
+        const taxableRatio = netItemsTotal > 0 ? (itemsTaxableBase / netItemsTotal) : 0;
+        const finalTaxableBase = Math.max(0, itemsTaxableBase - (globalDiscount * taxableRatio));
 
         const effectiveTaxRate = formData.taxEnabled ? (parseFloat(formData.taxRate) / 100) : 0;
-        const tax = taxable * effectiveTaxRate;
+        const tax = finalTaxableBase * effectiveTaxRate;
 
         // 4. Calcular Retención según Objeto de Retención del cliente
-        const customer = customers.find(c => c.id == formData.customerId);
         let retention = 0;
         if (customer?.objetoRetencion && formData.taxEnabled) {
             const objRet = String(customer.objetoRetencion);
@@ -280,17 +295,17 @@ export default function QuotationForm() {
             }
         }
 
-        const total = taxable + tax - retention;
+        const total = (netItemsTotal - globalDiscount) + tax - retention;
 
         setTotals({
-            subtotal: grossItemsTotal, // Subtotal Bruto
-            lineDiscounts: totalItemDiscounts, // Descuentos por línea
-            globalDiscount: globalDiscount, // Descuento Global
-            totalSavings: totalDiscount, // Total Ahorro
-            taxable, // Subtotal Neto
+            subtotal: grossItemsTotal,
+            lineDiscounts: totalItemDiscounts,
+            globalDiscount: globalDiscount,
+            totalSavings: totalDiscount,
+            taxable: finalTaxableBase,
             tax,
-            retention, // Nuevo campo
-            total
+            retention,
+            total: Math.max(0, total)
         });
     };
 
@@ -440,7 +455,24 @@ export default function QuotationForm() {
                             <Combobox
                                 options={customers.map(c => ({ value: c.id, label: c.name }))}
                                 value={formData.customerId}
-                                onChange={(value) => setFormData({ ...formData, customerId: value })}
+                                onChange={(value) => {
+                                    const customer = customers.find(c => String(c.id) === String(value));
+                                    if (customer?.isTaxExempt) {
+                                        setFormData({ 
+                                            ...formData, 
+                                            customerId: value,
+                                            taxEnabled: false,
+                                            taxRate: 0
+                                        });
+                                    } else {
+                                        setFormData({ 
+                                            ...formData, 
+                                            customerId: value,
+                                            taxEnabled: true,
+                                            taxRate: 7
+                                        });
+                                    }
+                                }}
                                 placeholder="Seleccionar Cliente..."
                                 searchPlaceholder="Buscar cliente..."
                             />

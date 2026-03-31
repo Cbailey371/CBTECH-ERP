@@ -12,7 +12,8 @@ export default function ProductModal({ isOpen, onClose, onSubmit, product, loadi
         cost: '',
         margin: '',
         price: '',
-        isActive: true
+        isActive: true,
+        isTaxExempt: false
     });
 
     useEffect(() => {
@@ -25,7 +26,8 @@ export default function ProductModal({ isOpen, onClose, onSubmit, product, loadi
                 cost: product.cost || '',
                 margin: product.margin || '',
                 price: product.price || '',
-                isActive: product.isActive ?? true
+                isActive: product.isActive ?? true,
+                isTaxExempt: product.isTaxExempt || false
             });
         } else {
             setFormData({
@@ -36,7 +38,8 @@ export default function ProductModal({ isOpen, onClose, onSubmit, product, loadi
                 cost: '',
                 margin: '',
                 price: '',
-                isActive: true
+                isActive: true,
+                isTaxExempt: false
             });
         }
     }, [product, isOpen]);
@@ -192,6 +195,25 @@ export default function ProductModal({ isOpen, onClose, onSubmit, product, loadi
                             />
                             <p className="text-xs text-muted-foreground text-center">
                                 Calculado como: Costo / (1 - Margen)
+                            </p>
+                        </div>
+                        
+                        {/* Exención de Impuestos */}
+                        <div className="md:col-span-2 p-3 bg-green-50/10 border border-green-200/30 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <input
+                                    type="checkbox"
+                                    id="isTaxExempt"
+                                    checked={formData.isTaxExempt}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, isTaxExempt: e.target.checked }))}
+                                    className="w-4 h-4 text-green-600 rounded border-input focus:ring-green-500"
+                                />
+                                <label htmlFor="isTaxExempt" className="text-sm font-semibold text-foreground cursor-pointer">
+                                    Producto Exento de ITBMS (7%)
+                                </label>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground ml-7 mt-1">
+                                Si marca esta opción, este ítem no generará impuestos en las facturas, independientemente de si el cliente es exento o no.
                             </p>
                         </div>
                     </div>

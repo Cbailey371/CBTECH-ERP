@@ -21,7 +21,8 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
         tipoIdentificacion: '02',
         codUbi: '',
         paisReceptor: 'PA',
-        objetoRetencion: ''
+        objetoRetencion: '',
+        isTaxExempt: false
     });
 
     const [selectedProvinciaId, setSelectedProvinciaId] = useState('');
@@ -43,7 +44,8 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                 tipoIdentificacion: customer.tipoIdentificacion || '02',
                 codUbi: customer.codUbi || '',
                 paisReceptor: customer.paisReceptor || 'PA',
-                objetoRetencion: customer.objetoRetencion || ''
+                objetoRetencion: customer.objetoRetencion || '',
+                isTaxExempt: customer.isTaxExempt || false
             });
 
             // Si el cliente tiene codUbi, configurar los selects de provincia y distrito
@@ -71,7 +73,8 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                 tipoIdentificacion: '02',
                 codUbi: '',
                 paisReceptor: 'PA',
-                objetoRetencion: ''
+                objetoRetencion: '',
+                isTaxExempt: false
             });
             setSelectedProvinciaId('');
             setSelectedDistritoId('');
@@ -308,7 +311,6 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                                     ))}
                                 </select>
                             </div>
-
                             <div className="space-y-2 col-span-2">
                                 <label className="text-sm font-medium text-muted-foreground">Objeto de Retención (DGI)</label>
                                 <select
@@ -322,6 +324,25 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
                                         <option key={r.id} value={r.id}>{r.name}</option>
                                     ))}
                                 </select>
+                            </div>
+
+                            <div className="space-y-4 col-span-2 border p-3 rounded-md border-green-200/50 bg-green-50/10 mb-4">
+                                <div className="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        id="isTaxExempt"
+                                        name="isTaxExempt"
+                                        checked={formData.isTaxExempt}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, isTaxExempt: e.target.checked }))}
+                                        className="w-4 h-4 text-green-600 rounded border-input focus:ring-green-500"
+                                    />
+                                    <label htmlFor="isTaxExempt" className="text-sm font-semibold text-foreground cursor-pointer">
+                                        Exento de ITBMS (Exoneración Total)
+                                    </label>
+                                </div>
+                                <p className="text-[10px] text-muted-foreground ml-7">
+                                    Si activa esta opción, todas las facturas de este cliente se calcularán con 0% de ITBMS automáticamente.
+                                </p>
                             </div>
 
                             {formData.tipoReceptor === '03' && (

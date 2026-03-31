@@ -113,6 +113,12 @@ const Customer = sequelize.define('Customer', {
     field: 'objeto_retencion',
     comment: 'ID del catálogo de Objetos de Retención DGI'
   },
+  isTaxExempt: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+    field: 'is_tax_exempt'
+  },
   notes: {
     type: DataTypes.TEXT,
     allowNull: true
