@@ -189,13 +189,11 @@ class DigifactAdapter extends PACAdapter {
             "Contact": null
         };
 
-        // REGLA CLAVE: Solo enviamos AdditionlInfo (mal escrito) si es EXTRANJERO.
-        // Para operaciones LOCALES (Panamá), enviar PaisReceptorFE dispara error de exportación.
-        if (isExtranjero) {
-            buyerObj.AdditionlInfo = [
-                { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "US" }
-            ];
-        }
+        // REGLA CLAVE: La propiedad 'AdditionlInfo' DEBE existir siempre para cumplir el esquema,
+        // pero solo la poblamos con datos de país si es EXTRANJERO.
+        buyerObj.AdditionlInfo = isExtranjero ? [
+            { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "US" }
+        ] : [];
 
         // CodUbi Comprador
         if (!isExtranjero) {
@@ -356,9 +354,9 @@ class DigifactAdapter extends PACAdapter {
             "AdditionalDocumentInfo": {
                 "AdditionalInfo": (isExtranjero || ['C', '03', '04', '05'].includes(docData.docType)) ? [
                     {
-                        "AditionalInfo": isExtranjero ? [
+                        "AditionalInfo": [
                             { "Name": "TiempoPago", "Data": null, "Value": "1" }
-                        ] : []
+                        ]
                     }
                 ] : []
             }
