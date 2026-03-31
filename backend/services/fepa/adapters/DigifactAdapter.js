@@ -196,10 +196,11 @@ class DigifactAdapter extends PACAdapter {
             });
         }
 
-        // 3.5 LÓGICA DE RETENCIÓN (Para Gobierno 100%)
         const hasRetention = isGobierno && docData.customer.objetoRetencion;
         const totalRetention = hasRetention ? totalTax : 0;
-        const finalInvoiceTotal = Number((totalDocument - totalRetention).toFixed(2));
+        // IMPORTANTE: Para evitar el error [2504] del PAC, el InvoiceTotal debe ser el bruto (totalDocument)
+        // La retención se reporta en TotalRetenciones, pero no debe restarse del total principal en el JSON NUC.
+        const finalInvoiceTotal = totalDocument;
 
         const additionalIssueDocInfo = [
             { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },
@@ -209,7 +210,7 @@ class DigifactAdapter extends PACAdapter {
             { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },
             { "Name": "TipoOperacion", "Data": null, "Value": "1" },
             { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
-            { "Name": "FormatoGeneracion", "Data": null, "Value": "1" }, // Formato 1 es el Clásico
+            { "Name": "FormatoGeneracion", "Data": null, "Value": "3" }, // Formato 3 es el Moderno (CAFE)
             { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
             { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
             { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
