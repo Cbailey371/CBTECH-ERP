@@ -243,6 +243,8 @@ class DigifactAdapter extends PACAdapter {
                 "AdditionalIssueDocInfo": additionalIssueDocInfo,
                 "AditionalInfo": [
                     { "Name": "FormatoGeneracion", "Data": null, "Value": "3" },
+                    { "Name": "Formato", "Data": null, "Value": "3" },
+                    { "Name": "TemplateID", "Data": null, "Value": "3" },
                     ...(isExtranjero ? [{ "Name": "CondEntr", "Data": null, "Value": "EXW" }] : [])
                 ]
             },

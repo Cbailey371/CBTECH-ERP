@@ -121,8 +121,8 @@ const creditNoteController = {
                     quantity: item.quantity,
                     unitPrice: item.unitPrice,
                     total: item.total,
-                    discount: item.discount, // Assuming simple amount
-                    taxRate: 0 // Will need to infer or fetch ??
+                    discount: item.discount,
+                    taxRate: parseFloat(item.taxRate || 0)
                 }));
             } else {
                 // Partial: items provided in body
@@ -141,10 +141,8 @@ const creditNoteController = {
                         description: originalItem.description || originalItem.product?.name,
                         quantity: qty,
                         unitPrice: parseFloat(originalItem.unitPrice),
-                        total: qty * parseFloat(originalItem.unitPrice), // Recalculate basic total
-                        // Discounts logic for partial is complex, we simplify: proportional? or manual?
-                        // For now: assume no discount on partial or manual override.
-                        // Let's assume Unit Price is fixed.
+                        taxRate: parseFloat(originalItem.taxRate || 0),
+                        total: qty * parseFloat(originalItem.unitPrice)
                     };
                 });
             }
@@ -263,7 +261,7 @@ const creditNoteController = {
                     quantity: parseFloat(i.quantity),
                     price: parseFloat(i.unitPrice),
                     total: parseFloat(i.total),
-                    taxRate: 0.07,
+                    taxRate: parseFloat(i.taxRate || 0),
                     uom: 'und',
                     code: '1234567890',
                     cpbsAbr: '13',
@@ -287,11 +285,11 @@ const creditNoteController = {
                 
                 // Issuer
                 issuer: issuerConfig,
-                totals: {
-                    totalTaxable: creditNote.subtotal,
-                    totalTax: creditNote.tax,
-                    totalAmount: creditNote.total
-                }
+                totals: calculateTaxes(items.map(i => ({
+                    quantity: parseFloat(i.quantity),
+                    unitPrice: parseFloat(i.unitPrice),
+                    taxRate: parseFloat(i.taxRate || 0)
+                })))
             };
 
             // 4. Send to PAC
