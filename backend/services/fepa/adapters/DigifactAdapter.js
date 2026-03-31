@@ -103,6 +103,17 @@ class DigifactAdapter extends PACAdapter {
 
         const isConsumidorFinal = !docData.customer.taxId || docData.customer.tipoReceptor === '02';
 
+        // Manejo robusto para detectar si es una operación local (Panamá)
+        const rawCountry = (docData.customer.paisReceptor || docData.customer.country || 'PA').trim().toUpperCase();
+        // Eliminar tildes y ruidos comunes para comparar
+        const normalizedCountry = rawCountry.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z]/g, "");
+        
+        const isLocalCountry = ['PA', 'PANAMA', 'RP', 'REPUBLICADEPANAMA'].includes(normalizedCountry) || rawCountry === 'PA';
+        
+        // REGLA: Si la operación es local (isLocalCountry), NUNCA lo tratamos como "Extranjero" 
+        // para efectos de Digifact/DGI, incluso si su tipoReceptor es '04'.
+        const isExtranjero = !isLocalCountry && (docData.customer.tipoReceptor === '04' || rawCountry !== '' || docData.customer.taxId === 'EXTRANJERO');
+
         // TipoEmision: Contribuyente Previo (01) | Consumidor Final Posterior (03)
         const tipoEmision = isConsumidorFinal ? '03' : '01';
 
@@ -147,17 +158,6 @@ class DigifactAdapter extends PACAdapter {
         ];
 
         // Manejo específico para Extranjeros
-        // Manejo robusto para detectar si es una operación local (Panamá)
-        const rawCountry = (docData.customer.paisReceptor || docData.customer.country || 'PA').trim().toUpperCase();
-        // Eliminar tildes y ruidos comunes para comparar
-        const normalizedCountry = rawCountry.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z]/g, "");
-        
-        const isLocalCountry = ['PA', 'PANAMA', 'RP', 'REPUBLICADEPANAMA'].includes(normalizedCountry) || rawCountry === 'PA';
-        
-        // REGLA: Si la operación es local (isLocalCountry), NUNCA lo tratamos como "Extranjero" 
-        // para efectos de Digifact/DGI, incluso si su tipoReceptor es '04'.
-        const isExtranjero = !isLocalCountry && (docData.customer.tipoReceptor === '04' || rawCountry !== '' || docData.customer.taxId === 'EXTRANJERO');
-        
         if (isExtranjero) {
             if (docData.customer.taxId) {
                 buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId });
