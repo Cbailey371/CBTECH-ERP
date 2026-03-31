@@ -247,6 +247,9 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "NaturalezaOperacion", "Data": null, "Value": isExtranjero ? "02" : "01" },
                     { "Name": "TipoOperacion", "Data": null, "Value": "1" },
                     { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
+                    { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
+                    { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
+                    { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
                     { "Name": "TipoTransaccion", "Data": null, "Value": "1" }
                 ]
             },
