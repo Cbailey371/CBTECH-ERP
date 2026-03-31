@@ -236,8 +236,7 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
                     { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
                     { "Name": "TipoTransaccion", "Data": null, "Value": "1" },
-                    { "Name": "TipoSucursal", "Data": null, "Value": "2" },
-                    { "Name": "AdditionlInfo", "Data": null, "Value": [] }
+                    { "Name": "TipoSucursal", "Data": null, "Value": "2" }
                 ]
             },
             "Seller": {
@@ -339,7 +338,7 @@ class DigifactAdapter extends PACAdapter {
                 { "Type": "01", "Amount": Number(totalAmount.toFixed(2)) }
             ],
             "AdditionalDocumentInfo": {
-                "AdditionlInfo": [
+                "AdditionalInfo": [
                     {
                         "AditionalInfo": [
                             { "Name": "TiempoPago", "Data": null, "Value": "1" }
@@ -362,7 +361,7 @@ class DigifactAdapter extends PACAdapter {
             const cufeRaw = docData.cufeRef || docData.invoiceNumber || '';
             const cufeClean = cufeRaw.replace(/\D/g, ''); // Solo digitos
 
-            nucJson.AdditionalDocumentInfo.AdditionlInfo[0].AditionalData = {
+            nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
                 "Data": [
                     {
                         "Info": [
