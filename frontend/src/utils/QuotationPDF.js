@@ -248,11 +248,19 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
         doc.text(`Impuestos (${quotation.taxRate !== undefined ? quotation.taxRate : 7}%):`, totalsX, currentY);
         doc.text(`$${(parseFloat(quotation.tax) || 0).toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
 
-        // 7. TOTAL A PAGAR
+        if (quotation.retention > 0) {
+            currentY += 6;
+            doc.setTextColor(180, 83, 9);
+            doc.text('Retención ITBMS (-):', totalsX, currentY);
+            doc.text(`- $${parseFloat(quotation.retention).toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
+            doc.setTextColor(80);
+        }
+
+        // 7. TOTAL
         currentY += 8;
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.text('TOTAL A PAGAR:', totalsX, currentY);
+        doc.text(quotation.retention > 0 ? 'TOTAL A RECIBIR:' : 'TOTAL A PAGAR:', totalsX, currentY);
         doc.text(`$${(parseFloat(quotation.total) || 0).toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
 
         // Notes (Left aligned)

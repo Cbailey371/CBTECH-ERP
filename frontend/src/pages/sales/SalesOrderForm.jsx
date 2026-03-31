@@ -47,6 +47,7 @@ export default function SalesOrderForm() {
         discount: 0,
         taxable: 0,
         tax: 0,
+        retention: 0,
         total: 0,
         lineDiscounts: 0,
         globalDiscount: 0,
@@ -262,7 +263,21 @@ export default function SalesOrderForm() {
         const taxable = Math.max(0, netItemsTotal - globalDiscount);
         const effectiveTaxRate = formData.taxEnabled ? (parseFloat(formData.taxRate) / 100) : 0;
         const tax = taxable * effectiveTaxRate;
-        const total = taxable + tax;
+
+        // 4. Calcular Retención según Objeto de Retención del cliente
+        const customerIdMatch = String(formData.customerId);
+        const customer = customers.find(c => String(c.id) === customerIdMatch);
+        let retention = 0;
+        if (customer?.objetoRetencion && formData.taxEnabled) {
+            const objRet = String(customer.objetoRetencion);
+            if (objRet === '1' || objRet === '3') {
+                retention = tax; // 100%
+            } else if (objRet === '2' || objRet === '4' || objRet === '7') {
+                retention = tax * 0.5; // 50%
+            }
+        }
+
+        const total = taxable + tax - retention;
 
         setTotals({
             subtotal: grossItemsTotal,
@@ -271,6 +286,7 @@ export default function SalesOrderForm() {
             totalSavings: totalDiscount,
             taxable,
             tax,
+            retention,
             total
         });
     };
@@ -791,9 +807,16 @@ export default function SalesOrderForm() {
                                 </div>
                                 <span>${totals.tax.toFixed(2)}</span>
                             </div>
+                            
+                            {totals.retention > 0 && (
+                                <div className="flex justify-between text-amber-600 font-medium py-1 border-t border-border/30">
+                                    <span className="text-sm">Retención ITBMS (-):</span>
+                                    <span>- ${totals.retention.toFixed(2)}</span>
+                                </div>
+                            )}
 
                             <div className="flex justify-between font-bold text-lg border-t pt-2">
-                                <span>Total:</span>
+                                <span>{totals.retention > 0 ? 'Total a Recibir:' : 'Total:'}</span>
                                 <span>${totals.total.toFixed(2)}</span>
                             </div>
 

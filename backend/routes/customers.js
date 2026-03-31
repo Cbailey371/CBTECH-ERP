@@ -48,7 +48,7 @@ router.get('/', requireCompanyContext, async (req, res) => {
 
     const { count, rows } = await Customer.findAndCountAll({
       where: whereClause,
-      attributes: ['id', 'code', 'name', 'tradeName', 'taxId', 'dv', 'email', 'phone', 'isActive', 'tipoReceptor', 'tipoIdentificacion', 'codUbi', 'paisReceptor'],
+      attributes: ['id', 'code', 'name', 'tradeName', 'taxId', 'dv', 'email', 'phone', 'isActive', 'tipoReceptor', 'tipoIdentificacion', 'codUbi', 'paisReceptor', 'address', 'notes', 'objetoRetencion'],
       limit: parseInt(limit),
       offset: offset,
       order: [['created_at', 'DESC']]
@@ -126,7 +126,8 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['customers.cre
       tipoReceptor,
       tipoIdentificacion,
       codUbi,
-      paisReceptor
+      paisReceptor,
+      objetoRetencion
     } = req.body;
 
     // Validar campos requeridos
@@ -215,7 +216,8 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['customers.cre
       tipoReceptor: tipoReceptor || '01',
       tipoIdentificacion: tipoIdentificacion || '02',
       codUbi: codUbi || null,
-      paisReceptor: paisReceptor || 'PA'
+      paisReceptor: paisReceptor || 'PA',
+      objetoRetencion: objetoRetencion || null
     });
 
     res.status(201).json({
@@ -272,7 +274,8 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['customers.u
       tipoReceptor,
       tipoIdentificacion,
       codUbi,
-      paisReceptor
+      paisReceptor,
+      objetoRetencion
     } = req.body;
 
     // Verificar email único en la empresa si se cambia
@@ -333,7 +336,8 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['customers.u
       tipoReceptor: tipoReceptor !== undefined ? tipoReceptor : customer.tipoReceptor,
       tipoIdentificacion: tipoIdentificacion !== undefined ? tipoIdentificacion : customer.tipoIdentificacion,
       codUbi: codUbi !== undefined ? codUbi : customer.codUbi,
-      paisReceptor: paisReceptor !== undefined ? paisReceptor : customer.paisReceptor
+      paisReceptor: paisReceptor !== undefined ? paisReceptor : customer.paisReceptor,
+      objetoRetencion: objetoRetencion !== undefined ? objetoRetencion : customer.objetoRetencion
     });
 
     res.json({
