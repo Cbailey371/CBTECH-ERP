@@ -362,7 +362,7 @@ class DigifactAdapter extends PACAdapter {
             const cufeRaw = docData.cufeRef || docData.invoiceNumber || '';
             const cufeClean = cufeRaw.replace(/\D/g, ''); // Solo digitos
 
-            nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
+            nucJson.AdditionalDocumentInfo.AdditionlInfo[0].AditionalData = {
                 "Data": [
                     {
                         "Info": [
