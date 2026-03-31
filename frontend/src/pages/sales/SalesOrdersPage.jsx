@@ -106,8 +106,9 @@ export default function SalesOrdersPage() {
                                 onChange={(e) => setStatusFilter(e.target.value)}
                             >
                                 <option value="">Todos</option>
-                                <option value="draft">No Fiscalizada</option>
-                                <option value="fulfilled">Fiscalizada</option>
+                                <option value="draft">No Fiscalizada (Borrador)</option>
+                                <option value="fulfilled">Autorizada DGI (Fiscalizada)</option>
+                                <option value="cancelled">Anulada / Cancelada</option>
                             </select>
                         </div>
                     </div>
@@ -194,6 +195,32 @@ export default function SalesOrdersPage() {
                             )}
                         </TableBody>
                     </Table>
+                    <div className="flex items-center justify-between mt-6 border-t border-border pt-4">
+                        <div className="text-sm text-muted-foreground">
+                            Mostrando <span className="font-medium">{orders.length}</span> de <span className="font-medium">{pagination.total}</span> facturas
+                        </div>
+                        <div className="flex gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fetchOrders(pagination.page - 1)}
+                                disabled={pagination.page <= 1}
+                            >
+                                Anterior
+                            </Button>
+                            <div className="flex items-center px-4 text-sm font-medium">
+                                Página {pagination.page} de {pagination.totalPages}
+                            </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => fetchOrders(pagination.page + 1)}
+                                disabled={pagination.page >= pagination.totalPages}
+                            >
+                                Siguiente
+                            </Button>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         </div>

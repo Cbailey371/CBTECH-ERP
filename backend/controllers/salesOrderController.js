@@ -51,8 +51,14 @@ exports.getOrders = async (req, res) => {
         }
 
         const whereClause = { companyId };
-
-        if (status) whereClause.status = status;
+        
+        if (status) {
+            if (status === 'draft') {
+                whereClause.status = { [Op.in]: ['draft', 'confirmed', 'in_progress'] };
+            } else {
+                whereClause.status = status;
+            }
+        }
         if (startDate && endDate) {
             whereClause.issueDate = { [Op.between]: [startDate, endDate] };
         }
