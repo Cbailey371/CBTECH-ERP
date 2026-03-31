@@ -133,11 +133,12 @@ class DigifactAdapter extends PACAdapter {
         // Generar código de seguridad aleatorio de 9 dígitos (AI06)
         const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
 
-        // Número correlativo de la FE (AI04) - derivado del número de documento
-        const numeroDF = String(docData.documentNumber || '1')
-            .replace(/\D/g, '') // Eliminar todo lo que no sea dígito
-            .slice(-10)         // Tomar los últimos 10
-            .padStart(10, '0'); // Rellenar con ceros a la izquierda
+        // Número correlativo de la FE (AI04)
+        // En TEST usamos un secuencial alto para evitar colisiones
+        const numeroDF = this.environment === 'TEST' ? "0020269999" : String(docData.documentNumber || '1')
+            .replace(/\D/g, '')
+            .slice(-10)
+            .padStart(10, '0');
 
         const docTypeBase = (docData.docType === '03' || docData.docType === 'C') ? 'NC' : ((docData.docType === '04' || docData.docType === 'D') ? 'ND' : 'FAC');
         
@@ -179,9 +180,10 @@ class DigifactAdapter extends PACAdapter {
             buyerTaxIDAdditionalInfo.push({ "Name": "ObjetoRetencion", "Data": null, "Value": docData.customer.objetoRetencion });
         }
 
-        const taxIdType = docData.customer.tipoIdentificacion 
+        // REGLA: 1=RUC (guiones), 2=Cédula (sin guiones)
+        const taxIdType = (docData.customer.taxId?.includes('-')) ? "1" : (docData.customer.tipoIdentificacion 
             ? String(docData.customer.tipoIdentificacion).replace(/^0/, '') 
-            : (isConsumidorFinal ? "1" : "2");
+            : (isConsumidorFinal ? "1" : "2"));
         
         const finalTaxId = isConsumidorFinal ? "CF" : (isExtranjero ? "EXTRANJERO" : receptorRuc);
 
@@ -245,12 +247,7 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "NaturalezaOperacion", "Data": null, "Value": isExtranjero ? "02" : "01" },
                     { "Name": "TipoOperacion", "Data": null, "Value": "1" },
                     { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
-                    { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
-                    { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
-                    { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
-                    { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
-                    { "Name": "TipoTransaccion", "Data": null, "Value": "1" },
-                    { "Name": "TipoSucursal", "Data": null, "Value": "2" }
+                    { "Name": "TipoTransaccion", "Data": null, "Value": "1" }
                 ]
             },
             "Seller": {
