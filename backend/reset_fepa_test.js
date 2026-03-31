@@ -1,49 +1,49 @@
-const { FE_Document, SalesOrder, Payment, CreditNote, sequelize } = require('./models');
+const { 
+    FE_Document, SalesOrder, SalesOrderItem, 
+    Payment, CreditNote, DeliveryNote, DeliveryNoteItem, 
+    sequelize 
+} = require('./models');
 
-async function resetFepaTests() {
+async function totalWipeOut() {
     const t = await sequelize.transaction();
     try {
-        console.log('🚀 Iniciando limpieza total de historial de facturación...');
+        console.log('🚀 INICIANDO PURGA TOTAL DE FACTURACÍON Y VENTAS...');
 
-        // 1. Borrar documentos electrónicos (FE_Document)
-        console.log('   🗑️  Eliminando registros de fiscalización (FE_Document)...');
+        // 1. Dependencias directas de SalesOrder
+        console.log('   🗑️  Eliminando documentos fiscales (FE_Document)...');
         await FE_Document.destroy({ where: {}, force: true, transaction: t });
 
-        // 2. Borrar Notas de Crédito
         console.log('   🗑️  Eliminando Notas de Crédito...');
         await CreditNote.destroy({ where: {}, force: true, transaction: t });
 
-        // 3. Borrar Pagos (para que el balance de la orden de venta se restaure)
-        console.log('   🗑️  Eliminando historial de cobros (Payments)...');
+        console.log('   🗑️  Eliminando Pagos/Cobros (Payments)...');
         await Payment.destroy({ where: {}, force: true, transaction: t });
 
-        // 4. Resetear estados en SalesOrder
-        console.log('   🔄 Restaurando estados de Órdenes de Venta...');
-        // Ponemos todo como unpaid y balance = total
-        await SalesOrder.update({
-            paymentStatus: 'unpaid',
-            paidAmount: 0,
-            balance: sequelize.col('total'),
-            // Opcional: si quieres resetear el status global a 'confirmed' para poder re-emitir
-            status: 'confirmed' 
-        }, { 
-            where: {}, 
-            transaction: t 
-        });
+        // 2. Guías de remisión (Delivery Notes) y sus ítems
+        console.log('   🗑️  Eliminando Guías de Entrega (DeliveryNotes)...');
+        await DeliveryNoteItem.destroy({ where: {}, force: true, transaction: t });
+        await DeliveryNote.destroy({ where: {}, force: true, transaction: t });
+
+        // 3. Ítems de las Órdenes de Venta
+        console.log('   🗑️  Eliminando Ítems de Ventas (SalesOrderItems)...');
+        await SalesOrderItem.destroy({ where: {}, force: true, transaction: t });
+
+        // 4. Órdenes de Venta (SalesOrders)
+        console.log('   🗑️  Eliminando Órdenes de Venta (SalesOrders)...');
+        await SalesOrder.destroy({ where: {}, force: true, transaction: t });
 
         await t.commit();
-        console.log('\n✨ ÉXITO: El sistema ha sido reseteado.');
-        console.log('   Ahora puedes intentar emitir nuevas facturas de prueba.');
+        console.log('\n✅ ÉXITO: El sistema ha sido purgado por completo.');
+        console.log('   Todas las facturas, ventas y cobros han sido eliminados.');
         process.exit(0);
     } catch (error) {
         await t.rollback();
-        console.error('\n❌ ERROR durante el reset:', error);
+        console.error('\n❌ ERROR CRÍTICO durante la purga:', error);
         process.exit(1);
     }
 }
 
-// Advertencia de seguridad
-console.log('⚠️  ATENCIÓN: Este script ELIMINARÁ permanentemente el historial de facturas y pagos.');
-console.log('   Preparando ejecución en 2 segundos...');
+console.log('⚠️  PELIGRO: ESTA ACCIÓN ES IRREVERSIBLE.');
+console.log('   Se eliminará TODO el historial de ventas y facturación en 3 segundos...');
 
-setTimeout(resetFepaTests, 2000);
+setTimeout(totalWipeOut, 3000);
