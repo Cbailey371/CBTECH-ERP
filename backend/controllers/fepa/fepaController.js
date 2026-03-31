@@ -99,26 +99,48 @@ exports.emitDocument = async (req, res) => {
 
         // 4. Save FE_Document if Successful
         if (result.success && result.status === 'AUTHORIZED') {
-            const feDoc = await FE_Document.create({
-                companyId,
-                salesOrderId: order.id,
-                docType: docTypeVal,
-                cufe: result.cufe,
-                qrUrl: result.qr,
-                xmlSigned: result.xmlSigned,
-                htmlContent: result.htmlContent, // Guardamos el HTML oficial de Digifact
-                pdfContent: result.pdfBase64,  // Guardamos el PDF oficial de Digifact
-                authDate: result.authDate || new Date(),
-                status: 'AUTHORIZED',
-                pacName: 'DIGIFACT',
-                protocol: result.protocol,
-                environment: issuerConfig.environment,
-            });
+            try {
+                const feDoc = await FE_Document.create({
+                    companyId,
+                    salesOrderId: order.id,
+                    docType: docTypeVal,
+                    cufe: result.cufe,
+                    qrUrl: result.qr,
+                    xmlSigned: result.xmlSigned,
+                    htmlContent: result.htmlContent,
+                    pdfContent: result.pdfBase64,
+                    authDate: result.authDate || new Date(),
+                    status: 'AUTHORIZED',
+                    pacName: 'DIGIFACT',
+                    protocol: result.protocol,
+                    environment: issuerConfig.environment,
+                });
 
-            // 5. Update Sales Order Status
-            await order.update({ status: 'fulfilled' });
+                // 5. Update Sales Order Status
+                await order.update({ status: 'fulfilled' });
 
-            return res.json({ success: true, document: feDoc });
+                return res.json({ success: true, document: feDoc });
+            } catch (dbError) {
+                console.error(' [FE_PERSISTENCE_ERROR] El documento fue certificado pero falló el guardado local:', dbError);
+                
+                // Si es un error de duplicidad de CUFE, intentamos encontrar el documento existente
+                if (dbError.name === 'SequelizeUniqueConstraintError') {
+                    const existingDoc = await FE_Document.findOne({ where: { cufe: result.cufe } });
+                    if (existingDoc) {
+                        return res.json({ 
+                            success: true, 
+                            message: 'Documento ya estaba registrado.', 
+                            document: existingDoc 
+                        });
+                    }
+                }
+
+                return res.status(500).json({ 
+                    error: 'Documento certificado en Digifact pero error al guardar localmente.',
+                    details: dbError.message,
+                    cufe: result.cufe
+                });
+            }
         } else {
             // Document Rejected by PAC
             return res.status(400).json({ 
@@ -129,8 +151,11 @@ exports.emitDocument = async (req, res) => {
         }
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
+        console.error(' [FE_EMIT_CRITICAL_ERROR]:', error);
+        res.status(500).json({ 
+            error: 'Error crítico en el proceso de emisión.',
+            message: error.message 
+        });
     }
 };
 

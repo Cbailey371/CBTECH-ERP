@@ -362,10 +362,13 @@ class DigifactAdapter extends PACAdapter {
             }
 
             const result = JSON.parse(resultText);
-            if (result && result.authNumber) {
-                // Intentar extraer el contenido del QR del XML si es posible, 
-                // ya que el usuario indica que la URL de consulta no es suficiente.
-                let finalQr = result.qrCodeUrl;
+            
+            // Digifact puede devolver el CUFE en authNumber o en campos similares según versión
+            const authNumber = result.authNumber || result.auth_number || result.authorizationNumber;
+            
+            if (result && authNumber) {
+                // Intentar extraer el contenido del QR del XML si es posible
+                let finalQr = result.qrCodeUrl || result.qr_code_url;
                 if (result.responseData1) {
                     try {
                         const xmlDecoded = Buffer.from(result.responseData1, 'base64').toString('utf8');
@@ -378,16 +381,22 @@ class DigifactAdapter extends PACAdapter {
                     }
                 }
 
+                // Extraer protocolo de múltiples fuentes
+                const protocol = result.authProtocol || 
+                                 result.authorizationProtocol || 
+                                 result.auth_protocol || 
+                                 (result.description?.includes('Protocolo:') ? result.description.split('Protocolo:')[1].trim() : null);
+
                 return {
                     success: true,
-                    cufe: result.authNumber,
+                    cufe: authNumber,
                     qr: finalQr, 
                     xmlSigned: result.responseData1,
                     htmlContent: result.responseData2,
                     pdfBase64: result.responseData3,
                     authDate: result.issuedTimeStamp ? new Date(result.issuedTimeStamp) : new Date(),
                     status: 'AUTHORIZED',
-                    protocol: result.authProtocol || result.authorizationProtocol || null
+                    protocol: protocol
                 };
             } else {
                 return {
