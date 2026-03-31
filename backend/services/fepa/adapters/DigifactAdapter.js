@@ -149,9 +149,9 @@ class DigifactAdapter extends PACAdapter {
         if (docTypeBase === 'NC') docType = isExtranjero ? '14' : '03';
         if (docTypeBase === 'ND') docType = isExtranjero ? '13' : '04';
 
-        // REGLA CLAVE: En Digifact Panamá, AdditionalIssueType 1 es para emisión operativa (incluso en TEST).
-        // El código 2 a veces dispara perfiles de exportación forzados.
-        const additionalIssueType = 1;
+        // REGLA CLAVE: En Digifact Panamá TEST, DEBE ser 2 para coincidir con la URL de pruebas.
+        // El error A04 nos obliga a esto.
+        const additionalIssueType = this.environment === 'TEST' ? 2 : 1;
 
         // PtoFactDF: Para pruebas debe ser mayor a 599 (ej: 987)
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
