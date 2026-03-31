@@ -126,13 +126,15 @@ class DigifactAdapter extends PACAdapter {
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
         
         // Generar NumeroDF asegurando unicidad por tipo de documento (DocType)
-        // Usamos prefijos: 1 para Facturas (01/02), 4 para Notas de Crédito, 5 para Notas de Débito.
-        // Esto evita que NC-100 y FE-100 colisionen en el PAC como '0000000100'.
         const numericPart = String(docData.documentNumber || '1').replace(/\D/g, '');
         const prefix = (docType === '04' || docType === '03') ? '4' : (docType === '05' ? '5' : '1');
-        let numeroDF = (prefix + numericPart).slice(-10).padStart(10, '0');
+        
+        // En ambiente de TEST, si reseteamos la BD local, los números colisionan en el PAC.
+        // Añadimos un pequeño offset basado en la hora/minuto actual para pruebas rápidas.
+        const testSuffix = this.environment === 'TEST' ? String(new Date().getHours()) + String(new Date().getMinutes()) : '';
+        let numeroDF = (prefix + testSuffix + numericPart).slice(-10).padStart(10, '0');
 
-        if (numeroDF === '0000000000') numeroDF = '1000000001'; // Fallback robusto
+        if (numeroDF === '0000000000') numeroDF = '1000000001'; 
         
         const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
 
