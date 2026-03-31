@@ -141,10 +141,10 @@ const generateCafePdf = async (data) => {
                                             [{ text: [{text: 'Razón Social: ', bold: true}, data.customer.name || ''], margin: [0, 0] }],
                                             [{ 
                                                 text: [
-                                                    {text: data.customer.tipoReceptor === '04' ? 'Pasaporte: ' : 'Ruc: ', bold: true}, 
+                                                    {text: (data.customer.tipoReceptor === '04' || data.customer.tipoIdentificacion === '03') ? 'Pasaporte: ' : 'Ruc: ', bold: true}, 
                                                     `${data.customer.ruc || ''} `, 
-                                                    (data.customer.tipoReceptor === '04' || !data.customer.dv) ? '' : {text: 'DV: ', bold: true}, 
-                                                    (data.customer.tipoReceptor === '04' || !data.customer.dv) ? '' : data.customer.dv
+                                                    (data.customer.tipoReceptor === '04' || data.customer.tipoIdentificacion === '03' || !data.customer.dv) ? '' : {text: 'DV: ', bold: true}, 
+                                                    (data.customer.tipoReceptor === '04' || data.customer.tipoIdentificacion === '03' || !data.customer.dv) ? '' : data.customer.dv
                                                 ], 
                                                 margin: [0, 0] 
                                             }],                                            [{ text: [{text: 'Dirección: ', bold: true}, data.customer.address || ''], margin: [0, 0] }]

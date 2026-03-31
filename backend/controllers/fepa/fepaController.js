@@ -210,7 +210,8 @@ exports.downloadCafe = async (req, res) => {
                 address: order.customer.address,
                 email: order.customer.email,
                 phone: order.customer.phone,
-                tipoReceptor: order.customer.tipoReceptor
+                tipoReceptor: order.customer.tipoReceptor,
+                tipoIdentificacion: order.customer.tipoIdentificacion
             },
             items: formattedItems,
             // El usuario solicita el punto de facturación completo (usualmente 3 dígitos)

@@ -36,7 +36,7 @@ const FE_Document = sequelize.define('FE_Document', {
         }
     },
     docType: {
-        type: DataTypes.ENUM('01', '03', '04'), // 01=Factura, 03=NC, 04=ND
+        type: DataTypes.ENUM('01', '02', '03', '04', '05'), // 01=Factura, 02=Extranjero, 03=Exportacion, 04=NC, 05=ND
         allowNull: false,
         defaultValue: '01',
         field: 'doc_type'
@@ -62,7 +62,7 @@ const FE_Document = sequelize.define('FE_Document', {
         field: 'auth_date'
     },
     status: {
-        type: DataTypes.ENUM('DRAFT', 'SIGNING', 'AUTHORIZED', 'REJECTED', 'ANNULLED'),
+        type: DataTypes.ENUM('DRAFT', 'SIGNING', 'AUTHORIZED', 'REJECTED', 'ANNULLED', 'CERTIFIED'),
         defaultValue: 'DRAFT',
         allowNull: false
     },

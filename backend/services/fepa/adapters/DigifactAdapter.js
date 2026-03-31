@@ -109,12 +109,17 @@ class DigifactAdapter extends PACAdapter {
         const isConsumidorFinal = (receptorTipo === "02" || docData.customer.taxId === "CF");
 
         // 2. CONFIGURACIÓN DE TIPO DE DOCUMENTO Y EMISIÓN
-        const docTypeBase = (docData.docType === '03' || docData.docType === 'C') ? 'NC' : ((docData.docType === '04' || docData.docType === 'D') ? 'ND' : 'FAC');
-        
         let docType = '01';
-        if (docTypeBase === 'FAC') docType = isExtranjero ? '02' : '01'; 
-        if (docTypeBase === 'NC') docType = '04';
-        if (docTypeBase === 'ND') docType = '05';
+        if (docData.docType === '02') {
+            docType = '02'; // Operación Extranjera
+        } else if (docData.docType === '04' || docData.docType === '03') {
+            docType = '04'; // Nota de Crédito (soportamos 03 por compatibilidad)
+        } else if (docData.docType === '05') {
+            docType = '05'; // Nota de Débito
+        } else {
+            // Lógica automática basada en receptor si no se especifica explícitamente
+            docType = isExtranjero ? '02' : '01';
+        }
 
         const tipoEmision = isConsumidorFinal ? '03' : '01';
         const additionalIssueType = this.environment === 'TEST' ? 2 : 1;

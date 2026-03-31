@@ -256,7 +256,7 @@ const creditNoteController = {
 
             const docData = {
                 documentNumber: creditNote.number,
-                docType: '03', // Nota de Crédito
+                docType: '04', // Nota de Crédito (Standard DGI)
                 items: items.map(i => ({
                     description: i.description || 'Devolución de mercancía',
                     quantity: parseFloat(i.quantity),
@@ -308,7 +308,7 @@ const creditNoteController = {
                 const feDoc = await FE_Document.create({
                     companyId: companyId,
                     creditNoteId: creditNote.id,
-                    docType: '03', // NC
+                    docType: '04', // NC Standard
                     cufe: result.cufe,
                     qrUrl: result.qr,
                     xmlSigned: result.xmlSigned,
@@ -439,7 +439,7 @@ const creditNoteController = {
         const totals = calculateTaxes(formattedItems);
 
         const data = {
-            docType: '03', // NC
+            docType: '04', // NC Standard
             documentNumber: creditNote.number,
             issueDate: creditNote.date ? new Date(creditNote.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             cufe: creditNote.fiscalCufe,
