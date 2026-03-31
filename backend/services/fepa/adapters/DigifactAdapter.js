@@ -168,6 +168,7 @@ class DigifactAdapter extends PACAdapter {
         } else {
             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-2" });
             buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId || "PASAPORTE" });
+            buyerTaxIDAdditionalInfo.push({ "Name": "IdentificacionReceptor", "Data": null, "Value": docData.customer.taxId || "" });
             buyerTaxIDAdditionalInfo.push({ "Name": "PaisExt", "Data": null, "Value": docData.customer.paisReceptor || "US" });
         }
 
@@ -178,7 +179,9 @@ class DigifactAdapter extends PACAdapter {
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
             "Name": buyerName,
             "AdditionlInfo": [ 
-                { "Name": "PaisReceptorFE", "Data": null, "Value": isExtranjero ? (docData.customer.paisReceptor || "US") : "PA" }
+                { "Name": "PaisReceptorFE", "Data": null, "Value": isExtranjero ? (docData.customer.paisReceptor || "US") : "PA" },
+                { "Name": "IdReceptor", "Data": null, "Value": isExtranjero ? (docData.customer.taxId || "") : "" },
+                { "Name": "NumPasaporte", "Data": null, "Value": isExtranjero ? (docData.customer.taxId || "") : "" }
             ],
             "AddressInfo": {
                 "Address": (docData.customer.address || "CIUDAD DE PANAMA").substring(0, 100),
