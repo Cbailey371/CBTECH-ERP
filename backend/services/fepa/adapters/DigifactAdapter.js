@@ -112,7 +112,7 @@ class DigifactAdapter extends PACAdapter {
         const docTypeBase = (docData.docType === '03' || docData.docType === 'C') ? 'NC' : ((docData.docType === '04' || docData.docType === 'D') ? 'ND' : 'FAC');
         
         let docType = '01';
-        if (docTypeBase === 'FAC') docType = '01'; 
+        if (docTypeBase === 'FAC') docType = isExtranjero ? '02' : '01'; 
         if (docTypeBase === 'NC') docType = '04';
         if (docTypeBase === 'ND') docType = '05';
 

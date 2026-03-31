@@ -97,11 +97,18 @@ const generateCafePdf = async (data) => {
             ? { image: logoContent, width: 120, alignment: 'center', margin: [0, 20, 0, 0] } 
             : { text: '', width: 120 };
 
-        const isNC = data.docType === '03' || data.docType === '04';
-        const docTitle = isNC ? 'NOTA DE CRÉDITO ELECTRÓNICA' : 'FACTURA ELECTRÓNICA';
-        const opType = isNC 
-            ? 'Nota de crédito' 
-            : (data.isExtranjero ? 'Factura de Operación Extranjera' : 'Factura de Operación Interna');
+        const isNC = data.docType === '04'; // Nota de Crédito
+        const isND = data.docType === '05'; // Nota de Débito
+        const isExtranjeroOp = data.docType === '02' || data.isExtranjero;
+
+        let docTitle = 'FACTURA ELECTRÓNICA';
+        if (isNC) docTitle = 'NOTA DE CRÉDITO ELECTRÓNICA';
+        if (isND) docTitle = 'NOTA DE DÉBITO ELECTRÓNICA';
+
+        let opType = 'Factura de Operación Interna';
+        if (isNC) opType = 'Nota de crédito';
+        if (isND) opType = 'Nota de débito';
+        if (isExtranjeroOp && !isNC && !isND) opType = 'Factura de Operación Extranjera';
 
         const { date: iDate, time: iTime } = formatIssueDateStr(data.issueDate);
         
@@ -130,10 +137,17 @@ const generateCafePdf = async (data) => {
                                             [{ text: [{text: 'Nombre Emisor: ', bold: true}, data.issuer.razonSocial || ''], margin: [0, 0] }],
                                             [{ text: [{text: 'Ruc Emisor: ', bold: true}, `${data.issuer.ruc || ''} `, {text: 'DV: ', bold: true}, data.issuer.dv || ''], margin: [0, 0] }],
                                             [{ text: [{text: 'Dirección Emisor: ', bold: true}, data.issuer.direccion || ''], margin: [0, 0] }],
-                                            [{ text: [{text: 'Tipo de Receptor: ', bold: true}, data.customer.tipoReceptor || 'Contribuyente'], margin: [0, 0] }],
+                                            [{ text: [{text: 'Tipo de Receptor: ', bold: true}, data.customer.tipoReceptor === '04' ? 'Extranjero' : (data.customer.tipoReceptor === '03' ? 'Gobierno' : 'Contribuyente')], margin: [0, 0] }],
                                             [{ text: [{text: 'Razón Social: ', bold: true}, data.customer.name || ''], margin: [0, 0] }],
-                                            [{ text: [{text: 'Ruc: ', bold: true}, `${data.customer.ruc || ''} `, {text: 'DV: ', bold: true}, data.customer.dv || ''], margin: [0, 0] }],
-                                            [{ text: [{text: 'Dirección: ', bold: true}, data.customer.address || ''], margin: [0, 0] }]
+                                            [{ 
+                                                text: [
+                                                    {text: data.customer.tipoReceptor === '04' ? 'Pasaporte: ' : 'Ruc: ', bold: true}, 
+                                                    `${data.customer.ruc || ''} `, 
+                                                    (data.customer.tipoReceptor === '04' || !data.customer.dv) ? '' : {text: 'DV: ', bold: true}, 
+                                                    (data.customer.tipoReceptor === '04' || !data.customer.dv) ? '' : data.customer.dv
+                                                ], 
+                                                margin: [0, 0] 
+                                            }],                                            [{ text: [{text: 'Dirección: ', bold: true}, data.customer.address || ''], margin: [0, 0] }]
                                         ]
                                     },
                                     layout: {

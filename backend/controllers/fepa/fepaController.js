@@ -68,9 +68,12 @@ exports.emitDocument = async (req, res) => {
         // 2. Prepare Data (Normalize)
         const items = order.items || [];
 
+        const isExtranjeroVal = order.customer.tipoReceptor === '04' || (order.customer.paisReceptor && order.customer.paisReceptor !== 'PA');
+        const docTypeVal = isExtranjeroVal ? '02' : '01';
+
         const docData = {
             documentNumber: order.orderNumber,
-            docType: '01', // Factura
+            docType: docTypeVal, 
             issueDate: new Date(),
             items: items.map(i => ({
                 description: i.description || (i.product ? i.product.name : 'Artículo general'),
@@ -99,7 +102,7 @@ exports.emitDocument = async (req, res) => {
             const feDoc = await FE_Document.create({
                 companyId,
                 salesOrderId: order.id,
-                docType: '01',
+                docType: docTypeVal,
                 cufe: result.cufe,
                 qrUrl: result.qr,
                 xmlSigned: result.xmlSigned,
@@ -206,7 +209,8 @@ exports.downloadCafe = async (req, res) => {
                 ruc: order.customer.taxId,
                 address: order.customer.address,
                 email: order.customer.email,
-                phone: order.customer.phone
+                phone: order.customer.phone,
+                tipoReceptor: order.customer.tipoReceptor
             },
             items: formattedItems,
             // El usuario solicita el punto de facturación completo (usualmente 3 dígitos)
