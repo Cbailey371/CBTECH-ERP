@@ -101,131 +101,64 @@ class DigifactAdapter extends PACAdapter {
     mapToNucJson(docData) {
         const { totalTaxable, totalTax, totalAmount } = calculateTaxes(docData.items);
 
-        const isConsumidorFinal = !docData.customer.taxId || docData.customer.tipoReceptor === '02';
+        // 1. DETERMINAR PERFIL DEL CLIENTE (Basado en el modelo Customer del ERP)
+        const receptorTipo = docData.customer.tipoReceptor || "01";
+        const isGobierno = (receptorTipo === "03");
+        const isExtranjero = (receptorTipo === "04" || docData.customer.taxId === "EXTRANJERO");
+        const isConsumidorFinal = (receptorTipo === "02" || docData.customer.taxId === "CF");
 
-        // Manejo robusto para detectar si es una operación local (Panamá)
-        const rawCountry = (docData.customer.paisReceptor || docData.customer.country || 'PA').trim().toUpperCase();
-        // Eliminar tildes y ruidos comunes para comparar
-        const normalizedCountry = rawCountry.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z]/g, "");
-        
-        const isLocalCountry = ['PA', 'PANAMA', 'RP', 'REPUBLICADEPANAMA'].includes(normalizedCountry) || rawCountry === 'PA';
-        
-        // REGLA: Si la operación es local (isLocalCountry), NUNCA lo tratamos como "Extranjero" 
-        // para efectos de Digifact/DGI, incluso si su tipoReceptor es '04'.
-        const isExtranjero = !isLocalCountry && (docData.customer.tipoReceptor === '04' || rawCountry !== '' || docData.customer.taxId === 'EXTRANJERO');
-
-        // TipoEmision: Contribuyente Previo (01) | Consumidor Final Posterior (03)
-        const tipoEmision = isConsumidorFinal ? '03' : '01';
-
-        // Receptor
-        const receptorRuc = isConsumidorFinal ? 'CF' : docData.customer.taxId;
-        const receptorDv = isConsumidorFinal ? '' : (docData.customer.dv || '');
-
-        // En ambiente TEST Digifact requiere usar su propio RUC de sandbox
-        const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
-        const authDv = this.environment === 'TEST' ? '32' : (this.dvEmisor || '00');
-
-        // En ambiente TEST Digifact exige este nombre específico para el emisor
-        const emisorName = this.environment === 'TEST'
-            ? 'FE generada en ambiente de pruebas - sin valor comercial ni fiscal'
-            : (this.config.razonSocial || 'Emisor');
-
-        // Generar código de seguridad aleatorio de 9 dígitos (AI06)
-        const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
-
-        // Número correlativo de la FE (AI04)
-        // En TEST usamos un secuencial alto para evitar colisiones
-        const numeroDF = this.environment === 'TEST' ? "0020269999" : String(docData.documentNumber || '1')
-            .replace(/\D/g, '')
-            .slice(-10)
-            .padStart(10, '0');
-
+        // 2. CONFIGURACIÓN DE TIPO DE DOCUMENTO Y EMISIÓN
         const docTypeBase = (docData.docType === '03' || docData.docType === 'C') ? 'NC' : ((docData.docType === '04' || docData.docType === 'D') ? 'ND' : 'FAC');
         
-        // REGLA: Si es Factura (FAC): 01 (Local) o 12 (Export)
-        // REGLA: Si es Nota de Crédito (NC): 03 (Local) o 14 (Export)
-        // REGLA: Si es Nota de Débito (ND): 04 (Local) o 13 (Export)
         let docType = '01';
-        if (docTypeBase === 'FAC') docType = isExtranjero ? '12' : '01';
-        if (docTypeBase === 'NC') docType = isExtranjero ? '14' : '03';
-        if (docTypeBase === 'ND') docType = isExtranjero ? '13' : '04';
+        if (docTypeBase === 'FAC') docType = '01'; 
+        if (docTypeBase === 'NC') docType = '03';
+        if (docTypeBase === 'ND') docType = '04';
 
-        // REGLA CLAVE: En Digifact Panamá TEST, DEBE ser 2 para coincidir con la URL de pruebas.
-        // El error A04 nos obliga a esto.
+        const tipoEmision = isConsumidorFinal ? '03' : '01';
         const additionalIssueType = this.environment === 'TEST' ? 2 : 1;
-
-        // PtoFactDF: Para pruebas debe ser mayor a 599 (ej: 987)
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
+        const numeroDF = this.environment === 'TEST' ? "0020269999" : String(docData.documentNumber || '1').replace(/\D/g, '').slice(-10).padStart(10, '0');
+        const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
 
-        // Construir arreglo base de ID adicionales para comprador
-        let buyerTaxIDAdditionalInfo = [
-            { "Name": "TipoReceptor", "Data": null, "Value": isConsumidorFinal ? "02" : (docData.customer.tipoReceptor || "01") } // CI01
-        ];
+        // 3. DATOS DEL EMISOR Y RECEPTOR (REGLAS TEST)
+        const authRuc = this.environment === 'TEST' ? '155704849-2-2021' : this.rucEmisor;
+        const authDv = this.environment === 'TEST' ? '32' : (this.dvEmisor || '00');
+        const emisorName = this.environment === 'TEST' ? 'FE generada en ambiente de pruebas - sin valor comercial ni fiscal' : (this.config.razonSocial || 'Emisor');
 
-        // Manejo específico para Extranjeros
-        if (isExtranjero) {
-            if (docData.customer.taxId) {
-                buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId });
-            }
-            buyerTaxIDAdditionalInfo.push({ "Name": "PaisExt", "Data": null, "Value": docData.customer.paisReceptor || "US" });
-        } else {
-            // REGLA DE EMERGENCIA: Si NO es extranjero, asegurar que NO se envíen campos de extranjero
-            // que puedan activar el modo exportación accidentalmente.
-            if (!isConsumidorFinal && receptorDv) {
-                buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": receptorDv });
-            }
-        }
-
-        if (docData.customer.objetoRetencion) {
-            buyerTaxIDAdditionalInfo.push({ "Name": "ObjetoRetencion", "Data": null, "Value": docData.customer.objetoRetencion });
-        }
-
-        // REGLA DEL EJEMPLO: El ejemplo usa siempre '2' para el comprador en TEST,
-        // incluso si el RUC tiene guiones.
-        const taxIdType = "2";
+        const taxIdType = isExtranjero ? null : "2"; 
+        const finalTaxId = isExtranjero ? "EXTRANJERO" : (isConsumidorFinal ? "CF" : docData.customer.taxId?.replace(/\s/g, ''));
         
-        const finalTaxId = isConsumidorFinal ? "CF" : (isExtranjero ? "EXTRANJERO" : receptorRuc);
+        let buyerTaxIDAdditionalInfo = [{ "Name": "TipoReceptor", "Data": null, "Value": receptorTipo }];
 
-        let buyerObj = {
-            "TaxID": finalTaxId,
-            "TaxIDType": isExtranjero ? undefined : taxIdType,
-            "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
-            "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente Sin Nombre"),
-            "Contact": null
-        };
-
-        // REGLA CLAVE: La propiedad 'AdditionlInfo' DEBE existir y tener PaisReceptorFE.
-        // Si no se envía PaisReceptorFE, el PAC usa un motor de validación genérico que falla.
-        buyerObj.AdditionlInfo = [
-            { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" }
-        ];
-
-        // CodUbi Comprador
         if (!isExtranjero) {
+            if (docData.customer.dv) buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": String(docData.customer.dv) });
             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": docData.customer.codUbi || (this.environment === 'TEST' ? "1-1-1" : "8-8-1") });
         } else {
             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-2" });
+            buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId || "PASAPORTE" });
+            buyerTaxIDAdditionalInfo.push({ "Name": "PaisExt", "Data": null, "Value": docData.customer.paisReceptor || "US" });
         }
 
-        // Dirección Comprador Dinámica
-        if (!isConsumidorFinal) {
-            const ubiParts = (docData.customer.codUbi || "").split('-');
-            const provMap = {
-                "1": "Bocas del Toro", "2": "Coclé", "3": "Colón", "4": "Chiriquí", "5": "Darién",
-                "6": "Herrera", "7": "Los Santos", "8": "Panamá", "9": "Veraguas", "10": "Guna Yala",
-                "12": "Ngäbe-Buglé", "13": "Panamá Oeste"
-            };
-            const provName = provMap[ubiParts[0]] || (this.environment === 'TEST' ? "Bocas del Toro" : "Panama");
+        // 4. CONSTRUCCIÓN DEL OBJETO BUYER (COMPRADOR)
+        let buyerObj = {
+            "TaxID": finalTaxId,
+            "TaxIDType": taxIdType,
+            "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
+            "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente"),
+            "AdditionlInfo": [ // Nota: misspelling "AdditionlInfo" es intencional según ejemplos
+                { "Name": "PaisReceptorFE", "Data": null, "Value": "PA" }
+            ],
+            "AddressInfo": {
+                "Address": docData.customer.address || "CIUDAD DE PANAMA",
+                "City": docData.customer.city || "PANAMA",
+                "District": docData.customer.district || "PANAMA",
+                "State": docData.customer.state || "PANAMA",
+                "Country": "PA"
+            }
+        };
 
-            buyerObj.AddressInfo = {
-                "Address": docData.customer.address || (this.environment === 'TEST' ? "Westland Mall, Vista Alegre, Arraijan" : "Direccion no especificada"),
-                "City": isExtranjero ? "Ciudad Extranjera" : (docData.customer.city || (this.environment === 'TEST' ? `${provName} (Cabecera)` : provName)),
-                "District": isExtranjero ? "Distrito Extranjero" : (docData.customer.district || provName),
-                "State": isExtranjero ? "Estado Extranjero" : (docData.customer.state || provName),
-                "Country": docData.customer.paisReceptor || "PA"
-            };
-        }
-
+        // 5. CONSTRUCCIÓN DEL JSON NUC (v2.0.8)
         const nucJson = {
             "Version": "1.00",
             "CountryCode": "PA",
@@ -243,9 +176,9 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
                     { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },
                     { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad },
-                    { "Name": "NaturalezaOperacion", "Data": null, "Value": isExtranjero ? "02" : "01" },
+                    { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },
                     { "Name": "TipoOperacion", "Data": null, "Value": "1" },
-                    { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
+                    { "Name": "DestinoOperacion", "Data": null, "Value": "1" },
                     { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
                     { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
                     { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
@@ -266,13 +199,13 @@ class DigifactAdapter extends PACAdapter {
                     "EmailList": null
                 },
                 "BranchInfo": {
-                    "Code": "0001", 
+                    "Code": "0001",
                     "Name": null,
                     "AddressInfo": {
-                        "Address": (this.config.direccion || (this.environment === 'TEST' ? "Blv Costa del Este,PH Financial Tower Piso 17" : "Ciudad de Panama")),
-                        "City": (this.config.corregimiento || (this.environment === 'TEST' ? "Bocas del Toro (Cabecera)" : "San Felipe")),
-                        "District": (this.config.distrito || (this.environment === 'TEST' ? "Bocas del Toro" : "Panama")),
-                        "State": (this.config.provincia || (this.environment === 'TEST' ? "Bocas del Toro" : "Panama")),
+                        "Address": (this.config.direccion || "Ciudad de Panama"),
+                        "City": (this.config.corregimiento || "Panama"),
+                        "District": (this.config.distrito || "Panama"),
+                        "State": (this.config.provincia || "Panama"),
                         "Country": "PA"
                     },
                     "AdditionalBranchInfo": [
@@ -281,125 +214,75 @@ class DigifactAdapter extends PACAdapter {
                     ]
                 }
             },
-            "Buyer": buyerObj,
-            "ThirdParties": null,
-            "Items": docData.items.map((item, index) => {
-                const unitPrice = Number(item.price || item.unitPrice || 0);
-                const qty = Number(item.quantity || 1);
-                
-                // Recalcular el subtotal siempre en caso de que la DB tenga datos legacy incorrectos
+            "Items": docData.items.map((item) => {
+                const unitPrice = parseFloat(Number(item.price || item.unitPrice || 0).toFixed(6));
+                const qty = parseFloat(Number(item.quantity || 1).toFixed(2));
                 const subtotal = parseFloat((unitPrice * qty).toFixed(2));
-                
                 const taxRate = Number(item.taxRate || 0);
-                const taxAmount = parseFloat((subtotal * taxRate).toFixed(2));
-                const totalWTaxes = parseFloat((subtotal + taxAmount).toFixed(2));
-                
-                const discountAmount = Number(item.discount || 0);
-                const itemChargesAmount = Number(item.chargesAmount || 0);
-                const totalItem = parseFloat((totalWTaxes - discountAmount + itemChargesAmount).toFixed(2));
+                const taxAmount = parseFloat((subtotal * taxRate).toFixed(6));
+                const totalWTaxes = parseFloat((subtotal + taxAmount).toFixed(6));
 
-                const itemObj = {
+                return {
                     "Codes": [
                         { "Name": "CodigoProd", "Data": null, "Value": item.code || "1234567890" },
-                        { "Name": "CodCPBSabr", "Data": null, "Value": item.cpbsAbr || "13" }, 
-                        { "Name": "CodCPBScmp", "Data": null, "Value": item.cpbsCmp || "1310" }
+                        { "Name": "CodCPBSabr", "Data": null, "Value": "13" }, 
+                        { "Name": "CodCPBScmp", "Data": null, "Value": "1310" }
                     ],
                     "Description": item.description || item.name,
                     "Qty": qty,
-                    "UnitOfMeasure": item.uom === 'ud' || item.uom === 'UND' ? 'und' : (item.uom || "und"),
+                    "UnitOfMeasure": "und",
                     "Price": unitPrice,
-                    "Discounts": discountAmount > 0 ? {
-                        "Discount": [{ "Amount": discountAmount }]
-                    } : null,
-                    "Taxes": {
-                        "Tax": [
-                            {
-                                "Code": this.mapItbmsCode(taxRate * 100),
-                                "Description": "ITBMS",
-                                "Amount": taxAmount
-                            }
-                        ]
-                    },
-                    "Charges": itemChargesAmount > 0 ? {
-                        "Charge": [{ "Amount": itemChargesAmount }]
-                    } : null,
+                    "Taxes": { "Tax": [{ "Code": this.mapItbmsCode(taxRate * 100), "Description": "ITBMS", "Amount": taxAmount }] },
                     "Totals": {
                         "TotalBTaxes": subtotal,
                         "TotalWTaxes": totalWTaxes,
-                        "SpecificTotal": totalItem,
-                        "TotalItem": totalItem
+                        "SpecificTotal": totalWTaxes,
+                        "TotalItem": totalWTaxes
                     }
                 };
-
-                if (docData.customer.tipoReceptor === '03') {
-                    itemObj.Codes.push({ "Name": "UnidadCPBS", "Data": null, "Value": item.uom === 'ud' || item.uom === 'UND' ? 'und' : (item.uom || "und") });
-                }
-
-                // REGLA: Info adicional del ítem solo necesaria para exportación o casos especiales de retención
-                if (isExtranjero) {
-                    itemObj.AdditionlInfo = [
-                        { "Name": "InfEmFE", "Data": null, "Value": item.description || "ITEM" },
-                        { "Name": "PrSegItem", "Data": null, "Value": String(unitPrice) }
-                    ];
-                }
-
-                return itemObj;
             }),
             "Totals": {
                 "QtyItems": docData.items.length,
                 "GrandTotal": {
                     "TotalBTaxes": Number(totalTaxable.toFixed(2)),
-                    "TotalWTaxes": Number(totalAmount.toFixed(2)),
-                    "InvoiceTotal": Number(totalAmount.toFixed(2))
+                    "TotalWTaxes": totalDocument,
+                    "InvoiceTotal": totalDocument
                 }
             },
             "Payments": [
-                { "Type": "01", "Amount": Number(totalAmount.toFixed(2)) }
+                { "Type": "01", "Amount": totalDocument }
             ],
             "AdditionalDocumentInfo": {
-                "AdditionalInfo": (isExtranjero || ['C', '03', '04', '05'].includes(docData.docType)) ? [
+                "AdditionalInfo": [
                     {
                         "AditionalInfo": [
                             { "Name": "TiempoPago", "Data": null, "Value": "1" }
                         ]
                     }
-                ] : []
+                ]
             }
         };
 
-        if (['C', '03', '04', '05'].includes(docData.docType) && docData.invoiceNumber) {
-            // Extraer el numero correlativo de la factura original (ej: "0050" de "F - 2026 - 0050")
-            const origNumMatch = (docData.originalDocNumber || docData.invoiceNumber).match(/(\d+)$/);
-            const refNumber = origNumMatch ? origNumMatch[0].padStart(10, '0') : '0000000001';
-            
-            // EL POS de referencia DEBE coincidir con el POS de la factura original
-            // En TEST, Digifact fuerza 987.
-            const refPOS = this.environment === 'TEST' ? "987" : String(docData.originalPOS || this.config.puntoDeVenta || '001').padStart(3, '0');
-
-            // Limpiar CUFE de prefijos (FE) y guiones para la referencia (DGI espera solo digitos)
-            const cufeRaw = docData.cufeRef || docData.invoiceNumber || '';
-            const cufeFinal = cufeRaw.trim(); // Mantener formato original según ejemplo
-
+        // 6. REFERENCIA PARA NOTA DE CRÉDITO (REFINADO SEGÚN NUC 2)
+        if (docType === '03') {
+            const cufeFinal = (docData.cufeRef || docData.invoiceNumber || '').trim();
             nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
-                "Data": [
-                    {
-                        "Info": [
-                            { "Name": "NombEmRef", "Data": null, "Value": emisorName },
-                            { "Name": "FechaDFRef", "Data": null, "Value": (() => {
-                                try {
-                                    const d = new Date(docData.invoiceNumberRefDate || docData.originalDate);
-                                    if (isNaN(d.getTime())) return String(docData.invoiceNumberRefDate);
-                                    // Formato ejemplo: 2023-04-10T09:04:00-05:00
-                                    return d.toISOString().split('.')[0] + '-05:00';
-                                } catch (e) {
-                                    return String(docData.invoiceNumberRefDate);
-                                }
-                            })() },
-                            { "Name": "CUFERef", "Data": null, "Value": cufeFinal }
-                        ],
-                        "Name": null
-                    }
-                ]
+                "Data": [{
+                    "Info": [
+                        { "Name": "NombEmRef", "Data": null, "Value": emisorName },
+                        { "Name": "FechaDFRef", "Data": null, "Value": (() => {
+                            try {
+                                const d = new Date(docData.invoiceNumberRefDate || docData.originalDate);
+                                if (isNaN(d.getTime())) return String(docData.invoiceNumberRefDate);
+                                return d.toISOString().split('.')[0] + '-05:00';
+                            } catch (e) {
+                                return String(docData.invoiceNumberRefDate);
+                            }
+                        })() },
+                        { "Name": "CUFERef", "Data": null, "Value": cufeFinal }
+                    ],
+                    "Name": null
+                }]
             };
         }
 
