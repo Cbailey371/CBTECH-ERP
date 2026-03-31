@@ -48,7 +48,7 @@ router.get('/', requireCompanyContext, async (req, res) => {
 
     const { count, rows } = await Customer.findAndCountAll({
       where: whereClause,
-      attributes: ['id', 'code', 'name', 'tradeName', 'taxId', 'dv', 'email', 'phone', 'isActive', 'tipoReceptor', 'tipoIdentificacion', 'codUbi', 'paisReceptor', 'address', 'notes', 'objetoRetencion'],
+      attributes: ['id', 'code', 'name', 'tradeName', 'taxId', 'dv', 'email', 'phone', 'isActive', 'tipoReceptor', 'tipoIdentificacion', 'codUbi', 'paisReceptor', 'address', 'notes', 'objetoRetencion', 'isTaxExempt'],
       limit: parseInt(limit),
       offset: offset,
       order: [['created_at', 'DESC']]
@@ -127,7 +127,8 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['customers.cre
       tipoIdentificacion,
       codUbi,
       paisReceptor,
-      objetoRetencion
+      objetoRetencion,
+      isTaxExempt
     } = req.body;
 
     // Validar campos requeridos
@@ -217,7 +218,8 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['customers.cre
       tipoIdentificacion: tipoIdentificacion || '02',
       codUbi: codUbi || null,
       paisReceptor: paisReceptor || 'PA',
-      objetoRetencion: objetoRetencion || null
+      objetoRetencion: objetoRetencion || null,
+      isTaxExempt: isTaxExempt !== undefined ? isTaxExempt : false
     });
 
     res.status(201).json({
@@ -275,7 +277,8 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['customers.u
       tipoIdentificacion,
       codUbi,
       paisReceptor,
-      objetoRetencion
+      objetoRetencion,
+      isTaxExempt
     } = req.body;
 
     // Verificar email único en la empresa si se cambia
@@ -337,7 +340,8 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['customers.u
       tipoIdentificacion: tipoIdentificacion !== undefined ? tipoIdentificacion : customer.tipoIdentificacion,
       codUbi: codUbi !== undefined ? codUbi : customer.codUbi,
       paisReceptor: paisReceptor !== undefined ? paisReceptor : customer.paisReceptor,
-      objetoRetencion: objetoRetencion !== undefined ? objetoRetencion : customer.objetoRetencion
+      objetoRetencion: objetoRetencion !== undefined ? objetoRetencion : customer.objetoRetencion,
+      isTaxExempt: isTaxExempt !== undefined ? isTaxExempt : customer.isTaxExempt
     });
 
     res.json({

@@ -36,7 +36,7 @@ router.get('/', async (req, res) => {
 
     const { count, rows } = await Product.findAndCountAll({
       where,
-      attributes: ['id', 'type', 'code', 'sku', 'description', 'cost', 'margin', 'price', 'isActive'],
+      attributes: ['id', 'type', 'code', 'sku', 'description', 'cost', 'margin', 'price', 'isActive', 'isTaxExempt'],
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [['description', 'ASC']]
@@ -93,7 +93,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const companyId = req.companyContext.companyId;
-    const { type, code, sku, description, cost, margin } = req.body;
+    const { type, code, sku, description, cost, margin, isTaxExempt } = req.body;
 
     // Validaciones básicas
     if (!description) {
@@ -152,7 +152,8 @@ router.post('/', async (req, res) => {
       sku,
       description,
       cost: cost || 0,
-      margin: margin || 0
+      margin: margin || 0,
+      isTaxExempt: isTaxExempt || false
       // El precio se calcula en el hook beforeSave
     });
 
@@ -176,7 +177,7 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const companyId = req.companyContext.companyId;
-    const { type, code, sku, description, cost, margin, isActive } = req.body;
+    const { type, code, sku, description, cost, margin, isActive, isTaxExempt } = req.body;
 
     const product = await Product.findOne({ where: { id, companyId } });
 
@@ -205,7 +206,8 @@ router.put('/:id', async (req, res) => {
       name: description, // Sync name with description
       cost,
       margin,
-      isActive
+      isActive,
+      isTaxExempt
       // El precio se recalcula automáticamente por el hook si cost o margin cambian
     });
 
