@@ -180,10 +180,9 @@ class DigifactAdapter extends PACAdapter {
             buyerTaxIDAdditionalInfo.push({ "Name": "ObjetoRetencion", "Data": null, "Value": docData.customer.objetoRetencion });
         }
 
-        // REGLA: 1=RUC (guiones), 2=Cédula (sin guiones)
-        const taxIdType = (docData.customer.taxId?.includes('-')) ? "1" : (docData.customer.tipoIdentificacion 
-            ? String(docData.customer.tipoIdentificacion).replace(/^0/, '') 
-            : (isConsumidorFinal ? "1" : "2"));
+        // REGLA DEL EJEMPLO: El ejemplo usa siempre '2' para el comprador en TEST,
+        // incluso si el RUC tiene guiones.
+        const taxIdType = "2";
         
         const finalTaxId = isConsumidorFinal ? "CF" : (isExtranjero ? "EXTRANJERO" : receptorRuc);
 
@@ -238,7 +237,7 @@ class DigifactAdapter extends PACAdapter {
                     return panamaTime.toISOString().split('.')[0] + '-05:00';
                 })(),
                 "AdditionalIssueType": additionalIssueType,
-                "Currency": "USD",
+                "Currency": null,
                 "AdditionalIssueDocInfo": [
                     { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },
                     { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
@@ -249,8 +248,10 @@ class DigifactAdapter extends PACAdapter {
                     { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
                     { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
                     { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
+                    { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
                     { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
-                    { "Name": "TipoTransaccion", "Data": null, "Value": "1" }
+                    { "Name": "TipoTransaccion", "Data": null, "Value": "1" },
+                    { "Name": "TipoSucursal", "Data": null, "Value": "2" }
                 ]
             },
             "Seller": {
@@ -377,7 +378,7 @@ class DigifactAdapter extends PACAdapter {
 
             // Limpiar CUFE de prefijos (FE) y guiones para la referencia (DGI espera solo digitos)
             const cufeRaw = docData.cufeRef || docData.invoiceNumber || '';
-            const cufeClean = cufeRaw.replace(/\D/g, ''); // Solo digitos
+            const cufeFinal = cufeRaw.trim(); // Mantener formato original según ejemplo
 
             nucJson.AdditionalDocumentInfo.AdditionalInfo[0].AditionalData = {
                 "Data": [
@@ -387,15 +388,14 @@ class DigifactAdapter extends PACAdapter {
                             { "Name": "FechaDFRef", "Data": null, "Value": (() => {
                                 try {
                                     const d = new Date(docData.invoiceNumberRefDate || docData.originalDate);
-                                    return isNaN(d.getTime()) ? String(docData.invoiceNumberRefDate).split('T')[0] : d.toISOString().split('T')[0];
+                                    if (isNaN(d.getTime())) return String(docData.invoiceNumberRefDate);
+                                    // Formato ejemplo: 2023-04-10T09:04:00-05:00
+                                    return d.toISOString().split('.')[0] + '-05:00';
                                 } catch (e) {
-                                    return String(docData.invoiceNumberRefDate).split('T')[0];
+                                    return String(docData.invoiceNumberRefDate);
                                 }
                             })() },
-                            { "Name": "CUFERef", "Data": null, "Value": cufeClean },
-                           { "Name": "TipoDocumentoRef", "Data": null, "Value": "01" },
-                            { "Name": "SerieDocRef", "Data": null, "Value": refPOS },
-                            { "Name": "NumeroDocRef", "Data": null, "Value": refNumber }
+                            { "Name": "CUFERef", "Data": null, "Value": cufeFinal }
                         ],
                         "Name": null
                     }
