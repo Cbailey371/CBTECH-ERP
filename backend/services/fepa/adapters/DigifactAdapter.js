@@ -128,8 +128,15 @@ class DigifactAdapter extends PACAdapter {
             .slice(-10)         // Tomar los últimos 10
             .padStart(10, '0'); // Rellenar con ceros a la izquierda
 
-        // DocType: 01=Factura, 03=Nota de Crédito, 04=Nota de Débito (Para Digifact NUC)
-        const docType = (docData.docType === '03' || docData.docType === 'C') ? '03' : (docData.docType === '04' ? '04' : '01');
+        const docTypeBase = (docData.docType === '03' || docData.docType === 'C') ? 'NC' : ((docData.docType === '04' || docData.docType === 'D') ? 'ND' : 'FAC');
+        
+        // REGLA: Si es Factura (FAC): 01 (Local) o 12 (Export)
+        // REGLA: Si es Nota de Crédito (NC): 03 (Local) o 14 (Export)
+        // REGLA: Si es Nota de Débito (ND): 04 (Local) o 13 (Export)
+        let docType = '01';
+        if (docTypeBase === 'FAC') docType = isExtranjero ? '12' : '01';
+        if (docTypeBase === 'NC') docType = isExtranjero ? '14' : '03';
+        if (docTypeBase === 'ND') docType = isExtranjero ? '13' : '04';
 
         // PtoFactDF: Para pruebas debe ser mayor a 599 (ej: 987)
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
@@ -179,11 +186,16 @@ class DigifactAdapter extends PACAdapter {
             "TaxIDType": isExtranjero ? undefined : taxIdType,
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
             "Name": isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente Sin Nombre"),
-            "Contact": null,
-            "AdditionlInfo": [
-                { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" }
-            ]
+            "Contact": null
         };
+
+        // REGLA CLAVE: Solo enviamos AdditionlInfo (mal escrito) si es EXTRANJERO.
+        // Para operaciones LOCALES (Panamá), enviar PaisReceptorFE dispara error de exportación.
+        if (isExtranjero) {
+            buyerObj.AdditionlInfo = [
+                { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "US" }
+            ];
+        }
 
         // CodUbi Comprador
         if (!isExtranjero) {
@@ -318,6 +330,10 @@ class DigifactAdapter extends PACAdapter {
 
                 if (docData.customer.tipoReceptor === '03') {
                     itemObj.Codes.push({ "Name": "UnidadCPBS", "Data": null, "Value": item.uom === 'ud' || item.uom === 'UND' ? 'und' : (item.uom || "und") });
+                }
+
+                // REGLA: Info adicional del ítem solo necesaria para exportación o casos especiales de retención
+                if (isExtranjero) {
                     itemObj.AdditionlInfo = [
                         { "Name": "InfEmFE", "Data": null, "Value": item.description || "ITEM" },
                         { "Name": "PrSegItem", "Data": null, "Value": String(unitPrice) }
@@ -338,13 +354,13 @@ class DigifactAdapter extends PACAdapter {
                 { "Type": "01", "Amount": Number(totalAmount.toFixed(2)) }
             ],
             "AdditionalDocumentInfo": {
-                "AdditionalInfo": [
+                "AdditionalInfo": (isExtranjero || ['C', '03', '04', '05'].includes(docData.docType)) ? [
                     {
-                        "AditionalInfo": [
+                        "AditionalInfo": isExtranjero ? [
                             { "Name": "TiempoPago", "Data": null, "Value": "1" }
-                        ]
+                        ] : []
                     }
-                ]
+                ] : []
             }
         };
 
