@@ -189,11 +189,11 @@ class DigifactAdapter extends PACAdapter {
             "Contact": null
         };
 
-        // REGLA CLAVE: La propiedad 'AdditionlInfo' DEBE existir siempre para cumplir el esquema,
-        // pero solo la poblamos con datos de país si es EXTRANJERO.
-        buyerObj.AdditionlInfo = isExtranjero ? [
-            { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "US" }
-        ] : [];
+        // REGLA CLAVE: La propiedad 'AdditionlInfo' DEBE existir y tener al menos 1 elemento.
+        // Usamos PaisReceptorFE como campo obligatorio para el esquema.
+        buyerObj.AdditionlInfo = [
+            { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" }
+        ];
 
         // CodUbi Comprador
         if (!isExtranjero) {
