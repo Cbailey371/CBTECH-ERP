@@ -124,8 +124,15 @@ class DigifactAdapter extends PACAdapter {
         const tipoEmision = isConsumidorFinal ? '03' : '01';
         const additionalIssueType = this.environment === 'TEST' ? 2 : 1;
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
-        let numeroDF = String(docData.documentNumber || '1').replace(/\D/g, '').slice(-10).padStart(10, '0');
-        if (numeroDF === '0000000000') numeroDF = '0000000001'; // Fallback para evitar error de patrón schema
+        
+        // Generar NumeroDF asegurando unicidad por tipo de documento (DocType)
+        // Usamos prefijos: 1 para Facturas (01/02), 4 para Notas de Crédito, 5 para Notas de Débito.
+        // Esto evita que NC-100 y FE-100 colisionen en el PAC como '0000000100'.
+        const numericPart = String(docData.documentNumber || '1').replace(/\D/g, '');
+        const prefix = (docType === '04' || docType === '03') ? '4' : (docType === '05' ? '5' : '1');
+        let numeroDF = (prefix + numericPart).slice(-10).padStart(10, '0');
+
+        if (numeroDF === '0000000000') numeroDF = '1000000001'; // Fallback robusto
         
         const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
 
@@ -134,15 +141,17 @@ class DigifactAdapter extends PACAdapter {
         const authDv = this.environment === 'TEST' ? '32' : (this.dvEmisor || '00');
         const emisorName = this.environment === 'TEST' ? 'FE generada en ambiente de pruebas - sin valor comercial ni fiscal' : (this.config.razonSocial || 'Emisor');
 
-        // Para extranjeros el TaxIDType es 3 (Pasaporte). Para locales es 1 (RUC) o 2 (Cédula).
-        // El RUC de gobierno en Panamá es especial y debe mantenerse según la ficha técnica.
-        // TaxIDType: 1=RUC, 2=Cédula, 3=Pasaporte
-        const taxIdType = isExtranjero ? "3" : (docData.customer.tipoIdentificacion ? String(docData.customer.tipoIdentificacion) : "1"); 
+        // Mapeo de Tipos de Identificación (ERP -> Digifact)
+        // ERP: 01: Cedula, 02: RUC, 03: Pasaporte
+        // Digifact: 1: RUC, 2: Cedula, 3: Pasaporte
+        const idMapping = { '01': '2', '02': '1', '03': '3' };
+        const internalIdType = docData.customer.tipoIdentificacion ? String(docData.customer.tipoIdentificacion) : '02';
+        const taxIdType = isExtranjero ? "3" : (idMapping[internalIdType] || "1");
         const finalTaxId = (() => {
-            if (isExtranjero) return docData.customer.taxId || "000000000";
+            if (isExtranjero) return (docData.customer.taxId || "000000000").toUpperCase();
             if (isConsumidorFinal) return "CF";
-            // Para Gobierno y Local, limpiamos solo espacios. Los guiones son requeridos para el patrón dRuc en muchos casos.
-            return (docData.customer.taxId || "").replace(/\s+/g, '');
+            // Para Gobierno y Local, limpiamos espacios y forzamos mayúsculas (necesario para RUCs NT, PI, etc)
+            return (docData.customer.taxId || "").replace(/\s+/g, '').toUpperCase();
         })();
         const buyerName = (isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente")).substring(0, 100);
         
