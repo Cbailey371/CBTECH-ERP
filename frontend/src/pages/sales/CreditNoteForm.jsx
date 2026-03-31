@@ -194,7 +194,7 @@ const CreditNoteForm = () => {
 
             const lineGross = qty * item.unitPrice;
             const lineSub = lineGross - lineDiscount;
-            const lineTax = lineSub * (item.taxRate || 0.07); // Rate on Net
+            const lineTax = lineSub * (item.taxRate !== undefined ? item.taxRate : 0.07); // Rate on Net
 
             sub += lineSub;
             tax += lineTax;
