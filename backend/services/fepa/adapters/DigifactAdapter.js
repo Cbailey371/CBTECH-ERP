@@ -149,6 +149,10 @@ class DigifactAdapter extends PACAdapter {
         if (docTypeBase === 'NC') docType = isExtranjero ? '14' : '03';
         if (docTypeBase === 'ND') docType = isExtranjero ? '13' : '04';
 
+        // REGLA CLAVE: En Digifact Panamá, AdditionalIssueType 1 es para emisión operativa (incluso en TEST).
+        // El código 2 a veces dispara perfiles de exportación forzados.
+        const additionalIssueType = 1;
+
         // PtoFactDF: Para pruebas debe ser mayor a 599 (ej: 987)
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
 
@@ -189,13 +193,10 @@ class DigifactAdapter extends PACAdapter {
             "Contact": null
         };
 
-        // REGLA CLAVE: La propiedad 'AdditionlInfo' DEBE existir y tener al menos 1 elemento.
-        // Pero NO podemos enviar 'PaisReceptorFE' si es local porque el PAC cree que es Export.
-        // Usamos 'EmailReceptor' como campo seguro para locales.
-        buyerObj.AdditionlInfo = isExtranjero ? [
-            { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "US" }
-        ] : [
-            { "Name": "EmailReceptor", "Data": null, "Value": docData.customer.email || "carlos.bailey@cbtechpty.com" }
+        // REGLA CLAVE: La propiedad 'AdditionlInfo' DEBE existir y tener PaisReceptorFE.
+        // Si no se envía PaisReceptorFE, el PAC usa un motor de validación genérico que falla.
+        buyerObj.AdditionlInfo = [
+            { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" }
         ];
 
         // CodUbi Comprador
@@ -234,8 +235,8 @@ class DigifactAdapter extends PACAdapter {
                     const panamaTime = new Date(now.getTime() - (5 * 60 * 60 * 1000));
                     return panamaTime.toISOString().split('.')[0] + '-05:00';
                 })(),
-                "AdditionalIssueType": this.environment === 'TEST' ? 2 : 1,
-                "Currency": (docData.customer.tipoReceptor === '03' || docData.customer.tipoReceptor === '04') ? undefined : null,
+                "AdditionalIssueType": additionalIssueType,
+                "Currency": "USD",
                 "AdditionalIssueDocInfo": [
                     { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },
                     { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
