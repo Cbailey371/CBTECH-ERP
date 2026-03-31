@@ -54,7 +54,14 @@ exports.getOrders = async (req, res) => {
         
         if (status) {
             if (status === 'draft') {
-                whereClause.status = { [Op.in]: ['draft', 'confirmed', 'in_progress'] };
+                // "No Fiscalizada": No debe tener documento fiscal asociado
+                whereClause[Op.and] = [
+                    { status: { [Op.ne]: 'cancelled' } },
+                    { '$feDocument.id$': { [Op.is]: null } }
+                ];
+            } else if (status === 'fulfilled') {
+                // "Fiscalizada": Debe tener documento fiscal asociado
+                whereClause['$feDocument.id$'] = { [Op.not]: null };
             } else {
                 whereClause.status = status;
             }
