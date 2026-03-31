@@ -190,9 +190,12 @@ class DigifactAdapter extends PACAdapter {
         };
 
         // REGLA CLAVE: La propiedad 'AdditionlInfo' DEBE existir y tener al menos 1 elemento.
-        // Usamos PaisReceptorFE como campo obligatorio para el esquema.
-        buyerObj.AdditionlInfo = [
-            { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "PA" }
+        // Pero NO podemos enviar 'PaisReceptorFE' si es local porque el PAC cree que es Export.
+        // Usamos 'EmailReceptor' como campo seguro para locales.
+        buyerObj.AdditionlInfo = isExtranjero ? [
+            { "Name": "PaisReceptorFE", "Data": null, "Value": docData.customer.paisReceptor || "US" }
+        ] : [
+            { "Name": "EmailReceptor", "Data": null, "Value": docData.customer.email || "carlos.bailey@cbtechpty.com" }
         ];
 
         // CodUbi Comprador
