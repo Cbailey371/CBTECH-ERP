@@ -210,10 +210,10 @@ exports.downloadCafe = async (req, res) => {
 
         const formattedItems = items.map((i, index) => ({
             no: index + 1,
-            description: i.description || (i.product ? i.product.name : 'Producto'),
+            description: (i.description || (i.product ? i.product.name : 'Producto')).trim() || 'Producto/Servicio',
             quantity: parseFloat(i.quantity) || 0,
             uom: i.product?.unitOfMeasure || 'und',
-            code: i.product?.itemCode || '',
+            code: i.product?.itemCode || 'SERV-001',
             price: parseFloat(i.unitPrice) || 0,
             total: parseFloat(i.total) || 0,
             taxRate: parseFloat(i.taxRate) || 0,
@@ -261,9 +261,21 @@ exports.downloadCafe = async (req, res) => {
 
         const { generateCafePdf } = require('../../services/pdf/cafeGenerator');
         
-        // --- PRIORIDAD: Usar PDF oficial del proveedor (responseData3) ---
+        // --- REGLA DE NEGOCIO: Para Extranjeros y Gobierno, usamos siempre nuestro generador local ---
+        // Esto asegura que la etiqueta "Pasaporte:" y otros formatos premium se apliquen correctamente.
+        const isSpecialCase = data.docType === '02' || data.customer.tipoReceptor === '03' || data.customer.tipoReceptor === '04';
+
+        if (isSpecialCase) {
+            console.log(`[FE_DOWNLOAD] Forzando generador local para caso especial (Ext/Gob): ${feDoc.cufe}`);
+            const pdfBuffer = await generateCafePdf(data);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=CAFE-${feDoc.cufe}.pdf`);
+            return res.send(pdfBuffer);
+        }
+
+        // --- PRIORIDAD ESTÁNDAR (Local): Usar PDF oficial del proveedor if available ---
         if (feDoc.pdfContent) {
-            console.log(`[FE_DOWNLOAD] Usando PDF (responseData3) del proveedor para: ${feDoc.cufe}`);
+            console.log(`[FE_DOWNLOAD] Usando PDF oficial de Digifact para: ${feDoc.cufe}`);
             const pdfBuffer = Buffer.from(feDoc.pdfContent, 'base64');
             res.setHeader('Content-Type', 'application/pdf');
             res.setHeader('Content-Disposition', `attachment; filename=CAFE-${feDoc.cufe}.pdf`);

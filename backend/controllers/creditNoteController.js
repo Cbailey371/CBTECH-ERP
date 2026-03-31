@@ -258,7 +258,7 @@ const creditNoteController = {
                 documentNumber: creditNote.number,
                 docType: '04', // Nota de Crédito (Standard DGI)
                 items: items.map(i => ({
-                    description: i.description || 'Devolución de mercancía',
+                    description: (i.description || i.productName || 'Devolución de mercancía').trim() || 'Devolución',
                     quantity: parseFloat(i.quantity),
                     price: parseFloat(i.unitPrice),
                     total: parseFloat(i.total),

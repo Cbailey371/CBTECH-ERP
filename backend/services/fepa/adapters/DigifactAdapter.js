@@ -124,7 +124,9 @@ class DigifactAdapter extends PACAdapter {
         const tipoEmision = isConsumidorFinal ? '03' : '01';
         const additionalIssueType = this.environment === 'TEST' ? 2 : 1;
         const ptoFactDF = this.environment === 'TEST' ? "987" : (this.sucursal || "001");
-        const numeroDF = String(docData.documentNumber || '1').replace(/\D/g, '').slice(-10).padStart(10, '0');
+        let numeroDF = String(docData.documentNumber || '1').replace(/\D/g, '').slice(-10).padStart(10, '0');
+        if (numeroDF === '0000000000') numeroDF = '0000000001'; // Fallback para evitar error de patrón schema
+        
         const codigoSeguridad = String(Math.floor(Math.random() * 999999998) + 1).padStart(9, '0');
 
         // 3. DATOS DEL EMISOR Y RECEPTOR (REGLAS TEST)
@@ -132,8 +134,16 @@ class DigifactAdapter extends PACAdapter {
         const authDv = this.environment === 'TEST' ? '32' : (this.dvEmisor || '00');
         const emisorName = this.environment === 'TEST' ? 'FE generada en ambiente de pruebas - sin valor comercial ni fiscal' : (this.config.razonSocial || 'Emisor');
 
-        const taxIdType = isExtranjero ? null : "2"; 
-        const finalTaxId = isExtranjero ? "EXTRANJERO" : (isConsumidorFinal ? "CF" : docData.customer.taxId?.replace(/\s/g, ''));
+        // Para extranjeros el TaxIDType es 3 (Pasaporte). Para locales es 1 (RUC) o 2 (Cédula).
+        // El RUC de gobierno en Panamá es especial y debe mantenerse según la ficha técnica.
+        // TaxIDType: 1=RUC, 2=Cédula, 3=Pasaporte
+        const taxIdType = isExtranjero ? "3" : (docData.customer.tipoIdentificacion ? String(docData.customer.tipoIdentificacion) : "1"); 
+        const finalTaxId = (() => {
+            if (isExtranjero) return docData.customer.taxId || "000000000";
+            if (isConsumidorFinal) return "CF";
+            // Para Gobierno y Local, limpiamos solo espacios. Los guiones son requeridos para el patrón dRuc en muchos casos.
+            return (docData.customer.taxId || "").replace(/\s+/g, '');
+        })();
         const buyerName = (isConsumidorFinal ? "Consumidor Final" : (docData.customer.name || "Cliente")).substring(0, 100);
         
         let buyerTaxIDAdditionalInfo = [{ "Name": "TipoReceptor", "Data": null, "Value": receptorTipo }];
@@ -141,6 +151,9 @@ class DigifactAdapter extends PACAdapter {
         if (!isExtranjero) {
             if (docData.customer.dv) buyerTaxIDAdditionalInfo.push({ "Name": "DigitoVerificador", "Data": null, "Value": String(docData.customer.dv) });
             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": docData.customer.codUbi || (this.environment === 'TEST' ? "1-1-1" : "8-8-1") });
+            if (isGobierno) {
+                // Para gobierno, TaxIDType 2 es correcto pero el RUC debe ser numérico sin G-
+            }
         } else {
             buyerTaxIDAdditionalInfo.push({ "Name": "CodUbi", "Data": null, "Value": "1-1-2" });
             buyerTaxIDAdditionalInfo.push({ "Name": "NumPasaporte", "Data": null, "Value": docData.customer.taxId || "PASAPORTE" });
@@ -153,17 +166,46 @@ class DigifactAdapter extends PACAdapter {
             "TaxIDType": taxIdType,
             "TaxIDAdditionalInfo": buyerTaxIDAdditionalInfo,
             "Name": buyerName,
-            "AdditionlInfo": [ // Nota: misspelling "AdditionlInfo" es intencional según ejemplos
-                { "Name": "PaisReceptorFE", "Data": null, "Value": "PA" }
+            "AdditionlInfo": [ 
+                { "Name": "PaisReceptorFE", "Data": null, "Value": isExtranjero ? (docData.customer.paisReceptor || "US") : "PA" }
             ],
             "AddressInfo": {
                 "Address": (docData.customer.address || "CIUDAD DE PANAMA").substring(0, 100),
                 "City": (docData.customer.city || "PANAMA").substring(0, 100),
                 "District": (docData.customer.district || "PANAMA").substring(0, 100),
                 "State": (docData.customer.state || "PANAMA").substring(0, 100),
-                "Country": "PA"
+                "Country": isExtranjero ? (docData.customer.paisReceptor || "US") : "PA"
             }
         };
+
+        // Si el cliente tiene objetoRetencion (común en Gobierno), lo añadimos
+        if (docData.customer.objetoRetencion) {
+            buyerObj.AdditionlInfo.push({
+                "Name": "ObjetoRetencion",
+                "Data": null,
+                "Value": docData.customer.objetoRetencion // Puede ser '01', '02', etc.
+            });
+        }
+
+        const additionalIssueDocInfo = [
+            { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },
+            { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
+            { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },
+            { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad },
+            { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },
+            { "Name": "TipoOperacion", "Data": null, "Value": "1" },
+            { "Name": "DestinoOperacion", "Data": null, "Value": isExtranjero ? "2" : "1" },
+            { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
+            { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
+            { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
+            { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
+            { "Name": "TipoTransaccion", "Data": null, "Value": "1" },
+            { "Name": "TipoSucursal", "Data": null, "Value": "2" }
+        ];
+
+        if (isExtranjero) {
+            additionalIssueDocInfo.push({ "Name": "CondEntr", "Data": null, "Value": "EXW" });
+        }
 
         // 5. CONSTRUCCIÓN DEL JSON NUC (v2.0.8)
         const nucJson = {
@@ -178,21 +220,8 @@ class DigifactAdapter extends PACAdapter {
                 })(),
                 "AdditionalIssueType": additionalIssueType,
                 "Currency": null,
-                "AdditionalIssueDocInfo": [
-                    { "Name": "TipoEmision", "Data": null, "Value": tipoEmision },
-                    { "Name": "NumeroDF", "Data": null, "Value": numeroDF },
-                    { "Name": "PtoFactDF", "Data": null, "Value": ptoFactDF },
-                    { "Name": "CodigoSeguridad", "Data": null, "Value": codigoSeguridad },
-                    { "Name": "NaturalezaOperacion", "Data": null, "Value": "01" },
-                    { "Name": "TipoOperacion", "Data": null, "Value": "1" },
-                    { "Name": "DestinoOperacion", "Data": null, "Value": "1" },
-                    { "Name": "FormatoGeneracion", "Data": null, "Value": "1" },
-                    { "Name": "ManeraEntrega", "Data": null, "Value": "1" },
-                    { "Name": "EnvioContenedor", "Data": null, "Value": "1" },
-                    { "Name": "ProcesoGeneracion", "Data": null, "Value": "1" },
-                    { "Name": "TipoTransaccion", "Data": null, "Value": "1" },
-                    { "Name": "TipoSucursal", "Data": null, "Value": "2" }
-                ]
+                "AdditionalIssueDocInfo": additionalIssueDocInfo,
+                "AditionalInfo": isExtranjero ? [{ "Name": "CondEntr", "Data": null, "Value": "EXW" }] : null
             },
             "Seller": {
                 "TaxID": authRuc,
@@ -236,7 +265,7 @@ class DigifactAdapter extends PACAdapter {
                         { "Name": "CodCPBSabr", "Data": null, "Value": "13" }, 
                         { "Name": "CodCPBScmp", "Data": null, "Value": "1310" }
                     ],
-                    "Description": item.description || item.name,
+                    "Description": (item.description || item.name || "Producto/Servicio").trim().substring(0, 150) || "Producto/Servicio",
                     "Qty": qty,
                     "UnitOfMeasure": "und",
                     "Price": unitPrice,
@@ -273,9 +302,14 @@ class DigifactAdapter extends PACAdapter {
             "AdditionalDocumentInfo": {
                 "AdditionalInfo": [
                     {
-                        "AditionalInfo": [
-                            { "Name": "TiempoPago", "Data": null, "Value": "1" }
-                        ]
+                        "AditionalInfo": (() => {
+                            const info = [{ "Name": "TiempoPago", "Data": null, "Value": "1" }];
+                            if (isExtranjero) {
+                                info.push({ "Name": "CondEntr", "Data": null, "Value": "EXW" });
+                                info.push({ "Name": "Incoterm", "Data": null, "Value": "EXW" }); // Por si acaso
+                            }
+                            return info;
+                        })()
                     }
                 ]
             }
