@@ -100,6 +100,7 @@ class DigifactAdapter extends PACAdapter {
      */
     mapToNucJson(docData) {
         const { totalTaxable, totalTax, totalAmount } = calculateTaxes(docData.items);
+        const totalDocument = Number(totalAmount.toFixed(2));
 
         // 1. DETERMINAR PERFIL DEL CLIENTE (Basado en el modelo Customer del ERP)
         const receptorTipo = docData.customer.tipoReceptor || "01";
@@ -214,6 +215,7 @@ class DigifactAdapter extends PACAdapter {
                     ]
                 }
             },
+            "Buyer": buyerObj,
             "Items": docData.items.map((item) => {
                 const unitPrice = parseFloat(Number(item.price || item.unitPrice || 0).toFixed(6));
                 const qty = parseFloat(Number(item.quantity || 1).toFixed(2));
