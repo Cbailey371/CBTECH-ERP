@@ -22,8 +22,8 @@ const calculateTaxes = (items) => {
         // Ensure rate is standard (approximate matching could be added if needed)
         const rateKey = rate.toFixed(2); // "0.07", "0.00"
 
-        const lineAmount = qty * price;
-        const lineTax = lineAmount * rate;
+        const lineAmount = parseFloat((qty * price).toFixed(2));
+        const lineTax = parseFloat((lineAmount * rate).toFixed(2));
 
         if (!breakdown[rateKey]) {
             breakdown[rateKey] = {

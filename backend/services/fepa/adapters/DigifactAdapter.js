@@ -281,12 +281,12 @@ class DigifactAdapter extends PACAdapter {
             },
             "Buyer": buyerObj,
             "Items": docData.items.map((item) => {
-                const unitPrice = parseFloat(Number(item.price || item.unitPrice || 0).toFixed(6));
+                const unitPrice = parseFloat(Number(item.price || item.unitPrice || 0).toFixed(2));
                 const qty = parseFloat(Number(item.quantity || 1).toFixed(2));
                 const subtotal = parseFloat((unitPrice * qty).toFixed(2));
                 const taxRate = Number(item.taxRate || 0);
-                const taxAmount = parseFloat((subtotal * taxRate).toFixed(6));
-                const totalWTaxes = parseFloat((subtotal + taxAmount).toFixed(6));
+                const taxAmount = parseFloat((subtotal * taxRate).toFixed(2));
+                const totalWTaxes = parseFloat((subtotal + taxAmount).toFixed(2));
 
                 return {
                     "Codes": [
