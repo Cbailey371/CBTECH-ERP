@@ -61,7 +61,7 @@ const CreditNoteForm = () => {
     const fetchEligibleOrders = async () => {
         try {
             console.log('Fetching eligible orders for company:', selectedCompany?.id);
-            const response = await api.get('/sales-orders?status=fulfilled&limit=100');
+            const response = await api.get('/sales-orders?status=fulfilled&limit=100&excludeCredited=true');
             const data = response.data;
 
             if (data.success) {

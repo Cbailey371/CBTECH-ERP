@@ -66,6 +66,11 @@ exports.getOrders = async (req, res) => {
                 whereClause.status = status;
             }
         }
+
+        // Nuevo: Excluir facturas que ya tienen Notas de Crédito (útil para el dropdown de NC)
+        if (req.query.excludeCredited === 'true') {
+            whereClause['$creditNotes.id$'] = { [Op.is]: null };
+        }
         if (startDate && endDate) {
             whereClause.issueDate = { [Op.between]: [startDate, endDate] };
         }
