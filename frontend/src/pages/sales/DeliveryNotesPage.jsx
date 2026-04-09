@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as deliveryNoteService from '../../services/deliveryNoteService';
-import { Plus, Search, Eye, FileText, Download, Trash2, CheckCircle, RotateCcw } from 'lucide-react';
+import { Plus, Search, Eye, FileText, Download, Trash2, CheckCircle, RotateCcw, PenTool } from 'lucide-react';
+import SignaturePad from '../../components/SignaturePad';
+import { Dialog, DialogContent } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -17,6 +19,8 @@ export default function DeliveryNotesPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+    const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
+    const [selectedNoteForSignature, setSelectedNoteForSignature] = useState(null);
 
     useEffect(() => {
         if (selectedCompany) fetchNotes();
@@ -79,6 +83,26 @@ export default function DeliveryNotesPage() {
         } catch (error) {
             console.error('Error updating status:', error);
         }
+    };
+
+    const handleSaveSignature = async ({ signature, recipientName }) => {
+        try {
+            const response = await deliveryNoteService.saveSignature(token, selectedCompany.id, selectedNoteForSignature.id, { signature, recipientName });
+            if (response.success) {
+                setIsSignatureModalOpen(false);
+                setSelectedNoteForSignature(null);
+                fetchNotes(pagination.page);
+                alert('Firma guardada correctamente.');
+            }
+        } catch (error) {
+            console.error('Error saving signature:', error);
+            alert('Error al guardar la firma.');
+        }
+    };
+
+    const openSignatureModal = (note) => {
+        setSelectedNoteForSignature(note);
+        setIsSignatureModalOpen(true);
     };
 
     const getStatusBadge = (status) => {
@@ -158,6 +182,9 @@ export default function DeliveryNotesPage() {
                                                     <RotateCcw className="w-4 h-4 text-amber-500" />
                                                 </Button>
                                             )}
+                                            <Button variant="ghost" size="icon" onClick={() => openSignatureModal(note)} title="Firmar Nota">
+                                                <PenTool className={`w-4 h-4 ${note.signature ? 'text-emerald-500' : 'text-blue-500'}`} />
+                                            </Button>
                                             <Button variant="ghost" size="icon" onClick={() => navigate(`/delivery-notes/${note.id}`)} title="Ver/Editar">
                                                 <Eye className="w-4 h-4" />
                                             </Button>
@@ -175,6 +202,23 @@ export default function DeliveryNotesPage() {
                     </Table>
                 </CardContent>
             </Card>
+
+            <Dialog 
+                open={isSignatureModalOpen} 
+                onClose={() => setIsSignatureModalOpen(false)}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogContent sx={{ p: 0 }}>
+                    {selectedNoteForSignature && (
+                        <SignaturePad 
+                            onSave={handleSaveSignature}
+                            onCancel={() => setIsSignatureModalOpen(false)}
+                            noteNumber={selectedNoteForSignature.number}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

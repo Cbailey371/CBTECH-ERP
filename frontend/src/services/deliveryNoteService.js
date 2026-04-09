@@ -49,3 +49,8 @@ export const downloadDeliveryNotePdf = async (token, companyId, id) => {
     });
     return response.data;
 };
+
+export const saveSignature = async (token, companyId, id, signatureData) => {
+    const response = await axios.post(`${API_URL}/${id}/signature`, signatureData, getAuthHeader(token, companyId));
+    return response.data;
+};

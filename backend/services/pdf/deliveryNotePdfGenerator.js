@@ -47,7 +47,9 @@ const generateDeliveryNotePdf = async (note, company) => {
                         quantity: isNaN(qty) ? '0.00' : qty.toFixed(2)
                     };
                 }),
-                notes: note?.notes || ''
+                notes: note?.notes || '',
+                signature: note?.signature || null,
+                recipientName: note?.recipientName || ''
             };
 
             console.log(`[DEBUG] Datos finales para PDF (Nota ${safeNote.number}):`, JSON.stringify(safeNote));
@@ -157,14 +159,25 @@ const generateDeliveryNotePdf = async (note, company) => {
             content.push({ text: '\n\n\n\n' });
 
             // Signature Section
+            const signatureContent = [];
+            if (safeNote.signature) {
+                signatureContent.push({
+                    image: safeNote.signature,
+                    width: 150,
+                    alignment: 'center',
+                    margin: [0, 0, 0, -10]
+                });
+            } else {
+                signatureContent.push({ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] });
+            }
+            signatureContent.push({ text: safeNote.recipientName || 'Recibido por', style: 'infoLine', margin: [0, 5, 0, 0], alignment: 'center' });
+
             content.push({
                 columns: [
                     {
                         width: '*',
-                        stack: [
-                            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] },
-                            { text: 'Recibido por', style: 'infoLine', margin: [0, 5, 0, 0] }
-                        ]
+                        stack: signatureContent,
+                        alignment: 'center'
                     },
                     {
                         width: '*',
@@ -175,7 +188,7 @@ const generateDeliveryNotePdf = async (note, company) => {
                         alignment: 'right'
                     }
                 ],
-                margin: [40, 0, 40, 0]
+                margin: [40, 20, 40, 0]
             });
 
             const docDefinition = {

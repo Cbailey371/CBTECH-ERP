@@ -60,6 +60,15 @@ const DeliveryNote = sequelize.define('DeliveryNote', {
         type: DataTypes.INTEGER,
         allowNull: true,
         field: 'updated_by'
+    },
+    signature: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    recipientName: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+        field: 'recipient_name'
     }
 }, {
     tableName: 'delivery_notes',

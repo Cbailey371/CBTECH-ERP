@@ -234,6 +234,27 @@ exports.deleteDeliveryNote = async (req, res) => {
     }
 };
 
+exports.saveSignature = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const companyId = req.companyContext?.companyId || req.user.companyId;
+        const { signature, recipientName } = req.body;
+
+        const note = await DeliveryNote.findOne({ where: { id, companyId } });
+        if (!note) return res.status(404).json({ error: 'Nota de entrega no encontrada' });
+
+        await note.update({
+            signature,
+            recipientName,
+            status: 'delivered' // Auto-update to delivered when signed
+        });
+
+        res.json({ success: true, message: 'Firma guardada correctamente', deliveryNote: note });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.downloadPdf = async (req, res) => {
     try {
         const { id } = req.params;

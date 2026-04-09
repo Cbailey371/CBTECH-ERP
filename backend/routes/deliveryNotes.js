@@ -13,6 +13,7 @@ router.get('/:id/download', requireCompanyContext, deliveryNoteController.downlo
 router.post('/', requireCompanyContext, deliveryNoteController.createDeliveryNote);
 router.put('/:id', requireCompanyContext, deliveryNoteController.updateDeliveryNote);
 router.patch('/:id/status', requireCompanyContext, deliveryNoteController.updateDeliveryNoteStatus);
+router.post('/:id/signature', requireCompanyContext, deliveryNoteController.saveSignature);
 router.delete('/:id', requireCompanyContext, deliveryNoteController.deleteDeliveryNote);
 
 module.exports = router;
