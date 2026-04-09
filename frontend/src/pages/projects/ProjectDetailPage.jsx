@@ -304,65 +304,75 @@ export default function ProjectDetailPage() {
     };
 
     return (
-        <div className="space-y-6 animate-fadeIn pb-20">
+        <div className="space-y-6 animate-fadeIn pb-24">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between gap-4">
-                <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                        <Button variant="ghost" size="sm" onClick={() => navigate('/projects')} className="p-0 h-auto hover:bg-transparent hover:text-foreground">
-                            <ArrowLeft size={16} className="mr-1" />
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => navigate('/projects')} 
+                            className="p-0 h-auto hover:bg-transparent hover:text-foreground text-xs md:text-sm"
+                        >
+                            <ArrowLeft size={14} className="mr-1" />
                             Proyectos
                         </Button>
-                        <span>/</span>
-                        <span>{project.name}</span>
+                        <span className="opacity-50">/</span>
+                        <span className="truncate max-w-[150px] md:max-w-none">{project.name}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold text-foreground tracking-tight">
-                            {project.code && <span className="text-muted-foreground mr-2 font-mono text-2xl">[{project.code}]</span>}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h1 className="text-xl md:text-3xl font-bold text-foreground tracking-tight leading-tight">
+                            {project.code && <span className="text-muted-foreground mr-1.5 font-mono">[{project.code}]</span>}
                             {project.name}
                         </h1>
-                        {getStatusBadge(project.status)}
+                        <div className="md:mt-1">
+                            {getStatusBadge(project.status)}
+                        </div>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <Button onClick={handleCreateTask} className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                        <Plus className="w-4 h-4 mr-2" />
+                <div className="flex w-full md:w-auto">
+                    <Button 
+                        onClick={handleCreateTask} 
+                        className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground h-11 md:h-10 shadow-lg shadow-primary/20"
+                    >
+                        <Plus className="w-5 h-5 mr-2" />
                         Nueva Tarea
                     </Button>
                 </div>
             </div>
 
             {/* Project Info Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="bg-card/50 border-border p-4">
-                    <div className="text-muted-foreground text-sm mb-1">Cliente</div>
-                    <div className="font-medium text-foreground flex items-center gap-2">
-                        <User size={16} />
-                        {project.customer ? project.customer.name : 'N/A'}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 px-1 md:px-0">
+                <Card className="bg-card/40 border-border/50 p-3 md:p-4 backdrop-blur-sm shadow-sm">
+                    <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1 tracking-wider">Cliente</div>
+                    <div className="font-semibold text-foreground flex items-center gap-2 text-xs md:text-sm truncate">
+                        <User size={14} className="text-primary/70 shrink-0" />
+                        <span className="truncate">{project.customer ? project.customer.name : 'N/A'}</span>
                     </div>
                 </Card>
-                <Card className="bg-card/50 border-border p-4">
-                    <div className="text-muted-foreground text-sm mb-1">Responsable</div>
-                    <div className="font-medium text-foreground flex items-center gap-2">
-                        <User size={16} />
-                        {project.responsibleExternal || (project.responsible ? `${project.responsible.firstName} ${project.responsible.lastName}` : 'Sin asignar')}
+                <Card className="bg-card/40 border-border/50 p-3 md:p-4 backdrop-blur-sm shadow-sm">
+                    <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1 tracking-wider">Responsable</div>
+                    <div className="font-semibold text-foreground flex items-center gap-2 text-xs md:text-sm truncate">
+                        <User size={14} className="text-primary/70 shrink-0" />
+                        <span className="truncate">{project.responsibleExternal || (project.responsible ? `${project.responsible.firstName}` : 'Sin asignar')}</span>
                     </div>
                 </Card>
-                <Card className="bg-card/50 border-border p-4">
-                    <div className="text-muted-foreground text-sm mb-1">Fechas</div>
-                    <div className="font-medium text-foreground flex items-center gap-2 text-sm">
-                        <Calendar size={16} />
-                        {project.startDate || 'N/A'} - {project.endDate || 'N/A'}
+                <Card className="bg-card/40 border-border/50 p-3 md:p-4 backdrop-blur-sm shadow-sm col-span-2 md:col-span-1">
+                    <div className="text-[10px] uppercase font-bold text-muted-foreground mb-1 tracking-wider">Fechas</div>
+                    <div className="font-semibold text-foreground flex items-center gap-2 text-xs md:text-sm">
+                        <Calendar size={14} className="text-primary/70 shrink-0" />
+                        {new Date(project.startDate).toLocaleDateString()} - {new Date(project.endDate).toLocaleDateString()}
                     </div>
                 </Card>
-                <Card className="bg-card/50 border-border p-4">
-                    <div className="text-muted-foreground text-sm mb-1">Progreso</div>
-                    <div className="font-medium text-foreground text-lg">
-                        {project.progress || 0}%
+                <Card className="bg-card/40 border-border/50 p-3 md:p-4 backdrop-blur-sm shadow-sm col-span-2 md:col-span-1">
+                    <div className="flex justify-between items-center mb-1">
+                        <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Progreso</div>
+                        <span className="text-xs font-bold text-primary">{project.progress || 0}%</span>
                     </div>
-                    <div className="w-full bg-muted h-1.5 rounded-full mt-2">
+                    <div className="w-full bg-secondary/50 h-2 rounded-full overflow-hidden">
                         <div
-                            className="bg-primary h-1.5 rounded-full transition-all duration-500"
+                            className="bg-primary h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(var(--primary),0.3)]"
                             style={{ width: `${project.progress || 0}%` }}
                         />
                     </div>
@@ -370,67 +380,131 @@ export default function ProjectDetailPage() {
             </div>
 
             {/* Tasks Section */}
-            <Card className="bg-card/50 border-border backdrop-blur-sm">
-                <CardContent className="p-0">
-                    <div className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
-                        <h3 className="font-semibold text-foreground flex items-center gap-2">
-                            <CheckCircle size={18} className="text-primary" />
-                            Tareas del Proyecto
-                        </h3>
-                        <div className="flex gap-2">
-                            <select
-                                className="bg-background border border-border rounded-md text-sm text-foreground px-2 py-1 outline-none focus:border-primary"
-                                value={statusFilter}
-                                onChange={(e) => {
-                                    setStatusFilter(e.target.value);
-                                    // Trigger fetch via effect or manually
-                                    // For simplicity, we can rely on effect if we add statusFilter to dependency array of a fetch effect,
-                                    // OR just filter client-side if list is small. 
-                                    // Given fetchTasks implementation, let's call it manually or rely on a "Refetch" button. 
-                                    // Easier: Re-fetch on change.
-                                    setTimeout(fetchTasks, 0);
-                                }}
-                            >
-                                <option value="">Todos los estados</option>
-                                <option value="pending">Pendientes</option>
-                                <option value="in_progress">En Progreso</option>
-                                <option value="completed">Completadas</option>
-                            </select>
-                        </div>
+            <div className="space-y-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 px-1">
+                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                        <CheckCircle size={20} className="text-primary" />
+                        Tareas del Proyecto
+                    </h3>
+                    <div className="w-full md:w-48">
+                        <select
+                            className="w-full bg-background border border-input rounded-lg text-sm text-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-primary/50 h-10 appearance-none"
+                            value={statusFilter}
+                            onChange={(e) => {
+                                setStatusFilter(e.target.value);
+                                setTimeout(fetchTasks, 0);
+                            }}
+                        >
+                            <option value="">Todos los estados</option>
+                            <option value="pending">Pendientes</option>
+                            <option value="in_progress">En Progreso</option>
+                            <option value="completed">Completadas</option>
+                        </select>
                     </div>
+                </div>
 
-                    <Table>
-                        <TableHeader className="bg-muted/50">
-                            <TableRow className="hover:bg-muted/50 border-border">
-                                <TableHead className="text-muted-foreground">Código</TableHead>
-                                <TableHead className="text-muted-foreground">Tarea</TableHead>
-                                <TableHead className="text-muted-foreground">Estado</TableHead>
-                                <TableHead className="text-muted-foreground">Prioridad</TableHead>
-                                <TableHead className="text-muted-foreground">Asignado a</TableHead>
-                                <TableHead className="text-muted-foreground">Vencimiento</TableHead>
-                                <TableHead className="text-right text-muted-foreground">Acciones</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {tasksLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                        Cargando tareas...
-                                    </TableCell>
-                                </TableRow>
-                            ) : tasks.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                        No hay tareas registradas en este proyecto.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                organizeTasks(tasks).map(task => renderTaskRow(task))
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
+                {tasksLoading ? (
+                    <div className="text-center py-12 text-muted-foreground animate-pulse">Cargando tareas...</div>
+                ) : tasks.length === 0 ? (
+                    <div className="text-center py-12 bg-muted/20 rounded-xl border-2 border-dashed border-border mx-1">
+                        <AlertCircle className="mx-auto h-8 w-8 text-muted-foreground opacity-20 mb-2" />
+                        <p className="text-muted-foreground font-medium">No se encontraron tareas</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Desktop Table */}
+                        <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+                            <Table>
+                                <TableHeader className="bg-muted/50">
+                                    <TableRow className="border-border hover:bg-muted/50">
+                                        <TableHead className="w-[100px]">Código</TableHead>
+                                        <TableHead>Tarea</TableHead>
+                                        <TableHead>Estado</TableHead>
+                                        <TableHead>Prioridad</TableHead>
+                                        <TableHead>Asignado</TableHead>
+                                        <TableHead>Vencimiento</TableHead>
+                                        <TableHead className="text-right">Acciones</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {organizeTasks(tasks).map(task => renderTaskRow(task))}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile List Cards */}
+                        <div className="md:hidden space-y-3 px-1">
+                            {tasks.map((task) => (
+                                <Card key={task.id} className="bg-card/50 border-border active:scale-[0.98] transition-transform overflow-hidden">
+                                    <div className="p-4 space-y-3">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground uppercase">
+                                                        {task.code || 'TSK'}
+                                                    </span>
+                                                    <Badge className={`${getTaskStatusStyle(task.status)} border-none text-[10px] py-0 h-5`}>
+                                                        {getTaskStatusLabel(task.status)}
+                                                    </Badge>
+                                                </div>
+                                                <h4 className="text-sm font-bold text-foreground leading-tight">{task.title}</h4>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    onClick={() => handleEditTask(task)} 
+                                                    className="h-8 w-8"
+                                                >
+                                                    <Pencil size={14} className="text-muted-foreground" />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3 text-[11px]">
+                                            <div className="space-y-1">
+                                                <span className="text-[10px] uppercase font-semibold text-muted-foreground/70">Asignado</span>
+                                                <p className="text-foreground truncate font-medium">
+                                                    {task.assignee ? `${task.assignee.firstName}` : 'Sin asignar'}
+                                                </p>
+                                            </div>
+                                            <div className="space-y-1 text-right">
+                                                <span className="text-[10px] uppercase font-semibold text-muted-foreground/70">Vencimiento</span>
+                                                <p className={`font-medium ${new Date(task.dueDate) < new Date() && task.status !== 'completed' ? 'text-destructive' : 'text-foreground'}`}>
+                                                    {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-2 flex justify-between items-center border-t border-border/50 mt-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[10px] font-bold text-muted-foreground uppercase">Prioridad:</span>
+                                                {getTaskPriorityBadge(task.priority)}
+                                            </div>
+                                            <div className="relative">
+                                                <Button variant="outline" size="sm" className="h-7 text-[10px] px-2 font-bold uppercase tracking-wider">
+                                                    Cambiar Estado
+                                                </Button>
+                                                <select
+                                                    value={task.status}
+                                                    onChange={(e) => handleQuickStatusChange(task.id, e.target.value)}
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                >
+                                                    <option value="pending">Pendiente</option>
+                                                    <option value="in_progress">En Progreso</option>
+                                                    <option value="review">En Revisión</option>
+                                                    <option value="completed">Completada</option>
+                                                    <option value="cancelled">Cancelada</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </>
+                )}
+            </div>
 
             <TaskModal
                 isOpen={isTaskModalOpen}

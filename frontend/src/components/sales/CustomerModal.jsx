@@ -109,262 +109,284 @@ export default function CustomerModal({ isOpen, onClose, onSave, customer, loadi
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[600px] max-h-[95vh] overflow-y-auto bg-background border-border text-foreground p-6">
-                <DialogHeader>
-                    <DialogTitle>{customer ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-muted-foreground">Código</label>
+            <DialogContent className="sm:max-w-[650px] w-[95vw] md:w-full max-h-[92vh] overflow-y-auto bg-background border-border text-foreground p-0 rounded-xl">
+                <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border p-4 flex items-center justify-between">
+                    <DialogTitle className="text-xl font-bold">{customer ? 'Editar Cliente' : 'Nuevo Cliente'}</DialogTitle>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-8">
+                    {/* Información Básica */}
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="h-6 w-1 bg-primary rounded-full" />
+                            <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Información General</h3>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase flex items-center gap-1.5">
+                                    Código <span className="text-[10px] lowercase font-normal opacity-70">(Opcional)</span>
+                                </label>
                                 <Input
                                     name="code"
                                     value={formData.code}
                                     onChange={handleChange}
-                                    placeholder="Ej. CUST-001"
-                                    className="bg-background border-input focus:border-ring"
+                                    placeholder="CUST-001"
+                                    className="h-11 md:h-10 bg-muted/30 border-border focus:ring-primary/20"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Razón Social *</label>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">Razón Social *</label>
                                 <Input
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
                                     placeholder="Nombre de la empresa"
                                     required
-                                    className="bg-background border-input focus:border-ring"
+                                    className="h-11 md:h-10 bg-muted/30 border-border"
                                 />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Nombre Comercial</label>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground uppercase">Nombre Comercial</label>
                             <Input
                                 name="tradeName"
                                 value={formData.tradeName}
                                 onChange={handleChange}
-                                className="bg-background border-input"
+                                className="h-11 md:h-10 bg-muted/30 border-border"
                                 required
-                                placeholder="Ej. Mi Empresa"
+                                placeholder="Nombre de fantasía"
                             />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="sm:col-span-2 space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">RUC / Cédula *</label>
+                                <Input
+                                    name="taxId"
+                                    value={formData.taxId}
+                                    onChange={handleChange}
+                                    className="h-11 md:h-10 bg-muted/30 border-border"
+                                    required
+                                    placeholder="123456789"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">DV *</label>
+                                <Input
+                                    name="dv"
+                                    value={formData.dv}
+                                    onChange={handleChange}
+                                    className="h-11 md:h-10 bg-muted/30 border-border"
+                                    required
+                                    maxLength={2}
+                                    placeholder="00"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="col-span-2 space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">RUC / Identificación</label>
+                    {/* Contacto */}
+                    <div className="space-y-4 pt-4 border-t border-border/50">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="h-6 w-1 bg-primary rounded-full" />
+                            <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Contacto y Ubicación</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">Email</label>
+                                <Input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="h-11 md:h-10 bg-muted/30 border-border font-medium"
+                                    placeholder="ejemplo@correo.com"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">Teléfono</label>
+                                <Input
+                                    name="phone"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    className="h-11 md:h-10 bg-muted/30 border-border font-medium"
+                                    placeholder="6XXX-XXXX"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground uppercase">Dirección Física</label>
                             <Input
-                                name="taxId"
-                                value={formData.taxId}
+                                name="address"
+                                value={formData.address}
                                 onChange={handleChange}
-                                className="bg-background border-input"
-                                required
-                                placeholder="Ej. 123456789"
+                                className="h-11 md:h-10 bg-muted/30 border-border"
+                                placeholder="Provincia, Distrito, Corregimiento..."
                             />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">DV</label>
-                            <Input
-                                name="dv"
-                                value={formData.dv}
-                                onChange={handleChange}
-                                className="bg-background border-input"
-                                required
-                                maxLength={2}
-                                placeholder="00"
-                            />
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Email</label>
-                            <Input
-                                type="email"
-                                name="email"
-                                value={formData.email}
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-bold text-muted-foreground uppercase">Notas Internas</label>
+                            <textarea
+                                name="notes"
+                                value={formData.notes}
                                 onChange={handleChange}
-                                className="bg-background border-input"
-                                placeholder="contacto@empresa.com"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-muted-foreground">Teléfono</label>
-                            <Input
-                                name="phone"
-                                value={formData.phone}
-                                onChange={handleChange}
-                                className="bg-background border-input"
-                                placeholder="+507 6000-0000"
+                                className="flex min-h-[100px] w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                                placeholder="Detalles relevantes sobre el cliente..."
                             />
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Dirección</label>
-                        <Input
-                            name="address"
-                            value={formData.address}
-                            onChange={handleChange}
-                            className="bg-background border-input"
-                            placeholder="Ciudad, Calle, Edificio..."
-                        />
-                    </div>
+                    {/* DGI Info */}
+                    <div className="space-y-4 pt-4 border-t border-border/50 p-4 bg-muted/10 rounded-xl">
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="h-6 w-1 bg-amber-500 rounded-full" />
+                            <h3 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Facturación Electrónica (DGI)</h3>
+                        </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-muted-foreground">Notas</label>
-                        <textarea
-                            name="notes"
-                            value={formData.notes}
-                            onChange={handleChange}
-                            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
-                            placeholder="Información adicional..."
-                        />
-                    </div>
-
-                    <div className="pt-4 border-t border-border">
-                        <h4 className="text-sm font-semibold text-foreground mb-4">Datos Requeridos por DGI (Facturación Electrónica)</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-muted-foreground">Tipo de Receptor</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">Tipo de Receptor</label>
                                 <select
                                     name="tipoReceptor"
                                     value={formData.tipoReceptor}
                                     onChange={handleChange}
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-12 md:h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                                 >
-                                    <option value="01">01 - Contribuyente (B2B)</option>
-                                    <option value="02">02 - Consumidor Final (B2C)</option>
-                                    <option value="03">03 - Gobierno</option>
-                                    <option value="04">04 - Extranjero</option>
+                                    <option value="01">Contribuyente (B2B)</option>
+                                    <option value="02">Consumidor Final (B2C)</option>
+                                    <option value="03">Gobierno</option>
+                                    <option value="04">Extranjero</option>
                                 </select>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-muted-foreground">Tipo de Identificación</label>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">Tipo de Identificación</label>
                                 <select
                                     name="tipoIdentificacion"
                                     value={formData.tipoIdentificacion}
                                     onChange={handleChange}
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-12 md:h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/20 outline-none"
                                 >
-                                    <option value="01">01 - Cédula</option>
-                                    <option value="02">02 - RUC</option>
-                                    <option value="03">03 - Pasaporte</option>
-                                    <option value="04">04 - Id. Extranjera</option>
+                                    <option value="01">Cédula</option>
+                                    <option value="02">RUC</option>
+                                    <option value="03">Pasaporte</option>
+                                    <option value="04">Id. Extranjera</option>
                                 </select>
                             </div>
-                            <div className="space-y-4 col-span-2 border p-3 rounded-md border-border bg-muted/20">
-                                <div>
-                                    <label className="text-sm font-medium text-foreground mb-1 block">Ubicación Geográfica (DGI)</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        <select
-                                            value={selectedProvinciaId}
-                                            onChange={handleProvinciaChange}
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                            disabled={formData.paisReceptor !== 'PA'}
-                                        >
-                                            <option value="">-- Provincia --</option>
-                                            {panamaLocations.map(p => (
-                                                <option key={p.id} value={p.id}>{p.name}</option>
-                                            ))}
-                                        </select>
-                                        <select
-                                            value={selectedDistritoId}
-                                            onChange={handleDistritoChange}
-                                            disabled={!selectedProvinciaId || formData.paisReceptor !== 'PA'}
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            <option value="">-- Distrito --</option>
-                                            {provSelected?.distritos.map(d => (
-                                                <option key={d.id} value={d.id}>{d.name}</option>
-                                            ))}
-                                        </select>
-                                        <select
-                                            name="codUbi"
-                                            value={formData.codUbi}
-                                            onChange={handleChange}
-                                            disabled={!selectedDistritoId || formData.paisReceptor !== 'PA'}
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                        >
-                                            <option value="">-- Corregimiento --</option>
-                                            {distSelected?.corregimientos.map(c => (
-                                                <option key={c.id} value={c.id}>{c.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <p className="text-[10px] text-muted-foreground mt-1">
-                                        Código resultante: {formData.codUbi || '(Ninguno)'} -- Requerido solo para operaciones locales en Panamá.
-                                    </p>
+
+                            <div className="md:col-span-2 space-y-3">
+                                <label className="text-xs font-bold text-muted-foreground uppercase block">Ubicación Geográfica Panamá</label>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <select
+                                        value={selectedProvinciaId}
+                                        onChange={handleProvinciaChange}
+                                        disabled={formData.paisReceptor !== 'PA'}
+                                        className="h-12 md:h-10 rounded-lg border border-border bg-background px-3 text-sm"
+                                    >
+                                        <option value="">Provincia</option>
+                                        {panamaLocations.map(p => (
+                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={selectedDistritoId}
+                                        onChange={handleDistritoChange}
+                                        disabled={!selectedProvinciaId || formData.paisReceptor !== 'PA'}
+                                        className="h-12 md:h-10 rounded-lg border border-border bg-background px-3 text-sm"
+                                    >
+                                        <option value="">Distrito</option>
+                                        {provSelected?.distritos.map(d => (
+                                            <option key={d.id} value={d.id}>{d.name}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        name="codUbi"
+                                        value={formData.codUbi}
+                                        onChange={handleChange}
+                                        disabled={!selectedDistritoId || formData.paisReceptor !== 'PA'}
+                                        className="h-12 md:h-10 rounded-lg border border-border bg-background px-3 text-sm"
+                                    >
+                                        <option value="">Corregimiento</option>
+                                        {distSelected?.corregimientos.map(c => (
+                                            <option key={c.id} value={c.id}>{c.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
+                                {formData.codUbi && (
+                                    <div className="text-[10px] bg-primary/10 text-primary-foreground font-mono px-2 py-1 rounded inline-block">
+                                        Código DGI: {formData.codUbi}
+                                    </div>
+                                )}
                             </div>
-                            <div className="space-y-2 col-span-2">
-                                <label className="text-sm font-medium text-muted-foreground">País Receptor</label>
+
+                            <div className="space-y-1.5 md:col-span-2">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">País de Residencia</label>
                                 <select
                                     name="paisReceptor"
                                     value={formData.paisReceptor}
                                     onChange={handleChange}
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-12 md:h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium"
                                 >
                                     {panamaCountries.map(c => (
                                         <option key={c.id} value={c.id}>{c.name}</option>
                                     ))}
                                 </select>
                             </div>
-                            <div className="space-y-2 col-span-2">
-                                <label className="text-sm font-medium text-muted-foreground">Objeto de Retención (DGI)</label>
+
+                            <div className="space-y-1.5 md:col-span-2">
+                                <label className="text-xs font-bold text-muted-foreground uppercase">Objeto de Retención</label>
                                 <select
                                     name="objetoRetencion"
                                     value={formData.objetoRetencion}
                                     onChange={handleChange}
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex h-12 md:h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
                                 >
-                                    <option value="">-- Sin Retención --</option>
+                                    <option value="">Sin Retención Especial</option>
                                     {panamaRetentions.map(r => (
                                         <option key={r.id} value={r.id}>{r.name}</option>
                                     ))}
                                 </select>
                             </div>
 
-                            <div className="space-y-4 col-span-2 border p-3 rounded-md border-green-200/50 bg-green-50/10 mb-4">
+                            <div className="md:col-span-2 p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 transition-all hover:bg-emerald-500/10 active:scale-[0.99] cursor-pointer"
+                                 onClick={() => setFormData(prev => ({ ...prev, isTaxExempt: !prev.isTaxExempt }))}>
                                 <div className="flex items-center gap-3">
-                                    <input
-                                        type="checkbox"
-                                        id="isTaxExempt"
-                                        name="isTaxExempt"
-                                        checked={formData.isTaxExempt}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, isTaxExempt: e.target.checked }))}
-                                        className="w-4 h-4 text-green-600 rounded border-input focus:ring-green-500"
-                                    />
-                                    <label htmlFor="isTaxExempt" className="text-sm font-semibold text-foreground cursor-pointer">
-                                        Exento de ITBMS (Exoneración Total)
-                                    </label>
+                                    <div className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-all ${formData.isTaxExempt ? 'bg-emerald-500 border-emerald-500' : 'border-emerald-500/50'}`}>
+                                        {formData.isTaxExempt && <div className="w-3 h-1.5 border-l-2 border-b-2 border-white -rotate-45 mb-1" />}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold text-foreground">Exento de ITBMS</p>
+                                        <p className="text-[11px] text-muted-foreground leading-tight">Activar solo si el cliente posee exoneración fiscal total autorizada.</p>
+                                    </div>
                                 </div>
-                                <p className="text-[10px] text-muted-foreground ml-7">
-                                    Si activa esta opción, todas las facturas de este cliente se calcularán con 0% de ITBMS automáticamente.
-                                </p>
                             </div>
-
-                            {formData.tipoReceptor === '03' && (
-                                <div className="space-y-2 col-span-2 bg-blue-50 p-3 rounded-md border border-blue-200">
-                                    <p className="text-xs font-semibold text-blue-800">Facturación a Gobierno detectada:</p>
-                                    <ul className="text-[10px] text-blue-700 list-disc ml-4">
-                                        <li>Es obligatorio usar el Catálogo CPBS en los ítems de factura.</li>
-                                        <li>Asegúrese de que el RUC sea válido para Organismos de Gobierno.</li>
-                                    </ul>
-                                </div>
-                            )}
                         </div>
+
+                        {formData.tipoReceptor === '03' && (
+                            <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400">
+                                <div className="flex gap-3">
+                                    <div className="w-5 h-5 rounded-full bg-blue-500 text-background flex items-center justify-center text-[10px] font-bold">i</div>
+                                    <div className="flex-1">
+                                        <p className="text-xs font-bold mb-1">Facturación a Gobierno</p>
+                                        <p className="text-[10px] opacity-80">Recuerde que las facturas a gobierno requieren obligatoriamente el código CPBS en los productos.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
-                    <DialogFooter className="pt-4">
-                        <Button type="button" variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-foreground">
+                    <div className="sticky bottom-0 z-10 bg-background/80 backdrop-blur-md border-t border-border p-4 -mx-4 md:-mx-6 flex flex-col sm:flex-row gap-2 mt-auto">
+                        <Button type="button" variant="ghost" onClick={onClose} className="w-full sm:flex-1 h-12 md:h-10 text-muted-foreground font-bold order-2 sm:order-1">
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={loading}>
-                            {loading ? 'Guardando...' : (customer ? 'Actualizar' : 'Crear')}
+                        <Button type="submit" disabled={loading} className="w-full sm:flex-1 h-12 md:h-10 bg-primary font-bold shadow-lg shadow-primary/20 order-1 sm:order-2">
+                            {loading ? 'Guardando...' : (customer ? 'Actualizar Cliente' : 'Crear Cliente')}
                         </Button>
-                    </DialogFooter>
+                    </div>
                 </form>
             </DialogContent>
         </Dialog>

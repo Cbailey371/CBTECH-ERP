@@ -88,31 +88,31 @@ export default function SuppliersPage() {
 
     return (
         <div className="space-y-6 animate-fadeIn">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-foreground">Proveedores</h1>
-                    <p className="text-muted-foreground">Gestiona los proveedores y compras de tu empresa</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-foreground">Proveedores</h1>
+                    <p className="text-muted-foreground text-sm md:text-base">Gestiona los proveedores y compras de tu empresa</p>
                 </div>
-                <Button onClick={() => navigate('/suppliers/new')} className="bg-primary-600 hover:bg-primary-700 text-foreground">
+                <Button onClick={() => navigate('/suppliers/new')} className="w-full md:w-auto bg-primary-600 hover:bg-primary-700 text-foreground">
                     <Plus size={20} className="mr-2" />
                     Nuevo Proveedor
                 </Button>
             </div>
 
             {/* Filters */}
-            <Card className="bg-card/50 border-border backdrop-blur-sm">
+            <Card className="bg-card/50 border-border backdrop-blur-sm shadow-md">
                 <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="relative md:col-span-2">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={18} />
                         <Input
                             placeholder="Buscar por nombre, RUC, contacto, email..."
-                            className="pl-10 bg-background border-input"
+                            className="pl-10 bg-background border-input w-full"
                             value={filters.search}
                             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                         />
                     </div>
                     <select
-                        className="bg-background border border-border rounded-lg px-3 py-2 text-foreground outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground outline-none focus:ring-2 focus:ring-primary-500 text-sm h-10"
                         value={filters.is_active}
                         onChange={(e) => setFilters({ ...filters, is_active: e.target.value })}
                     >
@@ -124,8 +124,8 @@ export default function SuppliersPage() {
             </Card>
 
             {/* List */}
-            <div className="bg-card border border-border rounded-lg overflow-hidden backdrop-blur-sm">
-                <Table>
+            <div className="bg-card border border-border rounded-lg overflow-hidden backdrop-blur-sm shadow-lg">
+                <Table className="hidden md:table">
                     <TableHeader className="bg-muted/50">
                         <TableRow className="hover:bg-muted/50 border-border">
                             <TableHead className="text-muted-foreground">Código</TableHead>
@@ -217,6 +217,87 @@ export default function SuppliersPage() {
                         ))}
                     </TableBody>
                 </Table>
+
+                {/* Vista Móvil */}
+                <div className="md:hidden divide-y divide-border">
+                    {suppliers.map(supplier => (
+                        <div
+                            key={supplier.id}
+                            className="p-4 space-y-4 active:bg-muted/50 transition-colors"
+                            onClick={() => navigate(`/suppliers/${supplier.id}`)}
+                        >
+                            <div className="flex justify-between items-start">
+                                <div className="flex gap-3">
+                                    <div className="p-2 bg-secondary rounded-lg">
+                                        <Building2 className="text-primary" size={20} />
+                                    </div>
+                                    <div>
+                                        <div className="font-bold text-foreground text-sm">{supplier.name}</div>
+                                        <div className="text-[10px] text-muted-foreground uppercase font-mono">{supplier.code || 'SINF-COD'}</div>
+                                    </div>
+                                </div>
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${supplier.isActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
+                                    {supplier.isActive ? 'Activo' : 'Inactivo'}
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-semibold">RUC / Identificación</span>
+                                    <div className="text-xs text-foreground font-mono">{supplier.ruc}-{supplier.dv}</div>
+                                </div>
+                                <div className="space-y-1 text-right">
+                                    <span className="text-[10px] text-muted-foreground uppercase font-semibold">Contacto</span>
+                                    <div className="text-xs text-foreground truncate">{supplier.contactName || '-'}</div>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-border/50">
+                                <div className="flex gap-3">
+                                    {supplier.phone && (
+                                        <a
+                                            href={`tel:${supplier.phone}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="p-2 bg-primary/10 rounded-full text-primary hover:bg-primary/20"
+                                        >
+                                            <Phone size={14} />
+                                        </a>
+                                    )}
+                                    {supplier.email && (
+                                        <a
+                                            href={`mailto:${supplier.email}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="p-2 bg-primary/10 rounded-full text-primary hover:bg-primary/20"
+                                        >
+                                            <Mail size={14} />
+                                        </a>
+                                    )}
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 text-xs"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/suppliers/${supplier.id}/edit`);
+                                        }}
+                                    >
+                                        <Edit className="w-3 h-3 mr-1" /> Editar
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                        onClick={(e) => confirmDelete(e, supplier)}
+                                    >
+                                        <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
                 {suppliers.length === 0 && !loading && (
                     <div className="text-center py-12 text-muted-foreground">

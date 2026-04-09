@@ -81,27 +81,27 @@ export default function SupplierForm() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
-            <div className="flex items-center gap-4 mb-6">
-                <Button variant="ghost" size="icon" onClick={() => navigate('/suppliers')} className="text-muted-foreground hover:text-foreground">
+        <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn pb-20 md:pb-6">
+            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 px-2">
+                <Button variant="ghost" size="icon" onClick={() => navigate('/suppliers')} className="text-muted-foreground hover:text-foreground h-10 w-10">
                     <ArrowLeft size={24} />
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold text-foreground">{isEditMode ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h1>
-                    <p className="text-muted-foreground text-sm">Información general y fiscal</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-foreground">{isEditMode ? 'Editar Proveedor' : 'Nuevo Proveedor'}</h1>
+                    <p className="text-muted-foreground text-xs md:text-sm">Información general y fiscal</p>
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <Card className="bg-card border-border backdrop-blur-sm">
-                    <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-6 px-2">
+                <Card className="bg-card border-border backdrop-blur-sm shadow-md">
+                    <CardContent className="p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-muted-foreground">Código</label>
                             <Input
                                 value={formData.code}
                                 onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                                 placeholder="Ej. PROV-001"
-                                className="bg-background border-input"
+                                className="bg-background border-input h-11 md:h-10"
                             />
                         </div>
 
@@ -112,26 +112,28 @@ export default function SupplierForm() {
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="Ej. Distribuidora S.A."
                                 required
-                                className="bg-background border-input"
+                                className="bg-background border-input h-11 md:h-10"
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-muted-foreground">RUC</label>
-                            <Input
-                                value={formData.ruc}
-                                onChange={(e) => setFormData({ ...formData, ruc: e.target.value })}
-                                className="bg-background border-input"
-                            />
-                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-muted-foreground">RUC</label>
+                                <Input
+                                    value={formData.ruc}
+                                    onChange={(e) => setFormData({ ...formData, ruc: e.target.value })}
+                                    className="bg-background border-input h-11 md:h-10"
+                                />
+                            </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-muted-foreground">DV</label>
-                            <Input
-                                value={formData.dv}
-                                onChange={(e) => setFormData({ ...formData, dv: e.target.value })}
-                                className="bg-background border-input"
-                            />
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-muted-foreground">DV</label>
+                                <Input
+                                    value={formData.dv}
+                                    onChange={(e) => setFormData({ ...formData, dv: e.target.value })}
+                                    className="bg-background border-input h-11 md:h-10"
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-2">
@@ -140,7 +142,8 @@ export default function SupplierForm() {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="bg-background border-input"
+                                className="bg-background border-input h-11 md:h-10"
+                                placeholder="proveedor@empresa.com"
                             />
                         </div>
 
@@ -149,7 +152,8 @@ export default function SupplierForm() {
                             <Input
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="bg-background border-input"
+                                className="bg-background border-input h-11 md:h-10"
+                                placeholder="+507 ..."
                             />
                         </div>
 
@@ -158,7 +162,8 @@ export default function SupplierForm() {
                             <textarea
                                 value={formData.address}
                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                                className="w-full px-3 py-2 bg-background border border-input rounded-lg h-20 resize-none text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-3 py-2 bg-background border border-input rounded-lg h-24 resize-none text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                                placeholder="Ubicación física..."
                             />
                         </div>
 
@@ -168,7 +173,7 @@ export default function SupplierForm() {
                                 value={formData.contactName}
                                 onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
                                 placeholder="Nombre completo del contacto"
-                                className="bg-background border-input"
+                                className="bg-background border-input h-11 md:h-10"
                             />
                         </div>
 
@@ -177,7 +182,7 @@ export default function SupplierForm() {
                             <select
                                 value={formData.paymentTerms}
                                 onChange={(e) => setFormData({ ...formData, paymentTerms: e.target.value })}
-                                className="w-full h-10 px-3 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full h-11 md:h-10 px-3 rounded-md border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                             >
                                 <option value="">Seleccionar...</option>
                                 <option value="contado">Contado</option>
@@ -190,14 +195,14 @@ export default function SupplierForm() {
                         {isEditMode && (
                             <div className="space-y-2">
                                 <label className="block text-sm font-medium text-muted-foreground">Estado</label>
-                                <div className="flex items-center gap-2 mt-2">
+                                <div className="flex items-center gap-3 py-2">
                                     <input
                                         type="checkbox"
                                         checked={formData.isActive}
                                         onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                        className="rounded border-input bg-background text-primary focus:ring-primary h-5 w-5"
+                                        className="rounded border-input bg-background text-primary focus:ring-primary h-6 w-6 md:h-5 md:w-5"
                                     />
-                                    <span className="text-muted-foreground">{formData.isActive ? 'Activo' : 'Inactivo'}</span>
+                                    <span className="text-foreground font-medium">{formData.isActive ? 'Activo' : 'Inactivo'}</span>
                                 </div>
                             </div>
                         )}
@@ -207,17 +212,17 @@ export default function SupplierForm() {
                             <textarea
                                 value={formData.notes}
                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                className="w-full px-3 py-2 bg-background border border-input rounded-lg h-24 resize-none text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-3 py-2 bg-background border border-input rounded-lg h-24 resize-none text-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                             />
                         </div>
                     </CardContent>
                 </Card>
 
-                <div className="flex justify-end gap-4">
-                    <Button type="button" variant="ghost" onClick={() => navigate('/suppliers')} className="text-muted-foreground hover:text-foreground">
+                <div className="flex flex-col-reverse md:flex-row justify-end gap-3 md:gap-4 fixed md:relative bottom-0 left-0 w-full md:w-auto p-4 md:p-0 bg-background/80 md:bg-transparent backdrop-blur-lg md:backdrop-blur-none border-t md:border-0 border-border z-10">
+                    <Button type="button" variant="ghost" onClick={() => navigate('/suppliers')} className="w-full md:w-auto text-muted-foreground hover:text-foreground h-12 md:h-10">
                         Cancelar
                     </Button>
-                    <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                    <Button type="submit" disabled={loading} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground h-12 md:h-10 shadow-lg shadow-primary/20">
                         <Save size={20} className="mr-2" />
                         {loading ? 'Guardando...' : 'Guardar Proveedor'}
                     </Button>

@@ -163,93 +163,137 @@ export default function CustomersPage() {
             }
         } catch (error) {
             console.error('API Call Error:', error);
-            // Show detailed error if available
             const msg = error.message || (error.code ? `Error Code: ${error.code}` : 'Error de conexión');
             alert('Error al generar estado de cuenta: ' + msg);
         }
     };
 
     return (
-        <div className="space-y-6 animate-fadeIn">
-            <div className="flex justify-between items-center">
+        <div className="space-y-6 animate-fadeIn pb-24">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 px-1 md:px-0">
                 <div>
-                    <h1 className="text-3xl font-bold text-foreground tracking-tight">Clientes</h1>
-                    <p className="text-muted-foreground mt-1">Gestiona tu cartera de clientes y contactos.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Clientes</h1>
+                    <p className="text-muted-foreground mt-1 text-sm md:text-base">Gestione su cartera de clientes y contactos de forma eficiente.</p>
                 </div>
-                <Button onClick={handleCreate} className="bg-primary-600 hover:bg-primary-700 text-foreground shadow-lg shadow-primary-900/20">
-                    <Plus className="w-4 h-4 mr-2" />
+                <Button 
+                    onClick={handleCreate} 
+                    className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 h-11 md:h-10"
+                >
+                    <Plus className="w-5 h-5 mr-2" />
                     Nuevo Cliente
                 </Button>
             </div>
 
-            <Card className="bg-card border-border shadow-lg">
-                <CardHeader className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0 pb-4">
-                    <CardTitle className="text-xl font-semibold text-foreground">Lista de Clientes</CardTitle>
-                    <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+            <Card className="bg-card/50 border-border backdrop-blur-sm shadow-md">
+                <CardContent className="p-4 flex flex-col md:flex-row gap-4">
+                    <div className="w-full md:w-48">
                         <select
-                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full sm:w-auto"
+                            className="w-full h-11 md:h-10 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary/50 outline-none appearance-none"
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
                             <option value="all">Todos los Estados</option>
-                            <option value="active">Activos</option>
-                            <option value="inactive">Inactivos</option>
+                            <option value="active">Solo Activos</option>
+                            <option value="inactive">Solo Inactivos</option>
                         </select>
-                        <div className="relative flex-1 sm:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Buscar clientes..."
-                                className="pl-9 pr-4 py-2 w-full bg-input border-border text-foreground"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border border-border overflow-hidden">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Buscar por nombre, RUC o código..."
+                            className="pl-10 pr-4 h-11 md:h-10 w-full bg-background border-input text-foreground rounded-lg"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+
+            {loading && customers.length === 0 ? (
+                <div className="text-center py-20 text-muted-foreground animate-pulse">Cargando clientes...</div>
+            ) : customers.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground bg-muted/20 rounded-xl border-2 border-border border-dashed mx-1">
+                    <Search size={48} className="mx-auto mb-4 opacity-10" />
+                    <p className="text-lg font-medium">No se encontraron clientes</p>
+                    <p className="text-sm opacity-60">Intenta ajustar los términos de búsqueda o filtros</p>
+                </div>
+            ) : (
+                <>
+                    {/* Desktop View */}
+                    <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
                         <Table>
                             <TableHeader className="bg-muted/50">
                                 <TableRow className="hover:bg-muted/50 border-border">
-                                    <TableHead className="text-muted-foreground">Código</TableHead>
-                                    <TableHead className="text-muted-foreground">Razón Social / Nombre</TableHead>
-                                    <TableHead className="text-muted-foreground">RUC</TableHead>
-                                    <TableHead className="text-muted-foreground">Contacto</TableHead>
-                                    <TableHead className="text-muted-foreground">Estado</TableHead>
-                                    <TableHead className="text-right text-muted-foreground">Acciones</TableHead>
+                                    <TableHead className="w-[120px]">Código</TableHead>
+                                    <TableHead>Cliente</TableHead>
+                                    <TableHead>ID Fiscal / RUC</TableHead>
+                                    <TableHead>Contacto</TableHead>
+                                    <TableHead>Estado</TableHead>
+                                    <TableHead className="text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {loading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                            Cargando clientes...
+                                {customers.map((customer) => (
+                                    <TableRow key={customer.id} className="hover:bg-muted/50 border-border transition-colors group">
+                                        <TableCell className="text-muted-foreground font-mono text-xs">{customer.code || '-'}</TableCell>
+                                        <TableCell className="font-medium">
+                                            <div className="font-bold text-foreground group-hover:text-primary transition-colors">{customer.name}</div>
+                                            <div className="text-xs text-muted-foreground">{customer.tradeName}</div>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground font-medium">{customer.taxId}-{customer.dv}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-0.5">
+                                                <div className="text-sm text-foreground">{customer.email || '-'}</div>
+                                                <div className="text-xs text-muted-foreground">{customer.phone || '-'}</div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="relative inline-block">
+                                                <Badge className={customer.isActive ? 'bg-emerald-500/10 text-emerald-400 border-none' : 'bg-destructive/10 text-destructive border-none'}>
+                                                    {customer.isActive ? 'Activo' : 'Inactivo'}
+                                                </Badge>
+                                                <select
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    value={customer.isActive ? "true" : "false"}
+                                                    onChange={(e) => handleStatusChange(customer, e.target.value)}
+                                                >
+                                                    <option value="true">Activo</option>
+                                                    <option value="false">Inactivo</option>
+                                                </select>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-1">
+                                                <Button variant="ghost" size="icon" onClick={() => handleEdit(customer)} className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted">
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" onClick={() => handleDownloadStatement(customer)} className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10" title="Estado de Cuenta">
+                                                    <FileText className="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(customer)} className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
-                                ) : customers.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                            No se encontraron clientes.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    customers.map((customer) => (
-                                        <TableRow key={customer.id} className="hover:bg-muted/50 border-border transition-colors">
-                                            <TableCell className="text-muted-foreground font-mono text-sm">{customer.code || '-'}</TableCell>
-                                            <TableCell className="font-medium text-foreground">
-                                                <div className="font-bold">{customer.name}</div>
-                                                <div className="text-xs text-muted-foreground">{customer.tradeName}</div>
-                                            </TableCell>
-                                            <TableCell className="text-muted-foreground">{customer.taxId}-{customer.dv}</TableCell>
-                                            <TableCell className="text-foreground">
-                                                <div className="text-xs">
-                                                    <div className="text-foreground">{customer.email}</div>
-                                                    <div className="text-muted-foreground">{customer.phone}</div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="relative inline-block">
-                                                    <Badge className={customer.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {/* Mobile View */}
+                    <div className="md:hidden space-y-4 px-1">
+                        {customers.map((customer) => (
+                            <Card key={customer.id} className="bg-card/50 border-border active:scale-[0.98] transition-all overflow-hidden shadow-sm">
+                                <div className="p-4 space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground uppercase">
+                                                    {customer.code || 'CLI'}
+                                                </span>
+                                                <div className="relative">
+                                                    <Badge className={customer.isActive ? 'bg-emerald-500/10 text-emerald-400 border-none text-[10px] py-0 h-5' : 'bg-destructive/10 text-destructive border-none text-[10px] py-0 h-5'}>
                                                         {customer.isActive ? 'Activo' : 'Inactivo'}
                                                     </Badge>
                                                     <select
@@ -261,30 +305,54 @@ export default function CustomersPage() {
                                                         <option value="false">Inactivo</option>
                                                     </select>
                                                 </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end space-x-2">
-                                                    <Button variant="ghost" size="icon" onClick={() => handleEdit(customer)} className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted">
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="icon" onClick={() => handleDownloadStatement(customer)} className="h-8 w-8 text-muted-foreground hover:text-blue-600 hover:bg-blue-50" title="Descargar Estado de Cuenta">
-                                                        <FileText className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                        onClick={() => handleDelete(customer)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
+                                            </div>
+                                            <h3 className="text-base font-bold text-foreground leading-tight">{customer.name}</h3>
+                                            <p className="text-[11px] text-muted-foreground line-clamp-1">{customer.tradeName}</p>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <Button variant="ghost" size="icon" onClick={() => handleEdit(customer)} className="h-8 w-8">
+                                                <Pencil size={16} className="text-muted-foreground" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 text-xs border-y border-border/50 py-3">
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] uppercase font-bold text-muted-foreground/70">ID Fiscal / RUC</span>
+                                            <p className="text-foreground font-mono">{customer.taxId}-{customer.dv}</p>
+                                        </div>
+                                        <div className="space-y-1 text-right">
+                                            <span className="text-[10px] uppercase font-bold text-muted-foreground/70">Contacto</span>
+                                            <a href={`tel:${customer.phone}`} className="text-primary font-bold block">{customer.phone || 'N/A'}</a>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center pt-1">
+                                        <div className="text-[11px] text-muted-foreground truncate max-w-[180px]">
+                                            {customer.email || 'Sin correo registrado'}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                onClick={() => handleDownloadStatement(customer)} 
+                                                className="h-9 px-3 text-xs font-semibold border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
+                                            >
+                                                <FileText className="h-4 w-4 mr-1.5" /> Estado
+                                            </Button>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                onClick={() => handleDelete(customer)} 
+                                                className="h-9 w-9 text-destructive hover:bg-destructive/10"
+                                            >
+                                                <Trash2 size={16} />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
                     </div>
 
                     <div className="flex justify-between items-center mt-4 text-sm text-muted-foreground">
@@ -312,8 +380,8 @@ export default function CustomersPage() {
                             </Button>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
+                </>
+            )}
 
             <CustomerModal
                 isOpen={isModalOpen}
@@ -341,6 +409,6 @@ export default function CustomersPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-        </div >
+        </div>
     );
 }

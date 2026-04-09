@@ -143,98 +143,186 @@ export default function PacProvidersPage() {
         }
     };
 
-    return (
-        <div className="p-8 space-y-8">
-            <div className="flex justify-between items-center">
+    return (        <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 animate-fadeIn pb-24 md:pb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-display font-bold text-foreground mb-2">Proveedores PAC</h1>
-                    <p className="text-muted-foreground">Gestiona los proveedores de facturación electrónica.</p>
+                    <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground mb-1">Proveedores PAC</h1>
+                    <p className="text-muted-foreground text-sm">Configure los proveedores de facturación electrónica.</p>
                 </div>
-                <Button className="gap-2" onClick={handleCreate}>
+                <Button className="w-full sm:w-auto gap-2 shadow-lg shadow-primary/20" onClick={handleCreate}>
                     <Plus className="h-4 w-4" /> Nuevo Proveedor
                 </Button>
             </div>
 
-            <Card className="bg-card border-border">
-                <CardHeader>
-                    <CardTitle className="text-foreground">Listado</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <select
-                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 w-full sm:w-auto"
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                        >
-                            <option value="all">Todos los Estados</option>
-                            <option value="active">Activos</option>
-                            <option value="inactive">Inactivos</option>
-                        </select>
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Card className="bg-card/50 border-border backdrop-blur-sm">
+                <CardContent className="p-4">
+                    <div className="flex flex-col lg:flex-row gap-4">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Buscar por nombre o código..."
-                                className="pl-8 bg-background border-input"
+                                className="pl-10 bg-background/50 border-border w-full"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
+                        <div className="w-full lg:w-48">
+                            <select
+                                className="w-full h-10 rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                value={filterStatus}
+                                onChange={(e) => setFilterStatus(e.target.value)}
+                            >
+                                <option value="all">Todos los Estados</option>
+                                <option value="active">Activos</option>
+                                <option value="inactive">Inactivos</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <Table>
-                        <TableHeader>
-                            <TableRow className="border-border hover:bg-card/50">
-                                <TableHead className="text-muted-foreground cursor-pointer hover:text-foreground transition-colors" onClick={() => handleSort('name')}>
-                                    <div className="flex items-center gap-2">
-                                        Nombre
-                                        {sortConfig.key === 'name' && <ArrowUpDown className="h-3 w-3" />}
-                                    </div>
-                                </TableHead>
-                                <TableHead className="text-muted-foreground cursor-pointer hover:text-foreground transition-colors" onClick={() => handleSort('code')}>
-                                    <div className="flex items-center gap-2">
-                                        Código
-                                        {sortConfig.key === 'code' && <ArrowUpDown className="h-3 w-3" />}
-                                    </div>
-                                </TableHead>
-                                <TableHead className="text-muted-foreground">Website</TableHead>
-                                <TableHead className="text-muted-foreground">Estado</TableHead>
-                                <TableHead className="text-right text-muted-foreground">Acciones</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredProviders.map((p) => (
-                                <TableRow key={p.id} className="border-border hover:bg-accent/50">
-                                    <TableCell className="font-medium text-foreground">{p.name}</TableCell>
-                                    <TableCell className="text-muted-foreground font-mono">{p.code}</TableCell>
-                                    <TableCell className="text-muted-foreground">{p.website || '-'}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={p.isActive ? 'success' : 'destructive'}>
-                                            {p.isActive ? 'Activo' : 'Inactivo'}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="icon" onClick={() => handleEdit(p)}>
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="hover:text-destructive" onClick={() => handleDelete(p.id)}>
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                            {filteredProviders.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                                        No se encontraron proveedores
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
                 </CardContent>
             </Card>
+
+            <div className="space-y-4">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20 animate-pulse">
+                        <div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-muted-foreground">Cargando proveedores...</p>
+                    </div>
+                ) : filteredProviders.length === 0 ? (
+                    <div className="text-center py-20 text-muted-foreground bg-muted/20 rounded-2xl border border-border border-dashed backdrop-blur-sm">
+                        <Plus size={48} className="mx-auto mb-4 opacity-20" />
+                        <p className="text-lg font-medium">No se encontraron proveedores</p>
+                    </div>
+                ) : (
+                    <>
+                        {/* Vista de Tarjetas para Móvil */}
+                        <div className="grid grid-cols-1 gap-4 md:hidden">
+                            {filteredProviders.map((p) => (
+                                <div 
+                                    key={p.id}
+                                    className="bg-card/50 border border-border rounded-2xl p-4 space-y-4 backdrop-blur-sm active:scale-[0.98] transition-all"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold shadow-inner border border-primary/20">
+                                                {p.code.substring(0, 3)}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-foreground leading-tight">{p.name}</h3>
+                                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">
+                                                    ID: {p.code}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Badge className={p.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}>
+                                            {p.isActive ? 'Activo' : 'Inactivo'}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="py-3 border-y border-border/50">
+                                        <p className="text-[10px] uppercase text-muted-foreground font-semibold mb-1">Sitio Web</p>
+                                        <p className="text-xs font-medium text-foreground truncate">
+                                            {p.website ? (
+                                                <a href={p.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                                    {p.website}
+                                                </a>
+                                            ) : '-'}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex gap-2 text-xs text-muted-foreground">
+                                        <span className="bg-muted px-2 py-0.5 rounded text-[10px] font-mono">{p.auth_type}</span>
+                                    </div>
+
+                                    <div className="flex gap-2 pt-2">
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1 bg-muted/30 border-border hover:bg-muted/50 h-10 rounded-xl"
+                                            onClick={() => handleEdit(p)}
+                                        >
+                                            <Pencil size={14} className="mr-2" />
+                                            Editar Configuración
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            className="w-12 bg-destructive/5 border-destructive/20 text-destructive hover:bg-destructive/10 h-10 rounded-xl"
+                                            onClick={() => handleDelete(p.id)}
+                                        >
+                                            <Trash2 size={14} />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Vista de Tabla para Escritorio */}
+                        <div className="hidden md:block bg-card/30 border border-border rounded-2xl overflow-hidden backdrop-blur-sm">
+                            <Table>
+                                <TableHeader className="bg-muted/50">
+                                    <TableRow className="border-border hover:bg-transparent">
+                                        <TableHead className="text-muted-foreground font-bold cursor-pointer hover:text-foreground transition-colors" onClick={() => handleSort('name')}>
+                                            <div className="flex items-center gap-2">
+                                                Nombre {sortConfig.key === 'name' && <ArrowUpDown className="h-3 w-3" />}
+                                            </div>
+                                        </TableHead>
+                                        <TableHead className="text-muted-foreground font-bold cursor-pointer hover:text-foreground transition-colors" onClick={() => handleSort('code')}>
+                                            <div className="flex items-center gap-2">
+                                                Código {sortConfig.key === 'code' && <ArrowUpDown className="h-3 w-3" />}
+                                            </div>
+                                        </TableHead>
+                                        <TableHead className="text-muted-foreground font-bold">Website</TableHead>
+                                        <TableHead className="text-muted-foreground font-bold">Auth</TableHead>
+                                        <TableHead className="text-muted-foreground font-bold">Estado</TableHead>
+                                        <TableHead className="text-right text-muted-foreground font-bold">Acciones</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredProviders.map((p) => (
+                                        <TableRow key={p.id} className="border-border hover:bg-accent/30 transition-colors group">
+                                            <TableCell className="font-bold text-foreground text-sm">{p.name}</TableCell>
+                                            <TableCell className="text-muted-foreground font-mono text-xs">{p.code}</TableCell>
+                                            <TableCell className="text-muted-foreground text-sm">
+                                                {p.website ? (
+                                                    <a href={p.website} target="_blank" rel="noopener noreferrer" className="hover:text-primary hover:underline">
+                                                        {p.website}
+                                                    </a>
+                                                ) : '-'}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="outline" className="text-[10px] bg-muted/30">{p.auth_type}</Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge className={p.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}>
+                                                    {p.isActive ? 'Activo' : 'Inactivo'}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                        onClick={() => handleEdit(p)}
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                        onClick={() => handleDelete(p.id)}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </>
+                )}
+            </div>
 
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
                 <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground">

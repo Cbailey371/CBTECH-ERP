@@ -81,159 +81,164 @@ export default function ProductModal({ isOpen, onClose, onSubmit, product, loadi
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Tipo */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-muted-foreground">Tipo</label>
-                            <select
-                                className="w-full px-3 py-2 bg-background border border-input rounded-lg text-foreground focus:ring-2 focus:ring-primary outline-none"
-                                value={formData.type}
-                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                            >
-                                <option value="product">Producto</option>
-                                <option value="service">Servicio</option>
-                            </select>
-                        </div>
-
-                        {/* Estado */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-muted-foreground">Estado</label>
-                            <select
-                                className="w-full px-3 py-2 bg-background border border-input rounded-lg text-foreground focus:ring-2 focus:ring-primary outline-none"
-                                value={formData.isActive ? 'true' : 'false'}
-                                onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'true' })}
-                            >
-                                <option value="true">Activo</option>
-                                <option value="false">Inactivo</option>
-                            </select>
-                        </div>
-
-                        {/* Código */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-muted-foreground">Código Interno</label>
-                            <Input
-                                value={formData.code || (formData.type === 'service' ? 'SERV-###' : 'PROD-###')}
-                                readOnly
-                                className="bg-muted/50 text-muted-foreground cursor-not-allowed border-input"
-                                placeholder="Se generará automáticamente"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                Se generará automáticamente al guardar
-                            </p>
-                        </div>
-
-                        {/* SKU (Solo para productos) */}
-                        {formData.type === 'product' && (
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 max-h-[calc(100vh-200px)]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        {/* Tipo y Estado */}
+                        <div className="space-y-4">
                             <div className="space-y-2">
-                                <label className="block text-sm font-medium text-muted-foreground">SKU</label>
-                                <Input
-                                    value={formData.sku}
-                                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                    placeholder="Ej: 12345678"
-                                />
+                                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Tipo</label>
+                                <select
+                                    className="w-full h-11 px-3 bg-background border border-input rounded-xl text-foreground focus:ring-2 focus:ring-primary outline-none transition-all"
+                                    value={formData.type}
+                                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                >
+                                    <option value="product">📦 Producto</option>
+                                    <option value="service">🛠️ Servicio</option>
+                                </select>
                             </div>
-                        )}
+
+                            <div className="space-y-2">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Estado</label>
+                                <select
+                                    className="w-full h-11 px-3 bg-background border border-input rounded-xl text-foreground focus:ring-2 focus:ring-primary outline-none transition-all"
+                                    value={formData.isActive ? 'true' : 'false'}
+                                    onChange={(e) => setFormData({ ...formData, isActive: e.target.value === 'true' })}
+                                >
+                                    <option value="true">✅ Activo</option>
+                                    <option value="false">❌ Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Código y SKU */}
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Código Interno</label>
+                                <Input
+                                    value={formData.code || (formData.type === 'service' ? 'SERV-###' : 'PROD-###')}
+                                    readOnly
+                                    className="h-11 bg-muted/30 text-muted-foreground cursor-not-allowed border-dashed font-mono"
+                                />
+                                <p className="text-[10px] text-muted-foreground italic">
+                                    Generado automáticamente al guardar
+                                </p>
+                            </div>
+
+                            {formData.type === 'product' && (
+                                <div className="space-y-2">
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">SKU / Código Barra</label>
+                                    <Input
+                                        className="h-11 rounded-xl"
+                                        value={formData.sku}
+                                        onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                                        placeholder="Ej: 74530123"
+                                    />
+                                </div>
+                            )}
+                        </div>
 
                         {/* Descripción (Full width) */}
                         <div className="space-y-2 md:col-span-2">
-                            <label className="block text-sm font-medium text-muted-foreground">Descripción *</label>
+                            <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Descripción del Item *</label>
                             <Input
+                                className="h-11 rounded-xl"
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="Nombre o descripción del producto"
+                                placeholder="Nombre comercial o técnico"
                                 required
                             />
                         </div>
 
-                        {/* Costo */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-muted-foreground">Costo Unitario ($)</label>
-                            <Input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={formData.cost}
-                                onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-                                placeholder="0.00"
-                                required
-                            />
-                        </div>
+                        {/* Costos y Márgenes */}
+                        <div className="p-4 bg-muted/10 border border-border rounded-2xl space-y-4 md:col-span-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Costo Unitario ($)</label>
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        className="h-11 rounded-xl font-mono text-lg"
+                                        value={formData.cost}
+                                        onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
+                                        placeholder="0.00"
+                                        required
+                                    />
+                                </div>
 
-                        {/* Margen */}
-                        <div className="space-y-2">
-                            <label className="block text-sm font-medium text-muted-foreground">Margen (Decimal)</label>
-                            <div className="relative">
-                                <Input
-                                    type="number"
-                                    min="0"
-                                    max="0.99"
-                                    step="0.01"
-                                    value={formData.margin}
-                                    onChange={(e) => setFormData({ ...formData, margin: e.target.value })}
-                                    placeholder="Ej: 0.30 para 30%"
-                                    required
-                                />
-                                <div className="absolute right-3 top-2.5 text-xs text-muted-foreground pointer-events-none">
-                                    {formData.margin ? `${(parseFloat(formData.margin) * 100).toFixed(0)}%` : ''}
+                                <div className="space-y-2">
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Margen de Ganancia</label>
+                                    <div className="relative">
+                                        <Input
+                                            type="number"
+                                            min="0"
+                                            max="0.99"
+                                            step="0.01"
+                                            className="h-11 pr-16 rounded-xl font-mono text-lg"
+                                            value={formData.margin}
+                                            onChange={(e) => setFormData({ ...formData, margin: e.target.value })}
+                                            placeholder="0.30"
+                                            required
+                                        />
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-bold text-primary">
+                                            {formData.margin ? `${(parseFloat(formData.margin) * 100).toFixed(0)}%` : '0%'}
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground">Ej: 0.30 equivale a 30%</p>
                                 </div>
                             </div>
-                            <p className="text-xs text-muted-foreground">Ej: 0.30 representa el 30%</p>
-                        </div>
 
-                        {/* Precio Calculado */}
-                        <div className="space-y-2 md:col-span-2">
-                            <label className="block text-sm font-medium text-primary flex items-center gap-2">
-                                <Calculator size={16} />
-                                Precio de Venta Calculado
-                            </label>
-                            <Input
-                                type="number"
-                                value={formData.price}
-                                readOnly
-                                className="bg-muted/30 border-primary/50 text-primary font-bold text-lg text-center"
-                            />
-                            <p className="text-xs text-muted-foreground text-center">
-                                Calculado como: Costo / (1 - Margen)
-                            </p>
+                            {/* Resultado Visual */}
+                            <div className="mt-2 p-4 bg-primary/5 border border-primary/20 rounded-xl flex flex-col items-center justify-center text-center">
+                                <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-primary mb-1">Precio de Venta Sugerido</span>
+                                <div className="text-3xl font-black text-primary font-mono tracking-tighter shadow-sm">
+                                    ${formData.price || '0.00'}
+                                </div>
+                                <div className="flex items-center gap-1.5 mt-2 text-[10px] text-muted-foreground">
+                                    <Calculator size={10} />
+                                    <span>Cálculo: Costo / (1 - Margen)</span>
+                                </div>
+                            </div>
                         </div>
                         
                         {/* Exención de Impuestos */}
-                        <div className="md:col-span-2 p-3 bg-green-50/10 border border-green-200/30 rounded-lg">
-                            <div className="flex items-center gap-3">
-                                <input
-                                    type="checkbox"
-                                    id="isTaxExempt"
-                                    checked={formData.isTaxExempt}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, isTaxExempt: e.target.checked }))}
-                                    className="w-4 h-4 text-green-600 rounded border-input focus:ring-green-500"
-                                />
-                                <label htmlFor="isTaxExempt" className="text-sm font-semibold text-foreground cursor-pointer">
-                                    Producto Exento de ITBMS (7%)
-                                </label>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground ml-7 mt-1">
-                                Si marca esta opción, este ítem no generará impuestos en las facturas, independientemente de si el cliente es exento o no.
-                            </p>
+                        <div className="md:col-span-2 p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl">
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative">
+                                    <input
+                                        type="checkbox"
+                                        id="isTaxExempt"
+                                        checked={formData.isTaxExempt}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, isTaxExempt: e.target.checked }))}
+                                        className="w-5 h-5 rounded border-input text-emerald-500 focus:ring-emerald-500 transition-all"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <span className="text-sm font-bold text-foreground">Exento de ITBMS (7%)</span>
+                                    <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                                        Este ítem no generará impuestos en las facturas ni cotizaciones automáticamente.
+                                    </p>
+                                </div>
+                            </label>
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                    <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-border">
                         <Button
                             type="button"
                             variant="ghost"
                             onClick={onClose}
-                            className="text-muted-foreground hover:text-foreground"
+                            className="w-full sm:w-auto h-12 order-2 sm:order-1 text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         >
                             Cancelar
                         </Button>
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            className="w-full sm:w-auto h-12 order-1 sm:order-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 font-bold"
                         >
                             <Save size={18} className="mr-2" />
-                            {loading ? 'Guardando...' : 'Guardar Producto'}
+                            {loading ? 'Guardando...' : 'Guardar Item'}
                         </Button>
                     </div>
                 </form>
