@@ -153,10 +153,12 @@ const generateDeliveryNotePdf = async (note, company) => {
             content.push({ text: '\n\n\n' });
 
             // Signature Table (Side-by-Side)
+            // Signature Table (3 rows to ensure perfect horizontal alignment of lines)
             const signatureTable = {
                 table: {
                     widths: ['*', '*'],
                     body: [
+                        // Row 1: The actual signature image and the date text
                         [
                             {
                                 stack: [
@@ -164,25 +166,43 @@ const generateDeliveryNotePdf = async (note, company) => {
                                         image: safeNote.signature,
                                         width: 140,
                                         alignment: 'center'
-                                    } : { text: '\n\n\n\n', alignment: 'center' },
-                                    { 
-                                        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 180, y2: 0, lineWidth: 0.5 }],
-                                        alignment: 'center'
-                                    },
-                                    { text: safeNote.recipientName || 'Nombre de quien recibe', style: 'infoLine', alignment: 'center', margin: [0, 2, 0, 0] }
+                                    } : { text: '\n\n\n\n', alignment: 'center' }
                                 ],
-                                margin: [0, 0, 0, 0]
+                                margin: [0, 0, 0, 0],
+                                alignment: 'center',
+                                verticalAlign: 'bottom'
                             },
                             {
-                                stack: [
-                                    { text: safeNote.receivedDate || '', alignment: 'center', margin: [0, 48, 0, 0], bold: true },
-                                    { 
-                                        canvas: [{ type: 'line', x1: 0, y1: 0, x2: 180, y2: 0, lineWidth: 0.5 }],
-                                        alignment: 'center'
-                                    },
-                                    { text: 'Fecha de Recibido', style: 'infoLine', alignment: 'center', margin: [0, 2, 0, 0] }
-                                ],
-                                margin: [0, 0, 0, 0]
+                                text: safeNote.receivedDate || '',
+                                alignment: 'center',
+                                bold: true,
+                                margin: [0, 45, 0, 0] // Pushing date down to align with signature base
+                            }
+                        ],
+                        // Row 2: The lines (This guarantees they are at the same height)
+                        [
+                            { 
+                                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 180, y2: 0, lineWidth: 0.5 }],
+                                alignment: 'center',
+                                margin: [0, 2, 0, 2]
+                            },
+                            { 
+                                canvas: [{ type: 'line', x1: 0, y1: 0, x2: 180, y2: 0, lineWidth: 0.5 }],
+                                alignment: 'center',
+                                margin: [0, 2, 0, 2]
+                            }
+                        ],
+                        // Row 3: The labels below the lines
+                        [
+                            { 
+                                text: safeNote.recipientName || 'Nombre de quien recibe', 
+                                style: 'infoLine', 
+                                alignment: 'center' 
+                            },
+                            { 
+                                text: 'Fecha de Recibido', 
+                                style: 'infoLine', 
+                                alignment: 'center' 
                             }
                         ]
                     ]
