@@ -242,99 +242,155 @@ export default function QuotationsPage() {
                 </CardHeader>
                 <CardContent>
                     <div className="rounded-md border border-border overflow-hidden">
-                        <Table>
-                            <TableHeader className="bg-muted/50">
-                                <TableRow className="hover:bg-muted/50 border-border">
-                                    <TableHead className="text-muted-foreground">Número</TableHead>
-                                    <TableHead className="text-muted-foreground">Cliente</TableHead>
-                                    <TableHead className="text-muted-foreground">Fecha</TableHead>
-                                    <TableHead className="text-muted-foreground">Total</TableHead>
-                                    <TableHead className="text-muted-foreground">Estado</TableHead>
-                                    <TableHead className="text-right text-muted-foreground">Acciones</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                            Cargando cotizaciones...
-                                        </TableCell>
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block">
+                            <Table>
+                                <TableHeader className="bg-muted/50">
+                                    <TableRow className="hover:bg-muted/50 border-border">
+                                        <TableHead className="text-muted-foreground">Número</TableHead>
+                                        <TableHead className="text-muted-foreground">Cliente</TableHead>
+                                        <TableHead className="text-muted-foreground">Fecha</TableHead>
+                                        <TableHead className="text-muted-foreground">Total</TableHead>
+                                        <TableHead className="text-muted-foreground">Estado</TableHead>
+                                        <TableHead className="text-right text-muted-foreground">Acciones</TableHead>
                                     </TableRow>
-                                ) : quotations.length === 0 ? (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                            No se encontraron cotizaciones.
-                                        </TableCell>
-                                    </TableRow>
-                                ) : (
-                                    quotations.map((quotation) => (
-                                        <TableRow key={quotation.id} className="hover:bg-muted/50 border-border transition-colors">
-                                            <TableCell className="font-medium text-foreground">
-                                                {quotation.number}
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                Cargando cotizaciones...
                                             </TableCell>
-                                            <TableCell className="text-muted-foreground">
-                                                {quotation.customer?.name}
+                                        </TableRow>
+                                    ) : quotations.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                No se encontraron cotizaciones.
                                             </TableCell>
-                                            <TableCell className="text-muted-foreground">
-                                                {new Date(quotation.date).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell className="font-medium text-foreground">
-                                                ${parseFloat(quotation.total).toFixed(2)}
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="relative inline-block">
-                                                    {getStatusBadge(quotation.status)}
-                                                    <select
-                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                        value={quotation.status}
-                                                        onChange={(e) => handleStatusChange(quotation, e.target.value)}
-                                                    >
-                                                        <option value="draft">Borrador</option>
-                                                        <option value="sent">Enviada</option>
-                                                        <option value="accepted">Aceptada</option>
-                                                        <option value="rejected">Rechazada</option>
-                                                        <option value="expired">Vencida</option>
-                                                    </select>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end space-x-2">
-                                                    {quotation.status === 'accepted' && (
+                                        </TableRow>
+                                    ) : (
+                                        quotations.map((quotation) => (
+                                            <TableRow key={quotation.id} className="hover:bg-muted/50 border-border transition-colors">
+                                                <TableCell className="font-medium text-foreground">
+                                                    {quotation.number}
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                    {quotation.customer?.name}
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">
+                                                    {new Date(quotation.date).toLocaleDateString()}
+                                                </TableCell>
+                                                <TableCell className="font-medium text-foreground">
+                                                    ${parseFloat(quotation.total).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="relative inline-block">
+                                                        {getStatusBadge(quotation.status)}
+                                                        <select
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                            value={quotation.status}
+                                                            onChange={(e) => handleStatusChange(quotation, e.target.value)}
+                                                        >
+                                                            <option value="draft">Borrador</option>
+                                                            <option value="sent">Enviada</option>
+                                                            <option value="accepted">Aceptada</option>
+                                                            <option value="rejected">Rechazada</option>
+                                                            <option value="expired">Vencida</option>
+                                                        </select>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end space-x-2">
+                                                        {quotation.status === 'accepted' && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleCreateInvoiceClick(quotation)}
+                                                                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                                title="Generar Factura"
+                                                            >
+                                                                <FileText className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
-                                                            onClick={() => handleCreateInvoiceClick(quotation)}
-                                                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                                                            title="Generar Factura"
+                                                            onClick={() => navigate(`/quotations/${quotation.id}`)}
+                                                            className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
+                                                            title="Ver detalle"
                                                         >
-                                                            <FileText className="h-4 w-4" />
+                                                            <Eye className="h-4 w-4" />
                                                         </Button>
-                                                    )}
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => navigate(`/quotations/${quotation.id}`)}
-                                                        className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                                                        title="Ver detalle"
-                                                    >
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => handleDelete(quotation)}
-                                                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                                        title="Eliminar"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => handleDelete(quotation)}
+                                                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                            title="Eliminar"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden divide-y divide-border">
+                            {loading ? (
+                                <div className="p-8 text-center text-muted-foreground">Cargando cotizaciones...</div>
+                            ) : quotations.length === 0 ? (
+                                <div className="p-8 text-center text-muted-foreground">No se encontraron cotizaciones.</div>
+                            ) : (
+                                quotations.map((quotation) => (
+                                    <div 
+                                        key={quotation.id} 
+                                        className="p-4 space-y-3 active:bg-muted/50 transition-colors cursor-pointer"
+                                        onClick={() => navigate(`/quotations/${quotation.id}`)}
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <span className="font-bold text-lg text-primary">{quotation.number}</span>
+                                            {getStatusBadge(quotation.status)}
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-foreground font-medium line-clamp-2">{quotation.customer?.name}</p>
+                                            <div className="flex justify-between text-sm text-muted-foreground">
+                                                <span>{new Date(quotation.date).toLocaleDateString()}</span>
+                                                <span className="font-bold text-foreground text-base">
+                                                    ${parseFloat(quotation.total).toFixed(2)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-end gap-3 pt-2">
+                                            {quotation.status === 'accepted' && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={(e) => { e.stopPropagation(); handleCreateInvoiceClick(quotation); }}
+                                                    className="h-9 px-4 text-xs"
+                                                >
+                                                    <FileText className="w-3.5 h-3.5 mr-1.5" />
+                                                    Facturar
+                                                </Button>
+                                            )}
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={(e) => { e.stopPropagation(); handleDelete(quotation); }}
+                                                className="h-9 px-4 text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 border-0"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                                                Eliminar
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
 
                     {/* Paginación simple */}

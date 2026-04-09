@@ -328,96 +328,133 @@ const CreditNoteForm = () => {
 
     if (viewMode) {
         return (
-            <div className="p-6 space-y-6 max-w-5xl mx-auto">
-                <div className="flex items-center justify-between">
-                    <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => navigate('/credit-notes')}>
-                        <ArrowLeft className="mr-2 h-4 w-4" /> Volver
+            <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto pb-10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <Button variant="ghost" className="w-fit text-muted-foreground hover:text-foreground px-2" onClick={() => navigate('/credit-notes')}>
+                        <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Volver</span><span className="md:hidden text-xs">Atrás</span>
                     </Button>
-                    <div className="flex items-center gap-2">
-                        {/* Actions for Draft */}
+                    <div className="flex items-center gap-2 w-full md:w-auto">
                         {formData.status === 'draft' && (
                             <>
-                                <Button onClick={() => handleSubmit('emit')} className="bg-blue-600 hover:bg-blue-700">
-                                    <Send className="mr-2 h-4 w-4" /> Emitir Fiscalmente
+                                <Button onClick={() => handleSubmit('emit')} className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 h-10 text-white font-bold">
+                                    <Send className="mr-2 h-4 w-4" /> Emitir
                                 </Button>
-                                <Button onClick={handleDelete} variant="destructive" className="ml-2">
+                                <Button onClick={handleDelete} variant="destructive" className="flex-1 md:flex-none h-10 font-bold">
                                     <Trash2 className="mr-2 h-4 w-4" /> Eliminar
                                 </Button>
                             </>
                         )}
-                        {/* Actions for Authorized (PDF Download) */}
                         {formData.status === 'authorized' && (
-                            <Button variant="outline" onClick={handleDownloadPDF} disabled={loading}>
+                            <Button variant="outline" onClick={handleDownloadPDF} disabled={loading} className="w-full md:w-auto h-11 border-primary text-primary font-bold">
                                 <FileText className="mr-2 h-4 w-4" /> {loading ? 'Descargando...' : 'Descargar PDF'}
                             </Button>
                         )}
                     </div>
                 </div>
 
-                <Card className="bg-card border-border text-foreground">
-                    <CardHeader className="flex flex-row items-center justify-between">
+                <Card className="bg-card/50 backdrop-blur-sm border-border text-foreground shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between border-b border-border/50 pb-4">
                         <div>
-                            <CardTitle className="text-2xl">Nota de Crédito {formData.number || 'Borrador'}</CardTitle>
-                            <p className="text-muted-foreground mt-1">
+                            <CardTitle className="text-xl md:text-2xl font-black">{formData.number || 'Borrador'}</CardTitle>
+                            <p className="text-muted-foreground text-xs md:text-sm mt-1 uppercase font-bold tracking-wider">
                                 {formData.date ? new Date(formData.date).toLocaleDateString() : 'Fecha N/A'}
                             </p>
                         </div>
-                        <Badge variant={formData.status === 'authorized' ? 'default' : 'secondary'} className="text-sm px-3 py-1">
-                            {formData.status === 'authorized' ? 'Autorizada' : 'Borrador'}
+                        <Badge variant={formData.status === 'authorized' ? 'default' : 'secondary'} className="text-xs px-3 py-1 font-bold">
+                            {formData.status === 'authorized' ? 'FISCALIZADA' : 'BORRADOR'}
                         </Badge>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-
+                    <CardContent className="p-0">
                         {/* Header Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted rounded-lg">
-                            <div>
-                                <h4 className="font-semibold text-sm text-muted-foreground">Cliente</h4>
-                                <p className="text-lg">{selectedOrder?.customer?.name || 'N/A'}</p>
-                                <p className="text-sm text-muted-foreground">{selectedOrder?.customer?.tax_id}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/50">
+                            <div className="p-4 md:p-6">
+                                <h4 className="font-black text-[10px] uppercase text-muted-foreground mb-2">Cliente</h4>
+                                <p className="text-base md:text-lg font-bold leading-tight">{selectedOrder?.customer?.name || 'N/A'}</p>
+                                <p className="text-xs text-muted-foreground font-mono mt-1">{selectedOrder?.customer?.tax_id}</p>
                             </div>
-                            <div>
-                                <h4 className="font-semibold text-sm text-muted-foreground">Factura Afectada</h4>
-                                <p className="text-lg">{selectedOrder?.orderNumber}</p>
-                                <p className="text-sm text-muted-foreground">Fecha: {selectedOrder?.issueDate}</p>
+                            <div className="p-4 md:p-6">
+                                <h4 className="font-black text-[10px] uppercase text-muted-foreground mb-2">Factura Afectada</h4>
+                                <p className="text-base md:text-lg font-bold">{selectedOrder?.orderNumber}</p>
+                                <p className="text-xs text-muted-foreground font-medium mt-1">Emitida: {selectedOrder?.issueDate}</p>
                             </div>
-                            <div>
-                                <h4 className="font-semibold text-sm text-muted-foreground">Motivo</h4>
-                                <p className="italic">"{formData.reason}"</p>
+                            <div className="p-4 md:p-6">
+                                <h4 className="font-black text-[10px] uppercase text-muted-foreground mb-2">Motivo de Devolución</h4>
+                                <p className="text-sm md:text-base italic font-medium leading-relaxed">"{formData.reason}"</p>
                             </div>
                         </div>
 
-                        {/* Items Table */}
-                        <div className="rounded-md border border-border overflow-hidden">
-                            <Table>
-                                <TableHeader className="bg-muted">
-                                    <TableRow>
-                                        <TableHead>Producto</TableHead>
-                                        <TableHead className="text-right">Cant.</TableHead>
-                                        <TableHead className="text-right">Precio Unit.</TableHead>
-                                        <TableHead className="text-right">Total</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {items.map((item, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{item.description}</TableCell>
-                                            <TableCell className="text-right">{item.quantity}</TableCell>
-                                            <TableCell className="text-right">${Number(item.unitPrice).toFixed(2)}</TableCell>
-                                            <TableCell className="text-right font-mono">${Number(item.total).toFixed(2)}</TableCell>
+                        {/* Items Section */}
+                        <div className="border-t border-border/50 bg-muted/5">
+                            <h3 className="px-4 md:px-6 py-4 font-black text-sm uppercase text-foreground">Productos Devueltos</h3>
+                            
+                            {/* Desktop Items Table */}
+                            <div className="hidden md:block">
+                                <Table>
+                                    <TableHeader className="bg-muted/50">
+                                        <TableRow>
+                                            <TableHead className="font-bold">Producto</TableHead>
+                                            <TableHead className="text-right font-bold w-24">Cant.</TableHead>
+                                            <TableHead className="text-right font-bold w-32">Precio Unit.</TableHead>
+                                            <TableHead className="text-right font-bold w-32">Total</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {items.map((item, index) => (
+                                            <TableRow key={index} className="hover:bg-muted/10 transition-colors">
+                                                <TableCell className="font-medium">{item.description}</TableCell>
+                                                <TableCell className="text-right font-bold">{item.quantity}</TableCell>
+                                                <TableCell className="text-right text-muted-foreground font-mono">${Number(item.unitPrice).toFixed(2)}</TableCell>
+                                                <TableCell className="text-right font-black text-primary font-mono">${Number(item.total).toFixed(2)}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            {/* Mobile Items Cards */}
+                            <div className="md:hidden divide-y divide-border/50">
+                                {items.map((item, index) => (
+                                    <div key={index} className="p-4 flex gap-4 items-center justify-between">
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold text-foreground line-clamp-2">{item.description}</p>
+                                            <p className="text-[10px] text-muted-foreground font-bold mt-1">
+                                                P. UNIT: <span className="font-mono">${Number(item.unitPrice).toFixed(2)}</span>
+                                            </p>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-[10px] uppercase font-black text-muted-foreground">Cant</p>
+                                            <p className="text-lg font-black text-foreground">{item.quantity}</p>
+                                            <p className="text-sm font-black text-primary font-mono leading-none mt-1">${Number(item.total).toFixed(2)}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Totals */}
-                        <div className="flex justify-end space-x-8 text-lg font-bold border-t border-border pt-4 px-4 overflow-x-auto">
-                            <div className="text-muted-foreground whitespace-nowrap">Subtotal: <span className="text-foreground">${totals.subtotal?.toFixed(2)}</span></div>
-                            <div className="text-muted-foreground whitespace-nowrap">ITBMS: <span className="text-foreground">${totals.tax?.toFixed(2)}</span></div>
-                            {totals.retention > 0 && (
-                                <div className="text-amber-600 whitespace-nowrap">Retención ITBMS (-): <span className="font-mono">-${totals.retention.toFixed(2)}</span></div>
-                            )}
-                            <div className="text-primary whitespace-nowrap">{totals.retention > 0 ? 'Total a Devolver (Neto):' : 'Total:'} ${totals.total?.toFixed(2)}</div>
+                        {/* Totals Section */}
+                        <div className="p-6 bg-muted/30 border-t border-border/50 rounded-b-lg">
+                            <div className="flex flex-col gap-3 max-w-xs ml-auto">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground font-bold uppercase tracking-tighter">Subtotal</span>
+                                    <span className="font-black">${totals.subtotal?.toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground font-bold uppercase tracking-tighter">ITBMS</span>
+                                    <span className="font-black">${totals.tax?.toFixed(2)}</span>
+                                </div>
+                                {totals.retention > 0 && (
+                                    <div className="flex justify-between text-sm text-amber-600">
+                                        <span className="font-bold uppercase tracking-tighter">Retención ITBMS (-)</span>
+                                        <span className="font-mono font-black">-${totals.retention.toFixed(2)}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between items-center pt-2 border-t border-border text-xl">
+                                    <span className="text-primary font-black uppercase text-sm tracking-tighter">
+                                        {totals.retention > 0 ? 'Total Neto' : 'Total'}
+                                    </span>
+                                    <span className="text-foreground font-black tracking-tighter leading-none">${totals.total?.toFixed(2)}</span>
+                                </div>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -426,31 +463,31 @@ const CreditNoteForm = () => {
     }
 
     return (
-        <div className="p-6 space-y-6 max-w-5xl mx-auto">
-            <div className="flex items-center justify-between">
-                <Button variant="ghost" className="text-muted-foreground hover:text-foreground" onClick={() => navigate('/credit-notes')}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Cancelar
+        <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto pb-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <Button variant="ghost" className="w-fit text-muted-foreground hover:text-foreground px-2" onClick={() => navigate('/credit-notes')}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> <span className="hidden md:inline">Cancelar</span><span className="md:hidden text-xs">Cerrar</span>
                 </Button>
-                <h1 className="text-2xl font-bold text-foreground">Nueva Nota de Crédito</h1>
+                <h1 className="text-xl md:text-2xl font-black text-foreground tracking-tight">Nueva Nota de Crédito</h1>
             </div>
 
             {error && (
-                <div className="bg-destructive/10 border border-destructive text-destructive p-4 rounded-md flex items-start space-x-2">
-                    <AlertTriangle className="h-5 w-5 mt-0.5" />
-                    <div>
-                        <h4 className="font-bold">Error</h4>
-                        <p>{error}</p>
+                <div className="bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-xl flex items-start space-x-3 shadow-sm animate-pulse">
+                    <AlertTriangle className="h-5 w-5 mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                        <h4 className="font-black text-xs uppercase tracking-tighter leading-none mb-1">Error de Proceso</h4>
+                        <p className="text-sm font-medium">{error}</p>
                     </div>
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left Panel: Configuration */}
-                <Card className="md:col-span-1 bg-card border-border text-foreground h-fit">
-                    <CardHeader><CardTitle className="text-lg">Configuración</CardTitle></CardHeader>
-                    <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Configuration Panel */}
+                <Card className="lg:col-span-1 border-border bg-card/50 backdrop-blur-sm shadow-sm h-fit">
+                    <CardHeader className="pb-3"><CardTitle className="text-base md:text-lg font-bold">Configuración</CardTitle></CardHeader>
+                    <CardContent className="space-y-5">
                         <div className="space-y-2">
-                            <Label>Factura Original</Label>
+                            <Label className="text-xs uppercase font-black text-muted-foreground ml-1">Factura Original</Label>
                             <Combobox
                                 options={orders.map(order => ({
                                     label: `${order.orderNumber} - ${order.customer?.name}`,
@@ -460,90 +497,103 @@ const CreditNoteForm = () => {
                                 onChange={(val) => handleOrderSelect(val)}
                                 placeholder="Seleccionar Factura..."
                                 searchPlaceholder="Buscar factura..."
-                                className="w-full"
+                                className="w-full h-11"
                                 disabled={isEditMode}
                             />
                         </div>
 
                         {selectedOrder && (
-                            <>
-                                <div className="p-3 bg-muted rounded-md text-sm space-y-1">
-                                    <p><span className="text-muted-foreground">Cliente:</span> {selectedOrder.customer?.name}</p>
-                                    <p><span className="text-muted-foreground">Fecha:</span> {selectedOrder.issueDate}</p>
-                                    <p><span className="text-muted-foreground">Total Factura:</span> ${selectedOrder.total}</p>
+                            <div className="space-y-5 animate-slideIn">
+                                <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 text-sm space-y-3">
+                                    <div>
+                                        <p className="text-[10px] uppercase font-black text-muted-foreground leading-none mb-1">Cliente</p>
+                                        <p className="font-bold text-foreground leading-tight">{selectedOrder.customer?.name}</p>
+                                    </div>
+                                    <div className="flex justify-between items-end">
+                                        <div>
+                                            <p className="text-[10px] uppercase font-black text-muted-foreground leading-none mb-1">Fecha Factura</p>
+                                            <p className="font-bold text-foreground">{selectedOrder.issueDate}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] uppercase font-black text-muted-foreground leading-none mb-1">Monto Original</p>
+                                            <p className="font-black text-primary">${selectedOrder.total}</p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Tipo de Devolución</Label>
+                                    <Label className="text-xs uppercase font-black text-muted-foreground ml-1">Tipo de Devolución</Label>
                                     <select
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-foreground"
+                                        className="flex h-11 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm font-bold shadow-sm focus:ring-1 focus:ring-primary"
                                         value={formData.refundType}
                                         onChange={(e) => setFormData(prev => ({ ...prev, refundType: e.target.value }))}
                                     >
-                                        <option value="full">Devolución Total</option>
-                                        <option value="partial">Ajuste Parcial</option>
+                                        <option value="full">Devolución Total (100%)</option>
+                                        <option value="partial">Devolución Parcial / Ajuste</option>
                                     </select>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Motivo</Label>
+                                    <Label className="text-xs uppercase font-black text-muted-foreground ml-1">Motivo de Devolución</Label>
                                     <Textarea
-                                        placeholder="Razón de la nota de crédito (Requerido)"
-                                        className="bg-background border-input"
+                                        placeholder="Indique la razón técnica o comercial..."
+                                        className="bg-background border-input min-h-[100px] text-sm md:text-base font-medium"
                                         value={formData.reason}
                                         onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
                                     />
                                 </div>
-                            </>
+                            </div>
                         )}
                     </CardContent>
                 </Card>
 
-                {/* Right Panel: Items Preview */}
-                <Card className="md:col-span-2 bg-card border-border text-foreground">
-                    <CardHeader><CardTitle className="text-lg">Ítems Afectados</CardTitle></CardHeader>
-                    <CardContent>
+                {/* Items and Totals Panel */}
+                <Card className="lg:col-span-2 border-border bg-card shadow-sm">
+                    <CardHeader className="flex flex-row items-center justify-between pb-3">
+                        <CardTitle className="text-base md:text-lg font-bold">Resumen de Devolución</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0 sm:p-6">
                         {selectedOrder ? (
-                            <div className="space-y-4">
-                                <div className="rounded-md border border-border overflow-hidden">
+                            <div className="space-y-6">
+                                {/* Desktop Items View */}
+                                <div className="hidden md:block rounded-xl border border-border overflow-hidden">
                                     <Table>
-                                        <TableHeader className="bg-muted">
+                                        <TableHeader className="bg-muted/50">
                                             <TableRow>
-                                                <TableHead>Producto</TableHead>
-                                                <TableHead className="text-right">Cant. Orig.</TableHead>
-                                                <TableHead className="text-right">Cant. Devol.</TableHead>
-                                                <TableHead className="text-right">Precio</TableHead>
-                                                <TableHead className="text-right">Desc.</TableHead>
-                                                <TableHead className="text-right">Total</TableHead>
+                                                <TableHead className="font-bold">Producto</TableHead>
+                                                <TableHead className="text-right font-bold w-32">Cant. Devol.</TableHead>
+                                                <TableHead className="text-right font-bold w-32">Precio</TableHead>
+                                                <TableHead className="text-right font-bold w-24">Desc.</TableHead>
+                                                <TableHead className="text-right font-bold w-32">Total</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {items.map((item, index) => (
-                                                <TableRow key={index} className="border-border">
-                                                    <TableCell>{item.description}</TableCell>
-                                                    <TableCell className="text-right text-muted-foreground">{item.originalQuantity}</TableCell>
-                                                    <TableCell className="text-right w-32">
+                                                <TableRow key={index} className="border-border hover:bg-muted/5 transition-colors">
+                                                    <TableCell className="font-medium text-sm">
+                                                        {item.description}
+                                                        <p className="text-[10px] text-muted-foreground font-medium">Orig: {item.originalQuantity}</p>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
                                                         {formData.refundType === 'partial' ? (
-                                                            <Input
-                                                                type="number"
-                                                                className="h-8 w-24 ml-auto text-right bg-background"
-                                                                value={item.quantity}
-                                                                onChange={(e) => handleQuantityChange(index, e.target.value)}
-                                                                min="0"
-                                                                max={item.originalQuantity}
-                                                            />
+                                                            <div className="flex justify-end">
+                                                                <Input
+                                                                    type="number"
+                                                                    className="h-10 w-24 text-right font-bold bg-muted/20"
+                                                                    value={item.quantity}
+                                                                    onChange={(e) => handleQuantityChange(index, e.target.value)}
+                                                                    min="0"
+                                                                    max={item.originalQuantity}
+                                                                />
+                                                            </div>
                                                         ) : (
-                                                            <span>{item.originalQuantity}</span>
+                                                            <span className="font-black text-primary">{item.originalQuantity}</span>
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="text-right">${item.unitPrice.toFixed(2)}</TableCell>
-                                                    <TableCell className="text-right text-red-500">-${(item.currentDiscount || item.discount || 0).toFixed(2)}</TableCell>
-                                                    <TableCell className="text-right font-mono hl-value">
-                                                        {/* Dynamic Calculation for display matching logic */}
-                                                        ${
-                                                            ((item.quantity * item.unitPrice) -
-                                                                ((item.originalQuantity > 0 ? (item.discount / item.originalQuantity) : 0) * item.quantity)).toFixed(2)
-                                                        }
+                                                    <TableCell className="text-right font-mono text-sm">${item.unitPrice.toFixed(2)}</TableCell>
+                                                    <TableCell className="text-right text-red-500 font-mono text-sm">-${(item.currentDiscount || item.discount || 0).toFixed(2)}</TableCell>
+                                                    <TableCell className="text-right font-black text-foreground font-mono">
+                                                        ${((item.quantity * item.unitPrice) - ((item.originalQuantity > 0 ? (item.discount / item.originalQuantity) : 0) * item.quantity)).toFixed(2)}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -551,37 +601,99 @@ const CreditNoteForm = () => {
                                     </Table>
                                 </div>
 
-                                <div className="flex flex-wrap justify-end gap-x-8 gap-y-2 text-lg font-bold border-t border-border pt-4 px-4">
-                                    <div className="text-muted-foreground">Subtotal: <span className="text-foreground">${totals.subtotal.toFixed(2)}</span></div>
-                                    <div className="text-muted-foreground">ITBMS: <span className="text-foreground">${totals.tax.toFixed(2)}</span></div>
-                                    {/* Retention row */}
-                                    {totals.retention > 0 && (
-                                        <div className="text-amber-600">Retención ITBMS (-): <span className="font-mono">-${totals.retention.toFixed(2)}</span></div>
-                                    )}
-                                    {/* Global Discount Display */}
-                                    {totals.globalDiscount > 0 && (
-                                        <div className="text-red-500">Desc. General: -${totals.globalDiscount.toFixed(2)}</div>
-                                    )}
-                                    <div className="text-primary">{totals.retention > 0 ? 'Total a Devolver (Neto):' : 'Total:'} ${totals.total.toFixed(2)}</div>
+                                {/* Mobile Items View */}
+                                <div className="md:hidden divide-y divide-border border-y border-border">
+                                    {items.map((item, index) => (
+                                        <div key={index} className="p-4 space-y-3 bg-muted/5">
+                                            <div className="flex justify-between items-start gap-2">
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-bold text-foreground line-clamp-2 leading-tight">{item.description}</p>
+                                                    <p className="text-[10px] text-muted-foreground font-bold mt-1 uppercase">Stock Facturado: {item.originalQuantity}</p>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <p className="text-sm font-black text-foreground font-mono leading-none">
+                                                        ${((item.quantity * item.unitPrice) - ((item.originalQuantity > 0 ? (item.discount / item.originalQuantity) : 0) * item.quantity)).toFixed(2)}
+                                                    </p>
+                                                    <p className="text-[10px] text-red-500 font-bold mt-1 tracking-tighter">Desc: -${(item.currentDiscount || item.discount || 0).toFixed(2)}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between items-center gap-4 pt-1">
+                                                <div className="text-xs text-muted-foreground font-medium">P. Unit: <span className="text-foreground">$ {item.unitPrice.toFixed(2)}</span></div>
+                                                <div className="w-32">
+                                                    {formData.refundType === 'partial' ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[10px] font-black uppercase text-muted-foreground">Dev:</span>
+                                                            <Input
+                                                                type="number"
+                                                                className="h-9 w-full text-center font-black bg-white shadow-inner"
+                                                                value={item.quantity}
+                                                                onChange={(e) => handleQuantityChange(index, e.target.value)}
+                                                                min="0"
+                                                                max={item.originalQuantity}
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-right">
+                                                            <p className="text-[10px] font-black uppercase text-muted-foreground mb-1 leading-none">Devolviendo Todo</p>
+                                                            <p className="text-lg font-black text-primary leading-none">{item.originalQuantity}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
 
-                                <div className="flex justify-end space-x-3 pt-6">
-                                    <Button variant="outline" className="border-input text-muted-foreground" onClick={() => handleSubmit('create')} disabled={loading}>
-                                        <Save className="mr-2 h-4 w-4" /> Guardar Borrador
-                                    </Button>
-                                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => handleSubmit('emit')} disabled={loading}>
-                                        {loading ? 'Procesando...' : (
-                                            <>
-                                                <Send className="mr-2 h-4 w-4" /> Emitir Fiscalmente
-                                            </>
+                                {/* Calculations and Actions */}
+                                <div className="p-4 md:p-0">
+                                    <div className="flex flex-col gap-3 max-w-xs ml-auto mb-8">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground font-bold uppercase tracking-tighter">Subtotal Devol.</span>
+                                            <span className="font-black">${totals.subtotal.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground font-bold uppercase tracking-tighter">ITBMS</span>
+                                            <span className="font-black">${totals.tax.toFixed(2)}</span>
+                                        </div>
+                                        {totals.globalDiscount > 0 && (
+                                            <div className="flex justify-between text-sm text-red-500">
+                                                <span className="font-bold uppercase tracking-tighter">Ajuste Descuento (-)</span>
+                                                <span className="font-black">-${totals.globalDiscount.toFixed(2)}</span>
+                                            </div>
                                         )}
-                                    </Button>
+                                        {totals.retention > 0 && (
+                                            <div className="flex justify-between text-sm text-amber-600">
+                                                <span className="font-bold uppercase tracking-tighter">Retención ITBMS (-)</span>
+                                                <span className="font-mono font-black">-${totals.retention.toFixed(2)}</span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between items-center pt-3 border-t-2 border-primary/20 text-xl font-black">
+                                            <span className="text-primary uppercase text-xs tracking-tighter">NETO A DEVOLVER</span>
+                                            <span className="text-foreground tracking-tighter leading-none">${totals.total.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row justify-end gap-3 border-t border-border pt-6">
+                                        <Button variant="outline" className="w-full sm:w-auto h-11 border-border text-muted-foreground font-bold border-2" onClick={() => handleSubmit('create')} disabled={loading}>
+                                            <Save className="mr-2 h-4 w-4" /> Guardar Borrador
+                                        </Button>
+                                        <Button className="w-full sm:w-auto h-11 bg-primary hover:bg-primary/90 text-white font-black text-base shadow-lg shadow-primary/20" onClick={() => handleSubmit('emit')} disabled={loading}>
+                                            {loading ? 'Procesando...' : (
+                                                <>
+                                                    <Send className="mr-2 h-4 w-4" /> EMITIR FISCALMENTE
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-center py-12 text-muted-foreground">
-                                <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                                <p>Seleccione una factura para comenzar</p>
+                            <div className="text-center py-20 text-muted-foreground">
+                                <div className="bg-muted w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-background shadow-inner">
+                                    <FileText className="h-10 w-10 opacity-40" />
+                                </div>
+                                <h3 className="font-bold text-foreground">Sin Configuración</h3>
+                                <p className="text-sm max-w-[200px] mx-auto mt-1">Seleccione una factura original del panel izquierdo para generar el resumen.</p>
                             </div>
                         )}
                     </CardContent>

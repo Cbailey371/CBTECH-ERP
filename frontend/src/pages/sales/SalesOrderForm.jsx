@@ -536,47 +536,47 @@ export default function SalesOrderForm() {
 
     return (
         <div className="space-y-6 animate-fadeIn max-w-6xl mx-auto">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Button variant="ghost" onClick={() => navigate('/sales-orders')}>
-                        <ArrowLeft className="w-5 h-5 mr-2" /> Volver
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+                <div className="flex items-center space-x-2 md:space-x-4">
+                    <Button variant="ghost" onClick={() => navigate('/sales-orders')} className="px-2 md:px-4">
+                        <ArrowLeft className="w-5 h-5 md:mr-2" /> <span className="hidden md:inline">Volver</span>
                     </Button>
-                    <h1 className="text-3xl font-bold tracking-tight">
+                    <h1 className="text-xl md:text-3xl font-bold tracking-tight truncate">
                         {isEditMode ? `Factura ${formData.orderNumber || ''}` : 'Nueva Factura'}
                     </h1>
                 </div>
-                <div className="space-x-2">
+                <div className="flex flex-wrap gap-2 w-full md:w-auto">
                     {isEditMode && formData.status !== 'draft' && (formData.balance > 0 || (formData.total - formData.paidAmount) > 0.01) && (
-                        <Button onClick={() => setShowPaymentModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Button onClick={() => setShowPaymentModal(true)} className="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm h-10 md:h-11">
                             <CreditCard className="w-4 h-4 mr-2" /> Registrar Pago
                         </Button>
                     )}
                     {isEditMode && (
-                        <Button variant="outline" onClick={handleDownloadPdf}>
-                            <Printer className="w-4 h-4 mr-2" /> PDF No Fiscal
+                        <Button variant="outline" onClick={handleDownloadPdf} className="flex-1 md:flex-none text-xs md:text-sm h-10 md:h-11">
+                            <Printer className="w-4 h-4 mr-2" /> <span className="hidden md:inline">PDF No Fiscal</span><span className="md:hidden">PDF</span>
                         </Button>
                     )}
                     {isEditMode && formData.feDocument && (
-                        <Button onClick={handleDownloadCafe} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                            <FileText className="w-4 h-4 mr-2" /> Descargar CAFE (DGI)
+                        <Button onClick={handleDownloadCafe} className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm h-10 md:h-11 px-2 md:px-4">
+                            <FileText className="w-4 h-4 mr-2" /> CAFE (DGI)
                         </Button>
                     )}
                     {isEditMode && !formData.feDocument && formData.status === 'draft' && (
                         <>
-                            <Button onClick={handleDelete} variant="destructive" className="mr-2">
+                            <Button onClick={handleDelete} variant="destructive" className="flex-1 md:flex-none text-xs md:text-sm h-10 md:h-11">
                                 <Trash2 className="w-4 h-4 mr-2" /> Eliminar
                             </Button>
                             <Button
                                 onClick={handleEmitFiscal}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white text-xs md:text-sm h-10 md:h-11"
                             >
-                                <Send className="w-4 h-4 mr-2" /> Emitir Fiscalmente
+                                <Send className="w-4 h-4 mr-2" /> Emitir Fiscal
                             </Button>
                         </>
                     )}
                     {!isEditMode && (
-                        <Button onClick={handleSubmit} disabled={loading}>
-                            <Save className="w-4 h-4 mr-2" /> Guardar Borrador
+                        <Button onClick={handleSubmit} disabled={loading} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-primary-foreground h-11">
+                            <Save className="w-4 h-4 mr-2" /> Guardar Factura
                         </Button>
                     )}
                 </div>
@@ -683,23 +683,113 @@ export default function SalesOrderForm() {
                     )}
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[30%]">Producto/Descripción</TableHead>
-                                <TableHead className="w-[10%] text-right">Cant.</TableHead>
-                                <TableHead className="w-[15%] text-right">Precio Unit.</TableHead>
-                                <TableHead className="w-[20%] text-right">Descuento</TableHead>
-                                <TableHead className="w-[15%] text-right">Total</TableHead>
-                                {!isEditMode && <TableHead className="w-[5%]"></TableHead>}
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                    <div className="space-y-4">
+                        {/* Desktop Table View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[30%]">Producto/Descripción</TableHead>
+                                        <TableHead className="w-[10%] text-right">Cant.</TableHead>
+                                        <TableHead className="w-[15%] text-right">Precio Unit.</TableHead>
+                                        <TableHead className="w-[20%] text-right">Descuento</TableHead>
+                                        <TableHead className="w-[15%] text-right">Total</TableHead>
+                                        {!isEditMode && <TableHead className="w-[5%]"></TableHead>}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {formData.items.map((item, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell>
+                                                {!isEditMode ? (
+                                                    <div className="space-y-2">
+                                                        <Combobox
+                                                            options={products.map(p => ({
+                                                                value: String(p.id),
+                                                                label: `${p.code || ''} - ${p.description}`.trim()
+                                                            }))}
+                                                            value={item.productId}
+                                                            onChange={(value) => handleProductSelect(index, value)}
+                                                            placeholder="Buscar producto..."
+                                                            className="w-full"
+                                                        />
+                                                        <Textarea
+                                                            className="bg-background border-border text-foreground text-xs min-h-[60px] resize-y mt-1"
+                                                            placeholder="Detalle adicional..."
+                                                            value={item.description}
+                                                            onChange={(e) => handleItemChange(index, 'description', e.target.value)}
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="space-y-1">
+                                                        <div className="font-medium">{item.product?.name || item.product?.description}</div>
+                                                        {item.description && <div className="text-xs text-muted-foreground italic">{item.description}</div>}
+                                                    </div>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Input
+                                                    type="number"
+                                                    value={item.quantity}
+                                                    onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
+                                                    disabled={isEditMode}
+                                                    className="text-right"
+                                                />
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Input
+                                                    type="number"
+                                                    value={item.unitPrice}
+                                                    onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)}
+                                                    disabled={isEditMode}
+                                                    className="text-right"
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-1 justify-end">
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.01"
+                                                        className="bg-background border-border text-foreground text-right h-8 px-2 w-20 text-sm"
+                                                        value={item.discountValue}
+                                                        onChange={(e) => handleItemChange(index, 'discountValue', e.target.value)}
+                                                        disabled={isEditMode}
+                                                    />
+                                                    <select
+                                                        className="bg-background border border-border rounded text-foreground text-xs px-1 h-8 w-12"
+                                                        value={item.discountType}
+                                                        onChange={(e) => handleItemChange(index, 'discountType', e.target.value)}
+                                                        disabled={isEditMode}
+                                                    >
+                                                        <option value="amount">$</option>
+                                                        <option value="percentage">%</option>
+                                                    </select>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium">
+                                                ${parseFloat(item.total).toFixed(2)}
+                                            </TableCell>
+                                            {!isEditMode && (
+                                                <TableCell>
+                                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)}>
+                                                        <Trash2 className="w-4 h-4 text-destructive" />
+                                                    </Button>
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Items Card View */}
+                        <div className="md:hidden space-y-4">
                             {formData.items.map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>
-                                        {!isEditMode ? (
-                                            <div className="space-y-2">
+                                <div key={index} className="border border-border rounded-xl p-4 bg-muted/20 space-y-4 shadow-sm relative overflow-hidden">
+                                    <div className="flex justify-between items-center gap-2">
+                                        <div className="flex-1">
+                                            {!isEditMode ? (
                                                 <Combobox
                                                     options={products.map(p => ({
                                                         value: String(p.id),
@@ -710,74 +800,95 @@ export default function SalesOrderForm() {
                                                     placeholder="Buscar producto..."
                                                     className="w-full"
                                                 />
-                                                <Textarea
-                                                    className="bg-background border-border text-foreground text-xs min-h-[60px] resize-y mt-1"
-                                                    placeholder="Detalle adicional..."
-                                                    value={item.description}
-                                                    onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                                                />
-                                            </div>
-                                        ) : (
-                                            <span>{item.description}</span>
+                                            ) : (
+                                                <div className="font-bold text-sm text-foreground line-clamp-1">
+                                                    {item.product?.name || item.product?.description || 'Producto'}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {!isEditMode && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveItem(index)}
+                                                className="text-destructive bg-destructive/10 p-2 rounded-lg"
+                                            >
+                                                <Trash2 size={18} />
+                                            </button>
                                         )}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Input
-                                            type="number"
-                                            value={item.quantity}
-                                            onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                                            disabled={isEditMode}
-                                            className="text-right"
+                                    </div>
+
+                                    {!isEditMode ? (
+                                        <Textarea
+                                            className="bg-background border-border text-sm min-h-[60px]"
+                                            placeholder="Detalle adicional..."
+                                            value={item.description}
+                                            onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                                         />
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Input
-                                            type="number"
-                                            value={item.unitPrice}
-                                            onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)}
-                                            disabled={isEditMode}
-                                            className="text-right"
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-1 justify-end">
+                                    ) : item.description && (
+                                        <div className="text-xs text-muted-foreground bg-background/50 p-2 rounded italic">
+                                            {item.description}
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-muted-foreground">Cant.</label>
                                             <Input
                                                 type="number"
-                                                min="0"
-                                                step="0.01"
-                                                className="bg-background border-border text-foreground text-right h-8 px-2 w-20 text-sm"
-                                                value={item.discountValue}
-                                                onChange={(e) => handleItemChange(index, 'discountValue', e.target.value)}
+                                                className="bg-background h-10"
+                                                value={item.quantity}
+                                                onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
                                                 disabled={isEditMode}
                                             />
-                                            <select
-                                                className="bg-background border border-border rounded text-foreground text-xs px-1 h-8 w-12"
-                                                value={item.discountType}
-                                                onChange={(e) => handleItemChange(index, 'discountType', e.target.value)}
-                                                disabled={isEditMode}
-                                            >
-                                                <option value="amount">$</option>
-                                                <option value="percentage">%</option>
-                                            </select>
                                         </div>
-                                    </TableCell>
-                                    <TableCell className="text-right font-medium">
-                                        ${parseFloat(item.total).toFixed(2)}
-                                    </TableCell>
-                                    {!isEditMode && (
-                                        <TableCell>
-                                            <Button variant="ghost" size="icon" onClick={() => handleRemoveItem(index)}>
-                                                <Trash2 className="w-4 h-4 text-destructive" />
-                                            </Button>
-                                        </TableCell>
-                                    )}
-                                </TableRow>
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-muted-foreground">Precio</label>
+                                            <Input
+                                                type="number"
+                                                className="bg-background h-10"
+                                                value={item.unitPrice}
+                                                onChange={(e) => handleItemChange(index, 'unitPrice', e.target.value)}
+                                                disabled={isEditMode}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 pt-1">
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase font-bold text-muted-foreground">Desc.</label>
+                                            <div className="flex gap-1">
+                                                <Input
+                                                    type="number"
+                                                    className="bg-background h-10 flex-1"
+                                                    value={item.discountValue}
+                                                    onChange={(e) => handleItemChange(index, 'discountValue', e.target.value)}
+                                                    disabled={isEditMode}
+                                                />
+                                                <select
+                                                    className="bg-background border border-border rounded h-10 px-1 text-xs"
+                                                    value={item.discountType}
+                                                    onChange={(e) => handleItemChange(index, 'discountType', e.target.value)}
+                                                    disabled={isEditMode}
+                                                >
+                                                    <option value="amount">$</option>
+                                                    <option value="percentage">%</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col justify-end items-end">
+                                            <span className="text-[10px] uppercase font-bold text-muted-foreground">Total</span>
+                                            <span className="text-lg font-black text-primary">
+                                                ${parseFloat(item.total || 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             ))}
-                        </TableBody>
-                    </Table>
+                        </div>
+                    </div>
 
                     <div className="mt-6 flex justify-end">
-                        <div className="w-1/2 md:w-1/3 space-y-3">
+                        <div className="w-full md:w-1/3 space-y-3 bg-muted/10 p-4 rounded-xl border border-border/50">
                             <div className="flex justify-between text-sm text-muted-foreground">
                                 <span>Subtotal Bruto:</span>
                                 <span>${totals.subtotal.toFixed(2)}</span>

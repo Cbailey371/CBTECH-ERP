@@ -151,28 +151,28 @@ export default function DeliveryNoteForm() {
     };
 
     return (
-        <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <Button variant="ghost" onClick={() => navigate('/delivery-notes')}>
-                        <ArrowLeft className="w-5 h-5 mr-2" /> Volver
+        <div className="space-y-6 animate-fadeIn max-w-5xl mx-auto pb-10">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center space-x-2 md:space-x-4">
+                    <Button variant="ghost" onClick={() => navigate('/delivery-notes')} className="px-2 md:px-4">
+                        <ArrowLeft className="w-5 h-5 md:mr-2" /> <span className="hidden md:inline">Volver</span>
                     </Button>
-                    <h1 className="text-3xl font-bold tracking-tight">
+                    <h1 className="text-xl md:text-3xl font-bold tracking-tight truncate">
                         {isEditMode ? 'Editar Nota de Entrega' : 'Nueva Nota de Entrega'}
                     </h1>
                 </div>
-                <div className="space-x-2">
-                    <Button onClick={handleSubmit} disabled={loading} className="bg-primary hover:bg-primary/90 text-white font-semibold">
+                <div className="flex gap-2 w-full md:w-auto">
+                    <Button onClick={handleSubmit} disabled={loading} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white font-bold h-11">
                         <Save className="w-4 h-4 mr-2" /> {isEditMode ? 'Actualizar Nota' : 'Guardar Nota'}
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="md:col-span-2 shadow-sm">
-                    <CardHeader><CardTitle className="text-xl">Información General</CardTitle></CardHeader>
+                <Card className="md:col-span-2 shadow-sm border-border bg-card/50 backdrop-blur-sm">
+                    <CardHeader><CardTitle className="text-lg md:text-xl">Información General</CardTitle></CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="grid md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">Cliente</label>
                                 <Combobox
@@ -181,18 +181,20 @@ export default function DeliveryNoteForm() {
                                     onChange={(val) => setFormData({ ...formData, customerId: val })}
                                     placeholder="Seleccionar cliente"
                                     disabled={isEditMode}
+                                    className="w-full h-11"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">Fecha</label>
+                                <label className="text-sm font-medium">Fecha de Entrega</label>
                                 <Input
                                     type="date"
                                     value={formData.date}
                                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                    className="h-11"
                                 />
                             </div>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 pt-2 border-t border-border/50">
                             <label className="text-sm font-medium">Importar desde Factura (Opcional)</label>
                             <Combobox
                                 options={salesOrders
@@ -202,17 +204,18 @@ export default function DeliveryNoteForm() {
                                 onChange={handleSalesOrderSelect}
                                 placeholder="Seleccionar factura para copiar ítems"
                                 disabled={isEditMode}
+                                className="w-full h-11"
                             />
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="shadow-sm">
-                    <CardHeader><CardTitle className="text-xl">Observaciones</CardTitle></CardHeader>
+                <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
+                    <CardHeader><CardTitle className="text-lg md:text-xl">Observaciones</CardTitle></CardHeader>
                     <CardContent>
                         <Textarea
                             placeholder="Instrucciones de entrega, destinatario, etc."
-                            className="min-h-[120px] resize-none"
+                            className="min-h-[120px] md:min-h-[150px] resize-none text-base"
                             value={formData.notes}
                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                         />
@@ -220,51 +223,65 @@ export default function DeliveryNoteForm() {
                 </Card>
             </div>
 
-            <Card className="shadow-sm">
+            <Card className="shadow-sm border-border bg-card/50 backdrop-blur-sm">
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-xl">Ítems a Entregar</CardTitle>
+                    <CardTitle className="text-lg md:text-xl font-bold">Ítems a Entregar</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader className="bg-muted/30">
-                            <TableRow>
-                                <TableHead className="font-bold">Descripción del Producto</TableHead>
-                                <TableHead className="w-[150px] text-center font-bold">Cantidad</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {formData.items.length === 0 ? (
+                <CardContent className="p-0 sm:p-6">
+                    {/* Desktop View */}
+                    <div className="hidden md:block">
+                        <Table>
+                            <TableHeader className="bg-muted/30">
                                 <TableRow>
-                                    <TableCell colSpan={2} className="text-center py-10 text-muted-foreground italic">
-                                        No hay productos en esta entrega. Seleccione una factura para importar los ítems.
-                                    </TableCell>
+                                    <TableHead className="font-bold">Descripción del Producto</TableHead>
+                                    <TableHead className="w-[150px] text-center font-bold">Cantidad</TableHead>
                                 </TableRow>
-                            ) : (
-                                formData.items.map((item, index) => (
-                                    <TableRow key={index} className="hover:bg-muted/10 transition-colors">
-                                        <TableCell>
-                                            <Input
-                                                placeholder="Nombre o descripción del item..."
-                                                value={item.description}
-                                                onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                                                disabled={true}
-                                                className="border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Input
-                                                type="number"
-                                                className="text-center border-none shadow-none focus-visible:ring-1 focus-visible:ring-primary/30"
-                                                value={item.quantity}
-                                                onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                                                disabled={true}
-                                            />
+                            </TableHeader>
+                            <TableBody>
+                                {formData.items.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={2} className="text-center py-10 text-muted-foreground italic">
+                                            No hay productos en esta entrega. Seleccione una factura para importar los ítems.
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                ) : (
+                                    formData.items.map((item, index) => (
+                                        <TableRow key={index} className="hover:bg-muted/10 transition-colors">
+                                            <TableCell>
+                                                <div className="py-2 px-1 font-medium">{item.description}</div>
+                                            </TableCell>
+                                            <TableCell className="text-center font-bold text-lg">
+                                                {item.quantity}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {/* Mobile Card-based View */}
+                    <div className="md:hidden">
+                        {formData.items.length === 0 ? (
+                            <div className="p-10 text-center text-muted-foreground italic text-sm">
+                                No hay productos en esta entrega.<br/>Seleccione una factura para importar.
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-border">
+                                {formData.items.map((item, index) => (
+                                    <div key={index} className="p-4 flex justify-between items-center gap-4 bg-muted/5">
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold text-foreground line-clamp-2">{item.description}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] uppercase font-bold text-muted-foreground">Cantidad</p>
+                                            <p className="text-xl font-black text-primary">{item.quantity}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>

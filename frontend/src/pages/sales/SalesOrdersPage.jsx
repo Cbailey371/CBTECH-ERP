@@ -114,87 +114,187 @@ export default function SalesOrdersPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Número</TableHead>
-                                <TableHead>Cliente</TableHead>
-                                <TableHead>Fecha</TableHead>
-                                <TableHead>Total</TableHead>
-                                <TableHead>Estado</TableHead>
-                                <TableHead className="text-right">Acciones</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
-                                <TableRow><TableCell colSpan={6} className="text-center py-8">Cargando...</TableCell></TableRow>
-                            ) : orders.length === 0 ? (
-                                <TableRow><TableCell colSpan={6} className="text-center py-8">No hay facturas que coincidan con los filtros.</TableCell></TableRow>
-                            ) : (
-                                orders.map(order => (
-                                    <TableRow key={order.id}>
-                                        <TableCell className="font-medium flex items-center gap-2">
-                                            {order.orderNumber}
-                                            {order.creditNotes && order.creditNotes.length > 0 && (
-                                                <AlertCircle 
-                                                    className="w-4 h-4 text-orange-500 cursor-pointer animate-pulse" 
-                                                    title={`Esta factura tiene ${order.creditNotes.length} Nota(s) de Crédito asociada(s). Haz clic para ir a NC.`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        navigate('/credit-notes', { state: { searchTerm: order.orderNumber } });
-                                                    }}
-                                                />
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{order.customer?.name}</TableCell>
-                                        <TableCell>{new Date(order.issueDate).toLocaleDateString()}</TableCell>
-                                        <TableCell>${parseFloat(order.total).toFixed(2)}</TableCell>
-                                        <TableCell>{getStatusBadge(order)}</TableCell>
-                                        <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" onClick={() => navigate(`/sales-orders/${order.id}`)}>
-                                                <Eye className="w-4 h-4" />
-                                            </Button>
-                                            {order.feDocument && (
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Número</TableHead>
+                                    <TableHead>Cliente</TableHead>
+                                    <TableHead>Fecha</TableHead>
+                                    <TableHead>Total</TableHead>
+                                    <TableHead>Estado</TableHead>
+                                    <TableHead className="text-right">Acciones</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {loading ? (
+                                    <TableRow><TableCell colSpan={6} className="text-center py-8">Cargando...</TableCell></TableRow>
+                                ) : orders.length === 0 ? (
+                                    <TableRow><TableCell colSpan={6} className="text-center py-8">No hay facturas que coincidan con los filtros.</TableCell></TableRow>
+                                ) : (
+                                    orders.map(order => (
+                                        <TableRow key={order.id}>
+                                            <TableCell className="font-medium flex items-center gap-2">
+                                                {order.orderNumber}
+                                                {order.creditNotes && order.creditNotes.length > 0 && (
+                                                    <AlertCircle 
+                                                        className="w-4 h-4 text-orange-500 cursor-pointer animate-pulse" 
+                                                        title={`Esta factura tiene ${order.creditNotes.length} Nota(s) de Crédito asociada(s). Haz clic para ir a NC.`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate('/credit-notes', { state: { searchTerm: order.orderNumber } });
+                                                        }}
+                                                    />
+                                                )}
+                                            </TableCell>
+                                            <TableCell>{order.customer?.name}</TableCell>
+                                            <TableCell>{new Date(order.issueDate).toLocaleDateString()}</TableCell>
+                                            <TableCell>${parseFloat(order.total).toFixed(2)}</TableCell>
+                                            <TableCell>{getStatusBadge(order)}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="icon" onClick={() => navigate(`/sales-orders/${order.id}`)}>
+                                                    <Eye className="w-4 h-4" />
+                                                </Button>
+                                                {order.feDocument && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={async () => {
+                                                            try {
+                                                                const baseUrl = import.meta.env.VITE_API_URL || (window.location.origin + '/api');
+                                                                const url = `${baseUrl}/sales-orders/download-cafe?id=${order.feDocument.id}`;
+                                                                const response = await api.get(url, { responseType: 'blob' });
+                                                                const blob = new Blob([response.data], { type: 'application/pdf' });
+                                                                const downloadUrl = window.URL.createObjectURL(blob);
+                                                                const link = document.createElement('a');
+                                                                link.href = downloadUrl;
+                                                                link.setAttribute('download', `CAFE_${order.orderNumber}.pdf`);
+                                                                document.body.appendChild(link);
+                                                                link.click();
+                                                                link.remove();
+                                                                window.URL.revokeObjectURL(downloadUrl);
+                                                            } catch (error) {
+                                                                console.error('Error downloading PDF:', error);
+                                                            }
+                                                        }}
+                                                        title="Descargar CAFE (PDF)"
+                                                    >
+                                                        <FileText className="w-4 h-4 text-emerald-600" />
+                                                    </Button>
+                                                )}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    onClick={async () => {
-                                                        try {
-                                                            const baseUrl = import.meta.env.VITE_API_URL || (window.location.origin + '/api');
-                                                            const url = `${baseUrl}/sales-orders/download-cafe?id=${order.feDocument.id}`;
-                                                            const response = await api.get(url, { responseType: 'blob' });
-                                                            const blob = new Blob([response.data], { type: 'application/pdf' });
-                                                            const downloadUrl = window.URL.createObjectURL(blob);
-                                                            const link = document.createElement('a');
-                                                            link.href = downloadUrl;
-                                                            link.setAttribute('download', `CAFE_${order.orderNumber}.pdf`);
-                                                            document.body.appendChild(link);
-                                                            link.click();
-                                                            link.remove();
-                                                            window.URL.revokeObjectURL(downloadUrl);
-                                                        } catch (error) {
-                                                            console.error('Error downloading PDF:', error);
-                                                        }
-                                                    }}
-                                                    title="Descargar CAFE (PDF)"
+                                                    onClick={() => navigate(`/delivery-notes/new?sourceOrderId=${order.id}`)}
+                                                    title="Generar Nota de Entrega"
                                                 >
-                                                    <FileText className="w-4 h-4 text-emerald-600" />
+                                                    <Truck className="w-4 h-4 text-primary" />
                                                 </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {/* Mobile Cards View */}
+                    <div className="md:hidden space-y-4">
+                        {loading ? (
+                            <div className="text-center py-8 text-muted-foreground">Cargando facturas...</div>
+                        ) : orders.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">No hay facturas.</div>
+                        ) : (
+                            orders.map(order => (
+                                <div 
+                                    key={order.id} 
+                                    className="border border-border rounded-xl p-4 bg-card active:bg-muted/30 transition-colors shadow-sm"
+                                    onClick={() => navigate(`/sales-orders/${order.id}`)}
+                                >
+                                    <div className="flex justify-between items-start mb-3">
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-bold text-primary">{order.orderNumber}</span>
+                                            {order.creditNotes && order.creditNotes.length > 0 && (
+                                                <AlertCircle className="w-4 h-4 text-orange-500" />
                                             )}
+                                        </div>
+                                        {getStatusBadge(order)}
+                                    </div>
+                                    
+                                    <div className="mb-4">
+                                        <div className="text-sm font-semibold text-foreground line-clamp-1">
+                                            {order.customer?.name}
+                                        </div>
+                                        <div className="flex justify-between items-center mt-2">
+                                            <span className="text-xs text-muted-foreground">
+                                                {new Date(order.issueDate).toLocaleDateString()}
+                                            </span>
+                                            <span className="text-lg font-black text-foreground">
+                                                ${parseFloat(order.total).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2 pt-3 border-t border-border/50">
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="flex-1 h-10 gap-2"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/sales-orders/${order.id}`);
+                                            }}
+                                        >
+                                            <Eye size={16} /> Ver
+                                        </Button>
+                                        
+                                        {order.feDocument && (
                                             <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => navigate(`/delivery-notes/new?sourceOrderId=${order.id}`)}
-                                                title="Generar Nota de Entrega"
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1 h-10 gap-2 text-emerald-600 border-emerald-500/20 bg-emerald-500/5"
+                                                onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                        const baseUrl = import.meta.env.VITE_API_URL || (window.location.origin + '/api');
+                                                        const url = `${baseUrl}/sales-orders/download-cafe?id=${order.feDocument.id}`;
+                                                        const response = await api.get(url, { responseType: 'blob' });
+                                                        const blob = new Blob([response.data], { type: 'application/pdf' });
+                                                        const downloadUrl = window.URL.createObjectURL(blob);
+                                                        const link = document.createElement('a');
+                                                        link.href = downloadUrl;
+                                                        link.setAttribute('download', `CAFE_${order.orderNumber}.pdf`);
+                                                        document.body.appendChild(link);
+                                                        link.click();
+                                                        link.remove();
+                                                        window.URL.revokeObjectURL(downloadUrl);
+                                                    } catch (error) {
+                                                        console.error('Error downloading PDF:', error);
+                                                    }
+                                                }}
                                             >
-                                                <Truck className="w-4 h-4 text-primary" />
+                                                <FileText size={16} /> PDF
                                             </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                        )}
+
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="p-2 h-10 w-10 flex items-center justify-center text-primary"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/delivery-notes/new?sourceOrderId=${order.id}`);
+                                            }}
+                                            title="Generar Nota de Entrega"
+                                        >
+                                            <Truck size={16} />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                     <div className="flex items-center justify-between mt-6 border-t border-border pt-4">
                         <div className="text-sm text-muted-foreground">
                             Mostrando <span className="font-medium">{orders.length}</span> de <span className="font-medium">{pagination.total}</span> facturas
