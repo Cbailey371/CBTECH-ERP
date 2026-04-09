@@ -6,6 +6,7 @@ import { Eraser, Save, X } from 'lucide-react';
 const SignaturePad = ({ onSave, onCancel }) => {
     const sigCanvas = useRef(null);
     const [recipientName, setRecipientName] = useState('');
+    const [receivedDate, setReceivedDate] = useState(new Date().toISOString().split('T')[0]);
 
     const clear = () => {
         sigCanvas.current.clear();
@@ -18,7 +19,7 @@ const SignaturePad = ({ onSave, onCancel }) => {
         }
         
         const signatureData = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
-        onSave({ signature: signatureData, recipientName });
+        onSave({ signature: signatureData, recipientName, receivedDate });
     };
 
     return (
@@ -28,6 +29,7 @@ const SignaturePad = ({ onSave, onCancel }) => {
             borderRadius: 2, 
             boxShadow: 24,
             maxWidth: 500,
+            width: '95%',
             mx: 'auto',
             display: 'flex',
             flexDirection: 'column',
@@ -40,14 +42,25 @@ const SignaturePad = ({ onSave, onCancel }) => {
                 </Button>
             </Box>
 
-            <TextField
-                label="Nombre de quien recibe"
-                variant="outlined"
-                fullWidth
-                value={recipientName}
-                onChange={(e) => setRecipientName(e.target.value)}
-                placeholder="Escriba su nombre completo"
-            />
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <TextField
+                    label="Nombre de quien recibe"
+                    variant="outlined"
+                    sx={{ flex: 2, minWidth: '200px' }}
+                    value={recipientName}
+                    onChange={(e) => setRecipientName(e.target.value)}
+                    placeholder="Nombre completo"
+                />
+                <TextField
+                    label="Fecha Recibido"
+                    type="date"
+                    variant="outlined"
+                    sx={{ flex: 1, minWidth: '150px' }}
+                    value={receivedDate}
+                    onChange={(e) => setReceivedDate(e.target.value)}
+                    InputLabelProps={{ shrink: true }}
+                />
+            </Box>
 
             <Typography variant="caption" color="text.secondary">
                 Firme en el recuadro gris:

@@ -85,9 +85,9 @@ export default function DeliveryNotesPage() {
         }
     };
 
-    const handleSaveSignature = async ({ signature, recipientName }) => {
+    const handleSaveSignature = async (data) => {
         try {
-            const response = await deliveryNoteService.saveSignature(token, selectedCompany.id, selectedNoteForSignature.id, { signature, recipientName });
+            const response = await deliveryNoteService.saveSignature(token, selectedCompany.id, selectedNoteForSignature.id, data);
             if (response.success) {
                 setIsSignatureModalOpen(false);
                 setSelectedNoteForSignature(null);

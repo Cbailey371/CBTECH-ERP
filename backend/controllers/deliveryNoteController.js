@@ -238,7 +238,7 @@ exports.saveSignature = async (req, res) => {
     try {
         const { id } = req.params;
         const companyId = req.companyContext?.companyId || req.user.companyId;
-        const { signature, recipientName } = req.body;
+        const { signature, recipientName, receivedDate } = req.body;
 
         const note = await DeliveryNote.findOne({ where: { id, companyId } });
         if (!note) return res.status(404).json({ error: 'Nota de entrega no encontrada' });
@@ -246,6 +246,7 @@ exports.saveSignature = async (req, res) => {
         await note.update({
             signature,
             recipientName,
+            receivedDate,
             status: 'delivered' // Auto-update to delivered when signed
         });
 

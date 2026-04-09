@@ -49,10 +49,9 @@ const generateDeliveryNotePdf = async (note, company) => {
                 }),
                 notes: note?.notes || '',
                 signature: note?.signature || null,
-                recipientName: note?.recipientName || ''
+                recipientName: note?.recipientName || '',
+                receivedDate: note?.receivedDate || ''
             };
-
-            console.log(`[DEBUG] Datos finales para PDF (Nota ${safeNote.number}):`, JSON.stringify(safeNote));
 
             const content = [];
 
@@ -62,24 +61,19 @@ const generateDeliveryNotePdf = async (note, company) => {
             // Logo column
             let logoImage = null;
             if (safeCompany.logo) {
-                // Adjust path to project root: backend/services/pdf/ -> backend/ -> ERP/
                 const logoPath = path.join(__dirname, '../../../', safeCompany.logo);
-                console.log(`[DEBUG] Intentando cargar logo desde: ${logoPath}`);
                 if (fs.existsSync(logoPath)) {
-                    console.log(`[DEBUG] Logo encontrado en el sistema de archivos.`);
                     logoImage = {
                         image: logoPath,
-                        width: 150, // Increased width for better visibility
+                        width: 150,
                         margin: [0, 0, 0, 10]
                     };
-                } else {
-                    console.error(`[DEBUG] ERROR: El logo no existe en la ruta: ${logoPath}`);
                 }
             }
 
             if (logoImage) {
                 headerColumns.push({
-                    width: 170, // Slightly wider to accommodate larger logo
+                    width: 170,
                     stack: [logoImage],
                     alignment: 'left'
                 });
@@ -156,40 +150,42 @@ const generateDeliveryNotePdf = async (note, company) => {
                 content.push({ text: safeNote.notes, style: 'small' });
             }
 
-            content.push({ text: '\n\n\n\n' });
+            content.push({ text: '\n\n\n' });
 
-            // Signature Section
-            const signatureContent = [];
-            if (safeNote.signature) {
-                signatureContent.push({
-                    image: safeNote.signature,
-                    width: 150,
-                    alignment: 'center',
-                    margin: [0, 0, 0, -10]
-                });
-            } else {
-                signatureContent.push({ canvas: [{ type: 'line', x1: 0, y1: 0, x2: 200, y2: 0, lineWidth: 1 }] });
-            }
-            signatureContent.push({ text: safeNote.recipientName || 'Recibido por', style: 'infoLine', margin: [0, 5, 0, 0], alignment: 'center' });
-
-            content.push({
-                columns: [
-                    {
-                        width: '*',
-                        stack: signatureContent,
-                        alignment: 'center'
-                    },
-                    {
-                        width: '*',
-                        stack: [
-                            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 150, y2: 0, lineWidth: 1 }] },
-                            { text: 'Fecha', style: 'infoLine', margin: [0, 5, 0, 0] }
-                        ],
-                        alignment: 'right'
-                    }
-                ],
+            // Signature Table (Side-by-Side)
+            const signatureTable = {
+                table: {
+                    widths: ['*', '*'],
+                    body: [
+                        [
+                            {
+                                stack: [
+                                    safeNote.signature ? {
+                                        image: safeNote.signature,
+                                        width: 140,
+                                        alignment: 'center'
+                                    } : { text: '\n\n\n\n', alignment: 'center' },
+                                    { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 180, y2: 0, lineWidth: 0.5 }] },
+                                    { text: safeNote.recipientName || 'Recibido por (Nombre)', style: 'infoLine', alignment: 'center', margin: [0, 2, 0, 0] }
+                                ],
+                                margin: [0, 0, 10, 0]
+                            },
+                            {
+                                stack: [
+                                    { text: safeNote.receivedDate || '', alignment: 'center', margin: [0, 45, 0, 0], bold: true },
+                                    { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 120, y2: 0, lineWidth: 0.5 }] },
+                                    { text: 'Fecha de Recibido', style: 'infoLine', alignment: 'center', margin: [0, 2, 0, 0] }
+                                ],
+                                margin: [10, 0, 0, 0]
+                            }
+                        ]
+                    ]
+                },
+                layout: 'noBorders',
                 margin: [40, 20, 40, 0]
-            });
+            };
+
+            content.push(signatureTable);
 
             const docDefinition = {
                 pageSize: 'LETTER',

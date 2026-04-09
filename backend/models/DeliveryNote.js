@@ -69,6 +69,11 @@ const DeliveryNote = sequelize.define('DeliveryNote', {
         type: DataTypes.STRING(255),
         allowNull: true,
         field: 'recipient_name'
+    },
+    receivedDate: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+        field: 'received_date'
     }
 }, {
     tableName: 'delivery_notes',
