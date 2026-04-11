@@ -364,7 +364,7 @@ export default function QuotationsPage() {
                                                     value={quotation.status}
                                                     onChange={(e) => {
                                                         e.stopPropagation();
-                                                        handleStatusChange(quotation.id, e.target.value);
+                                                        handleStatusChange(quotation, e.target.value);
                                                     }}
                                                 >
                                                     <option value="draft">Borrador</option>
