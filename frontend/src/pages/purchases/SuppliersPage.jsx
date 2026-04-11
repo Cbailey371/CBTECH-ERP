@@ -236,9 +236,19 @@ export default function SuppliersPage() {
                                         <div className="text-[10px] text-muted-foreground uppercase font-mono">{supplier.code || 'SINF-COD'}</div>
                                     </div>
                                 </div>
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${supplier.isActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
-                                    {supplier.isActive ? 'Activo' : 'Inactivo'}
-                                </span>
+                                <div className="relative inline-block group/status active:scale-95 transition-transform">
+                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${supplier.isActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
+                                        {supplier.isActive ? 'Activo' : 'Inactivo'}
+                                    </span>
+                                    <select
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        value={supplier.isActive ? "true" : "false"}
+                                        onChange={(e) => handleToggleStatus(e, supplier)}
+                                    >
+                                        <option value="true">Activo</option>
+                                        <option value="false">Inactivo</option>
+                                    </select>
+                                </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">

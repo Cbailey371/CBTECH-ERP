@@ -102,6 +102,26 @@ export default function ProjectsPage() {
             setSaving(false);
         }
     };
+    
+    const handleStatusChange = async (projectId, newStatus) => {
+        try {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            const response = await projectService.updateProject(token, selectedCompany.id, projectId, {
+                ...project,
+                status: newStatus
+            });
+            
+            if (response.success) {
+                setProjects(projects.map(p => 
+                    p.id === projectId ? { ...p, status: newStatus } : p
+                ));
+            }
+        } catch (error) {
+            console.error('Error updating project status:', error);
+        }
+    };
 
     const handleDeleteClick = (id) => {
         setProjectToDelete(id);
@@ -212,9 +232,20 @@ export default function ProjectsPage() {
                                             {project.description && <div className="text-xs text-muted-foreground truncate max-w-[250px]">{project.description}</div>}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge className={`${STATUS_COLORS[project.status]} border-none`}>
-                                                {STATUS_LABELS[project.status]}
-                                            </Badge>
+                                            <div className="relative inline-block active:scale-95 transition-transform" onClick={(e) => e.stopPropagation()}>
+                                                <Badge className={`${STATUS_COLORS[project.status]} border-none`}>
+                                                    {STATUS_LABELS[project.status]}
+                                                </Badge>
+                                                <select
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    value={project.status}
+                                                    onChange={(e) => handleStatusChange(project.id, e.target.value)}
+                                                >
+                                                    {Object.entries(STATUS_LABELS).map(([val, label]) => (
+                                                        <option key={val} value={val}>{label}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
                                         </TableCell>
                                         <TableCell className="text-muted-foreground text-sm">
                                             <div className="flex items-center gap-2">
@@ -289,9 +320,20 @@ export default function ProjectsPage() {
                                                 <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground uppercase">
                                                     {project.code || 'PRJ'}
                                                 </span>
-                                                <Badge className={`${STATUS_COLORS[project.status]} border-none text-[10px] py-0 h-5`}>
-                                                    {STATUS_LABELS[project.status]}
-                                                </Badge>
+                                                <div className="relative active:scale-95 transition-transform" onClick={(e) => e.stopPropagation()}>
+                                                    <Badge className={`${STATUS_COLORS[project.status]} border-none text-[10px] py-0 h-5`}>
+                                                        {STATUS_LABELS[project.status]}
+                                                    </Badge>
+                                                    <select
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                        value={project.status}
+                                                        onChange={(e) => handleStatusChange(project.id, e.target.value)}
+                                                    >
+                                                        {Object.entries(STATUS_LABELS).map(([val, label]) => (
+                                                            <option key={val} value={val}>{label}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
                                             </div>
                                             <h3 className="text-base font-bold text-foreground leading-tight">{project.name}</h3>
                                         </div>

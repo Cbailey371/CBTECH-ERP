@@ -100,7 +100,8 @@ export default function QuotationForm() {
             }
         ],
         taxRate: 7,
-        taxEnabled: true
+        taxEnabled: true,
+        status: 'draft'
     });
 
     // Add useEffect to enforce default if empty and not editing
@@ -177,7 +178,8 @@ export default function QuotationForm() {
                     discountValue: q.discountValue || 0,
                     items: items,
                     taxRate: q.taxRate !== undefined ? parseFloat((parseFloat(q.taxRate) * 100).toFixed(2)) : 7, // Convert 0.07 to 7 and round
-                    taxEnabled: q.taxRate !== undefined ? parseFloat(q.taxRate) > 0 : true
+                    taxEnabled: q.taxRate !== undefined ? parseFloat(q.taxRate) > 0 : true,
+                    status: q.status || 'draft'
                 });
             }
         } catch (error) {
@@ -449,8 +451,8 @@ export default function QuotationForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Cabecera */}
                 <Card className="bg-card/50 border-border backdrop-blur-sm relative z-20">
-                    <CardContent className="p-6 grid grid-cols-1 md:grid-cols-6 gap-6">
-                        <div className="space-y-2 md:col-span-4">
+                    <CardContent className="p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+                        <div className="space-y-2 md:col-span-6">
                             <label className="block text-sm font-medium text-muted-foreground">Cliente</label>
                             <Combobox
                                 options={customers.map(c => ({ value: c.id, label: c.name }))}
@@ -500,7 +502,7 @@ export default function QuotationForm() {
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 md:col-span-2">
                             <label className="block text-sm font-medium text-muted-foreground">Válida Hasta</label>
                             <Input
                                 type="date"
@@ -508,6 +510,19 @@ export default function QuotationForm() {
                                 value={formData.validUntil}
                                 onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
                             />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                            <label className="block text-sm font-medium text-muted-foreground">Estado</label>
+                            <select
+                                className="w-full bg-background border border-border rounded-md h-10 px-3 text-sm text-foreground focus:ring-2 focus:ring-primary outline-none"
+                                value={formData.status}
+                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                            >
+                                <option value="draft">Borrador</option>
+                                <option value="sent">Enviada</option>
+                                <option value="accepted">Aceptada</option>
+                                <option value="rejected">Rechazada</option>
+                            </select>
                         </div>
                     </CardContent>
                 </Card>

@@ -354,7 +354,22 @@ export default function QuotationsPage() {
                                     >
                                         <div className="flex justify-between items-start">
                                             <span className="font-bold text-lg text-primary">{quotation.number}</span>
-                                            {getStatusBadge(quotation.status)}
+                                            <div className="relative group/status active:scale-95 transition-transform">
+                                                {getStatusBadge(quotation.status)}
+                                                <select
+                                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                    value={quotation.status}
+                                                    onChange={(e) => {
+                                                        e.stopPropagation();
+                                                        handleStatusChange(quotation.id, e.target.value);
+                                                    }}
+                                                >
+                                                    <option value="draft">Borrador</option>
+                                                    <option value="sent">Enviada</option>
+                                                    <option value="accepted">Aceptada</option>
+                                                    <option value="rejected">Rechazada</option>
+                                                </select>
+                                            </div>
                                         </div>
                                         <div className="space-y-1">
                                             <p className="text-foreground font-medium line-clamp-2">{quotation.customer?.name}</p>
