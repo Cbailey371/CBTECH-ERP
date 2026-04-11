@@ -218,7 +218,7 @@ export default function ProductsPage() {
                                                 <p className="text-xs text-muted-foreground">SKU: {product.sku}</p>
                                             )}
                                         </div>
-                                        <div className="relative inline-block">
+                                        <div className="relative inline-block" onClick={(e) => e.stopPropagation()}>
                                             <Badge className={product.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}>
                                                 {product.isActive ? 'Activo' : 'Inactivo'}
                                             </Badge>

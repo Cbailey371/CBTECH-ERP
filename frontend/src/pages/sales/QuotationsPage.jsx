@@ -354,7 +354,10 @@ export default function QuotationsPage() {
                                     >
                                         <div className="flex justify-between items-start">
                                             <span className="font-bold text-lg text-primary">{quotation.number}</span>
-                                            <div className="relative group/status active:scale-95 transition-transform">
+                                            <div 
+                                                className="relative group/status active:scale-95 transition-transform"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
                                                 {getStatusBadge(quotation.status)}
                                                 <select
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"

@@ -236,7 +236,10 @@ export default function SuppliersPage() {
                                         <div className="text-[10px] text-muted-foreground uppercase font-mono">{supplier.code || 'SINF-COD'}</div>
                                     </div>
                                 </div>
-                                <div className="relative inline-block group/status active:scale-95 transition-transform">
+                                <div 
+                                    className="relative inline-block group/status active:scale-95 transition-transform"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${supplier.isActive ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>
                                         {supplier.isActive ? 'Activo' : 'Inactivo'}
                                     </span>

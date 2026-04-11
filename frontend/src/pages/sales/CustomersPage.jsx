@@ -292,7 +292,7 @@ export default function CustomersPage() {
                                                 <span className="text-[10px] font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground uppercase">
                                                     {customer.code || 'CLI'}
                                                 </span>
-                                                <div className="relative">
+                                                <div className="relative" onClick={(e) => e.stopPropagation()}>
                                                     <Badge className={customer.isActive ? 'bg-emerald-500/10 text-emerald-400 border-none text-[10px] py-0 h-5' : 'bg-destructive/10 text-destructive border-none text-[10px] py-0 h-5'}>
                                                         {customer.isActive ? 'Activo' : 'Inactivo'}
                                                     </Badge>
