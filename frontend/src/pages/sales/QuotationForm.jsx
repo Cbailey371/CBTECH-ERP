@@ -5,12 +5,13 @@ import * as customerService from '../../services/customerService';
 import * as companyService from '../../services/companyService';
 import productService from '../../services/productService'; // Corrected import
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Trash2, Save, ArrowLeft, Calculator } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Calculator, History, Clock, User as UserIcon, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Combobox } from '../../components/ui/Combobox';
 import { Textarea } from '../../components/ui/Textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../components/ui/Dialog';
 import { generateQuotationPDF } from '../../utils/QuotationPDF';
 
 const DEFAULT_NOTES = `Término de pago: 50% contra orden de compra y restantes 50% contra entrega
@@ -120,12 +121,33 @@ export default function QuotationForm() {
         total: 0
     });
 
+    const [history, setHistory] = useState([]);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [viewingVersion, setViewingVersion] = useState(null);
+
     useEffect(() => {
         if (selectedCompany) {
             loadCustomers();
             loadProducts();
         }
     }, [selectedCompany]);
+
+    useEffect(() => {
+        if (isEditMode) {
+            loadHistory();
+        }
+    }, [isEditMode, id]);
+
+    const loadHistory = async () => {
+        try {
+            const response = await quotationService.getQuotationHistory(id);
+            if (response.success) {
+                setHistory(response.history);
+            }
+        } catch (error) {
+            console.error('Error loading history:', error);
+        }
+    };
 
     useEffect(() => {
         if (selectedCompany && id && token) {
@@ -849,40 +871,51 @@ export default function QuotationForm() {
 
                 <div className="flex flex-col md:flex-row justify-end gap-3 md:gap-4 pt-4">
                     {isEditMode && (
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={async () => {
-                                try {
-                                    setLoading(true);
-                                    const quotationData = {
-                                        ...formData,
-                                        ...totals,
-                                        items: formData.items.map(item => {
-                                            const product = products.find(p => p.id == item.productId); // Loose equality for safety
-                                            return {
-                                                ...item,
-                                                productName: product ? product.description : '',
-                                                productCode: product ? product.code : '',
-                                                productSku: product ? product.sku : ''
-                                            };
-                                        }),
-                                        customer: customers.find(c => c.id == formData.customerId)
-                                    };
-                                    // Use currentCompany (fresh) or selectedCompany (fallback) for PDF
-                                    await generateQuotationPDF(quotationData, currentCompany || selectedCompany);
-                                } catch (error) {
-                                    console.error('Error generating PDF:', error);
-                                    alert(`Error al generar el PDF: ${error.message || error}`);
-                                } finally {
-                                    setLoading(false);
-                                }
-                            }}
-                            className="w-full md:w-auto md:mr-auto bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white h-12 md:h-10"
-                        >
-                            <Calculator size={20} className="mr-2" />
-                            {loading ? 'Generando...' : 'Descargar PDF'}
-                        </Button>
+                        <div className="flex gap-2 mr-auto w-full md:w-auto">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={() => setIsHistoryOpen(true)}
+                                className="flex-1 md:flex-none bg-slate-100 text-slate-700 hover:bg-slate-200 h-12 md:h-10"
+                            >
+                                <History size={20} className="mr-2" />
+                                Historial
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={async () => {
+                                    try {
+                                        setLoading(true);
+                                        const quotationData = {
+                                            ...formData,
+                                            ...totals,
+                                            items: formData.items.map(item => {
+                                                const product = products.find(p => p.id == item.productId); // Loose equality for safety
+                                                return {
+                                                    ...item,
+                                                    productName: product ? product.description : '',
+                                                    productCode: product ? product.code : '',
+                                                    productSku: product ? product.sku : ''
+                                                };
+                                            }),
+                                            customer: customers.find(c => c.id == formData.customerId)
+                                        };
+                                        // Use currentCompany (fresh) or selectedCompany (fallback) for PDF
+                                        await generateQuotationPDF(quotationData, currentCompany || selectedCompany);
+                                    } catch (error) {
+                                        console.error('Error generating PDF:', error);
+                                        alert(`Error al generar el PDF: ${error.message || error}`);
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                className="flex-1 md:flex-none bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white h-12 md:h-10"
+                            >
+                                <Calculator size={20} className="mr-2" />
+                                {loading ? 'Generando...' : 'Descargar PDF'}
+                            </Button>
+                        </div>
                     )}
                     <div className="flex gap-3 w-full md:w-auto">
                         <Button
@@ -904,6 +937,145 @@ export default function QuotationForm() {
                     </div>
                 </div>
             </form >
+
+            {/* Modal de Historial */}
+            <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+                <DialogContent className="max-w-2xl bg-white dark:bg-slate-900 border-border max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-xl">
+                            <History className="text-primary" />
+                            Historial de Cambios
+                        </DialogTitle>
+                        <DialogDescription>
+                            Versiones guardadas antes de una edición.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-4 mt-4">
+                        {history.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground border-2 border-dashed border-border rounded-xl">
+                                No hay cambios registrados todavía.
+                            </div>
+                        ) : (
+                            history.map((version) => (
+                                <div
+                                    key={version.id}
+                                    className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/50 hover:bg-accent/50 transition-all group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                            {version.version}
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2 text-sm font-medium">
+                                                <Clock size={14} className="text-muted-foreground" />
+                                                {new Date(version.created_at).toLocaleString('es-ES', {
+                                                    day: '2-digit', month: '2-digit', year: 'numeric',
+                                                    hour: '2-digit', minute: '2-digit'
+                                                })}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <UserIcon size={12} />
+                                                Editado por: {version.editor?.firstName} {version.editor?.lastName}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-right hidden sm:block">
+                                            <div className="text-sm font-bold text-foreground">
+                                                ${parseFloat(version.data.total).toFixed(2)}
+                                            </div>
+                                            <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                                                {version.data.items?.length || 0} ITEMS
+                                            </div>
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setViewingVersion(version)}
+                                            className="hover:bg-primary hover:text-white"
+                                        >
+                                            <Eye size={16} className="mr-1" />
+                                            Ver
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal de Detalle de Versión */}
+            <Dialog open={!!viewingVersion} onOpenChange={() => setViewingVersion(null)}>
+                <DialogContent className="max-w-4xl bg-white dark:bg-slate-900 border-border max-h-[90vh] overflow-y-auto">
+                    {viewingVersion && (
+                        <>
+                            <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2 text-xl">
+                                    Versión {viewingVersion.version} - {new Date(viewingVersion.created_at).toLocaleDateString()}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Snapshot de la cotización tal como estaba en este momento.
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <div className="mt-6 space-y-6">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-xl">
+                                    <div>
+                                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Subtotal</div>
+                                        <div className="text-sm font-medium">${parseFloat(viewingVersion.data.subtotal).toFixed(2)}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Descuento</div>
+                                        <div className="text-sm font-medium">${parseFloat(viewingVersion.data.discount).toFixed(2)}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] uppercase font-bold text-muted-foreground">ITBMS</div>
+                                        <div className="text-sm font-medium">${parseFloat(viewingVersion.data.tax).toFixed(2)}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] uppercase font-bold text-muted-foreground text-primary">Total</div>
+                                        <div className="text-sm font-bold text-primary">${parseFloat(viewingVersion.data.total).toFixed(2)}</div>
+                                    </div>
+                                </div>
+
+                                <div className="border rounded-xl overflow-hidden">
+                                    <table className="w-full text-sm">
+                                        <thead className="bg-muted/50 border-b">
+                                            <tr>
+                                                <th className="text-left p-3">Descripción</th>
+                                                <th className="text-right p-3 w-20">Cant.</th>
+                                                <th className="text-right p-3 w-32">Precio</th>
+                                                <th className="text-right p-3 w-32">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y">
+                                            {viewingVersion.data.items?.map((item, idx) => (
+                                                <tr key={idx}>
+                                                    <td className="p-3">{item.description || (item.product?.description) || 'Sin descripción'}</td>
+                                                    <td className="p-3 text-right">{item.quantity}</td>
+                                                    <td className="p-3 text-right">${parseFloat(item.unitPrice).toFixed(2)}</td>
+                                                    <td className="p-3 text-right font-medium">${parseFloat(item.total).toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {viewingVersion.data.notes && (
+                                    <div className="space-y-2">
+                                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Notas de esta versión</div>
+                                        <div className="p-4 bg-muted/20 rounded-xl text-sm whitespace-pre-wrap italic text-muted-foreground border border-border/50">
+                                            {viewingVersion.data.notes}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div >
     );
 }

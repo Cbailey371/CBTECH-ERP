@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
-const { sequelize, Quotation, QuotationItem, Customer } = require('../models');
+const { sequelize, Quotation, QuotationItem, Customer, QuotationHistory, User } = require('../models');
 const { authenticateToken } = require('../middleware/auth');
 const {
   companyContext,
@@ -276,6 +276,29 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       await t.rollback();
       return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
     }
+ 
+    // --- NUEVO: GUARDAR HISTORIAL ANTES DE ACTUALIZAR ---
+    // Obtener snapshot completo actual
+    const currentSnapshot = await Quotation.findByPk(id, {
+      include: [{ model: QuotationItem, as: 'items' }],
+      transaction: t
+    });
+ 
+    // Obtener última versión
+    const lastHistory = await QuotationHistory.findOne({
+      where: { quotationId: id },
+      order: [['version', 'DESC']],
+      transaction: t
+    });
+    const nextVersion = lastHistory ? lastHistory.version + 1 : 1;
+ 
+    await QuotationHistory.create({
+      quotationId: id,
+      version: nextVersion,
+      changedBy: req.user.id,
+      data: currentSnapshot.toJSON()
+    }, { transaction: t });
+    // --- FIN HISTORIAL ---
 
     // 1. Recalcular totales (Solo si se envían items)
     let updateData = {};
@@ -436,4 +459,29 @@ router.delete('/:id', requireCompanyContext, requireCompanyPermission(['quotatio
   }
 });
 
+ 
+// GET /api/quotations/:id/history - Obtener historial de cambios
+router.get('/:id/history', requireCompanyContext, requireCompanyPermission(['quotations.read'], 'user'), async (req, res) => {
+  try {
+    const history = await QuotationHistory.findAll({
+      where: {
+        quotationId: req.params.id
+      },
+      include: [
+        {
+          model: User,
+          as: 'editor',
+          attributes: ['id', 'firstName', 'lastName']
+        }
+      ],
+      order: [['version', 'DESC']]
+    });
+ 
+    res.json({ success: true, history });
+  } catch (error) {
+    console.error('Error al obtener historial:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+});
+ 
 module.exports = router;

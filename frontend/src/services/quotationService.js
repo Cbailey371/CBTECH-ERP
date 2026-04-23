@@ -25,12 +25,18 @@ const deleteQuotation = async (id) => {
   return response.data;
 };
 
+const getQuotationHistory = async (id) => {
+  const response = await api.get(`/quotations/${id}/history`);
+  return response.data;
+};
+
 const quotationService = {
   getQuotations,
   getQuotationById,
   createQuotation,
   updateQuotation,
-  deleteQuotation
+  deleteQuotation,
+  getQuotationHistory
 };
 
 export default quotationService;
@@ -40,5 +46,6 @@ export {
   getQuotationById,
   createQuotation,
   updateQuotation,
-  deleteQuotation
+  deleteQuotation,
+  getQuotationHistory
 };

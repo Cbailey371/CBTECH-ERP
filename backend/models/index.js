@@ -26,6 +26,7 @@ const DeliveryNote = require('./DeliveryNote');
 const DeliveryNoteItem = require('./DeliveryNoteItem');
 const FE_Document = require('./FE_Document');
 const AuditLog = require('./AuditLog');
+const QuotationHistory = require('./QuotationHistory');
 
 // Definir asociaciones
 // Usuarios y Roles (Many-to-Many)
@@ -225,6 +226,11 @@ AuditLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 AuditLog.belongsTo(Company, { foreignKey: 'companyId', as: 'company' });
 User.hasMany(AuditLog, { foreignKey: 'userId', as: 'auditLogs' });
 Company.hasMany(AuditLog, { foreignKey: 'userId', as: 'auditLogs' });
+ 
+// Historial de Cotizaciones
+Quotation.hasMany(QuotationHistory, { foreignKey: 'quotationId', as: 'history' });
+QuotationHistory.belongsTo(Quotation, { foreignKey: 'quotationId', as: 'quotation' });
+QuotationHistory.belongsTo(User, { foreignKey: 'changedBy', as: 'editor' });
 
 const models = {
   User,
@@ -254,6 +260,7 @@ const models = {
   DeliveryNoteItem,
   FE_Document,
   AuditLog,
+  QuotationHistory,
   sequelize
 };
 
