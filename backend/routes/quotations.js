@@ -47,13 +47,13 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
 
     const { count, rows } = await Quotation.findAndCountAll({
       where: whereClause,
-      distinct: true, // Asegura que cuente cotizaciones únicas, no ítems
+      distinct: true,
       attributes: ['id', 'number', 'date', 'status', 'total', 'subtotal', 'discount', 'tax', 'retention', 'currency', 'customerId'],
       include: [
         {
           model: Customer,
           as: 'customer',
-          attributes: ['id', 'name', 'email']
+          attributes: ['id', 'name']
         },
         {
           model: QuotationItem,
@@ -86,7 +86,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
 
   } catch (error) {
     console.error('Error al listar cotizaciones:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+    res.status(500).json({ success: false, message: 'Error interno del servidor', detail: error.message });
   }
 });
 
@@ -141,14 +141,11 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       retention = 0
     } = req.body;
 
-    // Generar número secuencial
     const count = await Quotation.count({ where: getCompanyFilter(req) });
     const number = `COT-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
 
-    // Calcular totales
     let subtotalItems = 0;
 
-    // Buscar costos de productos involucrados
     const productIds = items.map(i => i.productId).filter(id => id);
     const productsInvolved = await Product.findAll({
       where: { id: { [Op.in]: productIds } },
@@ -164,17 +161,12 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       const price = parseFloat(item.unitPrice);
       const itemDiscountValue = parseFloat(item.discountValue) || 0;
       const itemDiscountType = item.discountType || 'amount';
-      
       const itemUnitCost = item.productId ? (costMap[item.productId] || 0) : 0;
 
       let itemTotalBeforeDiscount = qty * price;
-      let itemDiscountAmount = 0;
-
-      if (itemDiscountType === 'percentage') {
-        itemDiscountAmount = itemTotalBeforeDiscount * (itemDiscountValue / 100);
-      } else {
-        itemDiscountAmount = itemDiscountValue;
-      }
+      let itemDiscountAmount = (itemDiscountType === 'percentage') 
+        ? itemTotalBeforeDiscount * (itemDiscountValue / 100) 
+        : itemDiscountValue;
 
       const itemTotal = itemTotalBeforeDiscount - itemDiscountAmount;
       subtotalItems += itemTotal;
@@ -189,14 +181,9 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       };
     });
 
-    let globalDiscountAmount = 0;
-    const globalDiscountVal = parseFloat(discountValue) || 0;
-
-    if (discountType === 'percentage') {
-      globalDiscountAmount = subtotalItems * (globalDiscountVal / 100);
-    } else {
-      globalDiscountAmount = globalDiscountVal;
-    }
+    let globalDiscountAmount = (discountType === 'percentage') 
+      ? subtotalItems * (parseFloat(discountValue) / 100) 
+      : parseFloat(discountValue);
 
     const taxable = Math.max(0, subtotalItems - globalDiscountAmount);
     const effectiveTaxRate = parseFloat(taxRate);
@@ -213,7 +200,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       subtotal: subtotalItems,
       discount: globalDiscountAmount,
       discountType,
-      discountValue: globalDiscountVal,
+      discountValue,
       tax,
       taxRate: effectiveTaxRate,
       retention,
@@ -241,22 +228,13 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       );
     }
 
-    const createdQuotation = await Quotation.findByPk(quotation.id, {
-      include: ['customer', {
-        model: QuotationItem,
-        as: 'items',
-        include: ['product']
-      }],
-      transaction: t
-    });
-
     await t.commit();
-    res.status(201).json({ success: true, quotation: createdQuotation });
+    res.status(201).json({ success: true, quotation });
 
   } catch (error) {
     if (t && !t.finished) await t.rollback();
-    console.error('Error al crear cotización:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
+    console.error('Error al crear:', error);
+    res.status(500).json({ success: false, message: 'Error interno' });
   }
 });
 
@@ -266,126 +244,62 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
   try {
     const { id } = req.params;
     const {
-      customerId,
-      date,
-      validUntil,
-      notes,
-      items,
-      discountType = 'amount',
-      discountValue = 0,
-      taxRate = 0.07,
-      status,
-      retention
+      customerId, date, validUntil, notes, items,
+      discountType = 'amount', discountValue = 0,
+      taxRate = 0.07, status, retention
     } = req.body;
 
-    const quotation = await Quotation.findOne({
-      where: {
-        id,
-        ...getCompanyFilter(req)
-      }
-    });
-
+    const quotation = await Quotation.findOne({ where: { id, ...getCompanyFilter(req) } });
     if (!quotation) {
       await t.rollback();
-      return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
+      return res.status(404).json({ success: false, message: 'No encontrada' });
     }
 
-    //Snapshot para historial
-    const currentSnapshot = await Quotation.findByPk(id, {
-      include: [{ model: QuotationItem, as: 'items' }],
-      transaction: t
-    });
-
-    const lastHistory = await QuotationHistory.findOne({
-      where: { quotationId: id },
-      order: [['version', 'DESC']],
-      transaction: t
-    });
-    const nextVersion = lastHistory ? lastHistory.version + 1 : 1;
-
+    // Snapshot historial
+    const currentSnapshot = await Quotation.findByPk(id, { include: [{ model: QuotationItem, as: 'items' }], transaction: t });
     await QuotationHistory.create({
       quotationId: id,
-      version: nextVersion,
+      version: ((await QuotationHistory.max('version', { where: { quotationId: id }, transaction: t })) || 0) + 1,
       changedBy: req.user.id,
       data: currentSnapshot.toJSON()
     }, { transaction: t });
 
     let updateData = {};
-    let shouldUpdateItems = false;
-    let itemsToCreate = [];
-
     if (items) {
-      shouldUpdateItems = true;
       let subtotalItems = 0;
-
-      // Buscar costos
       const productIds = items.map(i => i.productId).filter(id => id);
-      const productsInvolved = await Product.findAll({
-        where: { id: { [Op.in]: productIds } },
-        attributes: ['id', 'cost']
-      });
-      const costMap = productsInvolved.reduce((acc, p) => {
-        acc[p.id] = parseFloat(p.cost);
-        return acc;
-      }, {});
+      const productsInvolved = await Product.findAll({ where: { id: { [Op.in]: productIds } }, attributes: ['id', 'cost'] });
+      const costMap = productsInvolved.reduce((acc, p) => { acc[p.id] = parseFloat(p.cost); return acc; }, {});
 
-      itemsToCreate = items.map(item => {
+      const itemsToCreate = items.map(item => {
         const qty = parseFloat(item.quantity);
         const price = parseFloat(item.unitPrice);
-        const itemDiscountValue = parseFloat(item.discountValue) || 0;
-        const itemDiscountType = item.discountType || 'amount';
-        const itemUnitCost = item.productId ? (costMap[item.productId] || 0) : 0;
-
-        let itemTotalBeforeDiscount = qty * price;
-        let itemDiscountAmount = 0;
-
-        if (itemDiscountType === 'percentage') {
-          itemDiscountAmount = itemTotalBeforeDiscount * (itemDiscountValue / 100);
-        } else {
-          itemDiscountAmount = itemDiscountValue;
-        }
-
-        const itemTotal = itemTotalBeforeDiscount - itemDiscountAmount;
-        subtotalItems += itemTotal;
-
-        return {
-          ...item,
-          unitCost: itemUnitCost,
-          discount: itemDiscountAmount,
-          discountType: itemDiscountType,
-          discountValue: itemDiscountValue,
-          total: itemTotal
-        };
+        const dVal = parseFloat(item.discountValue || 0);
+        const dType = item.discountType || 'amount';
+        const cost = item.productId ? (costMap[item.productId] || 0) : 0;
+        const sub = qty * price;
+        const dAmount = (dType === 'percentage') ? sub * (dVal / 100) : dVal;
+        subtotalItems += (sub - dAmount);
+        return { ...item, unitCost: cost, discount: dAmount, total: sub - dAmount };
       });
 
-      let globalDiscountAmount = 0;
-      const globalDiscountVal = parseFloat(discountValue) || 0;
-
-      if (discountType === 'percentage') {
-        globalDiscountAmount = subtotalItems * (globalDiscountVal / 100);
-      } else {
-        globalDiscountAmount = globalDiscountVal;
-      }
-
-      const taxable = Math.max(0, subtotalItems - globalDiscountAmount);
-      const effectiveTaxRate = parseFloat(taxRate);
-      const tax = taxable * effectiveTaxRate;
-      const calculatedRetention = parseFloat(retention !== undefined ? retention : quotation.retention || 0);
-      const total = taxable + tax - calculatedRetention;
+      let globalD = (discountType === 'percentage') ? subtotalItems * (parseFloat(discountValue) / 100) : parseFloat(discountValue);
+      let tax = (subtotalItems - globalD) * parseFloat(taxRate);
+      let ret = parseFloat(retention !== undefined ? retention : quotation.retention);
 
       updateData = {
-        subtotal: subtotalItems,
-        discount: globalDiscountAmount,
-        discountType,
-        discountValue: globalDiscountVal,
-        tax,
-        taxRate: effectiveTaxRate,
-        retention: parseFloat(retention !== undefined ? retention : quotation.retention),
-        total,
-        notes,
-        date,
-        validUntil
+        subtotal: subtotalItems, discount: globalD, discountType, discountValue,
+        tax, taxRate: parseFloat(taxRate), retention: ret, total: (subtotalItems - globalD) + tax - ret,
+        notes, date, validUntil
       };
+
+      await QuotationItem.destroy({ where: { quotationId: id }, transaction: t });
+      await QuotationItem.bulkCreate(itemsToCreate.map((item, index) => ({
+        quotationId: id, productId: item.productId || null, description: item.description,
+        quantity: item.quantity, unitPrice: item.unitPrice, unitCost: item.unitCost,
+        discount: item.discount, discountType: item.discountType, discountValue: item.discountValue,
+        position: item.position !== undefined ? item.position : index, total: item.total
+      })), { transaction: t });
     } else {
       if (date) updateData.date = date;
       if (validUntil) updateData.validUntil = validUntil;
@@ -396,85 +310,34 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
     if (status) updateData.status = status;
 
     await quotation.update(updateData, { transaction: t });
-
-    if (shouldUpdateItems) {
-      await QuotationItem.destroy({ where: { quotationId: id }, transaction: t });
-      if (itemsToCreate.length > 0) {
-        await QuotationItem.bulkCreate(
-          itemsToCreate.map((item, index) => ({
-            quotationId: id,
-            productId: item.productId || null,
-            description: item.description,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            unitCost: item.unitCost,
-            discount: item.discount,
-            discountType: item.discountType,
-            discountValue: item.discountValue,
-            position: item.position !== undefined ? item.position : index,
-            total: item.total
-          })),
-          { transaction: t }
-        );
-      }
-    }
-
-    const updatedQuotation = await Quotation.findByPk(id, {
-      include: ['customer', {
-        model: QuotationItem,
-        as: 'items',
-        include: ['product']
-      }],
-      order: [[{ model: QuotationItem, as: 'items' }, 'position', 'ASC']],
-      transaction: t
-    });
-
     await t.commit();
-    res.json({ success: true, message: 'Cotización actualizada exitosamente', quotation: updatedQuotation });
-
+    res.json({ success: true, message: 'Actualizada' });
   } catch (error) {
     if (t && !t.finished) await t.rollback();
-    console.error('Error al actualizar cotización:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Error' });
   }
 });
 
-// DELETE /api/quotations/:id - Eliminar cotización
+// DELETE
 router.delete('/:id', requireCompanyContext, requireCompanyPermission(['quotations.delete'], 'manager'), async (req, res) => {
   try {
-    const quotation = await Quotation.findOne({
-      where: {
-        id: req.params.id,
-        ...getCompanyFilter(req)
-      }
-    });
-
-    if (!quotation) {
-      return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
-    }
-
-    await quotation.destroy();
-    res.json({ success: true, message: 'Cotización eliminada exitosamente' });
-
-  } catch (error) {
-    console.error('Error al eliminar cotización:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+    const q = await Quotation.findOne({ where: { id: req.params.id, ...getCompanyFilter(req) } });
+    if (q) await q.destroy();
+    res.json({ success: true });
+  } catch (error) { res.status(500).json({ success: false }); }
 });
 
-// GET /api/quotations/:id/history - Obtener historial de cambios
+// HISTORY
 router.get('/:id/history', requireCompanyContext, requireCompanyPermission(['quotations.read'], 'user'), async (req, res) => {
   try {
     const history = await QuotationHistory.findAll({
       where: { quotationId: req.params.id },
-      include: [{ model: User, as: 'editor', attributes: ['id', 'firstName', 'lastName'] }],
+      include: [{ model: User, as: 'editor', attributes: ['firstName', 'lastName'] }],
       order: [['version', 'DESC']]
     });
     res.json({ success: true, history });
-  } catch (error) {
-    console.error('Error al obtener historial:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
+  } catch (error) { res.status(500).json({ success: false }); }
 });
 
 module.exports = router;
