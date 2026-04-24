@@ -58,7 +58,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
     const quotationIds = quotations.map(q => q.id);
     const items = await QuotationItem.findAll({
       where: { quotationId: { [Op.in]: quotationIds } },
-      attributes: ['quotationId', 'quantity', 'unitPrice', 'unitCost', 'total'],
+      attributes: ['quotationId', 'productId', 'quantity', 'unitPrice', 'unitCost', 'total'],
       include: [{
         model: Product,
         as: 'product',
