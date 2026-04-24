@@ -141,8 +141,17 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
     const q = await Quotation.findOne({ where: { id: req.params.id, ...getCompanyFilter(req) } });
     if (!q) return res.status(404).json({ success: false });
 
-    // Historial
-    const snap = await Quotation.findByPk(q.id, { include: ['items'], transaction: t });
+    // Snapshot historial con productos incluidos para SKU y Ganancia
+    const snap = await Quotation.findByPk(q.id, { 
+      include: [
+        { 
+          model: QuotationItem, 
+          as: 'items',
+          include: [{ model: Product, as: 'product' }]
+        }
+      ], 
+      transaction: t 
+    });
     const v = (await QuotationHistory.max('version', { where: { quotationId: q.id }, transaction: t }) || 0) + 1;
     await QuotationHistory.create({ quotationId: q.id, version: v, changedBy: req.user.id, data: snap.toJSON() }, { transaction: t });
 

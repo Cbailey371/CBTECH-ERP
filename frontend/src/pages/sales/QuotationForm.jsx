@@ -1048,22 +1048,35 @@ export default function QuotationForm() {
                             </DialogHeader>
 
                             <div className="mt-6 space-y-6">
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-xl">
+                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
                                     <div>
                                         <div className="text-[10px] uppercase font-bold text-muted-foreground">Subtotal</div>
-                                        <div className="text-sm font-medium">${parseFloat(viewingVersion.data.subtotal).toFixed(2)}</div>
+                                        <div className="text-sm font-medium text-foreground">${parseFloat(viewingVersion.data.subtotal).toFixed(2)}</div>
                                     </div>
                                     <div>
-                                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Descuento</div>
-                                        <div className="text-sm font-medium">${parseFloat(viewingVersion.data.discount).toFixed(2)}</div>
+                                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Desc.</div>
+                                        <div className="text-sm font-medium text-foreground">${parseFloat(viewingVersion.data.discount).toFixed(2)}</div>
                                     </div>
                                     <div>
                                         <div className="text-[10px] uppercase font-bold text-muted-foreground">ITBMS</div>
-                                        <div className="text-sm font-medium">${parseFloat(viewingVersion.data.tax).toFixed(2)}</div>
+                                        <div className="text-sm font-medium text-foreground">${parseFloat(viewingVersion.data.tax).toFixed(2)}</div>
                                     </div>
                                     <div>
                                         <div className="text-[10px] uppercase font-bold text-muted-foreground text-primary">Total</div>
                                         <div className="text-sm font-bold text-primary">${parseFloat(viewingVersion.data.total).toFixed(2)}</div>
+                                    </div>
+                                    <div className="border-l border-border/50 pl-4 bg-emerald-500/5 rounded-r-lg">
+                                        <div className="text-[10px] uppercase font-bold text-emerald-600">Ganancia</div>
+                                        <div className="text-sm font-bold text-emerald-600">
+                                            {(() => {
+                                                const sub = parseFloat(viewingVersion.data.subtotal || 0);
+                                                const disc = parseFloat(viewingVersion.data.discount || 0);
+                                                const cost = viewingVersion.data.items?.reduce((acc, i) => acc + (parseFloat(i.quantity) * parseFloat(i.unitCost || 0)), 0) || 0;
+                                                const profit = (sub - disc) - cost;
+                                                const margin = (sub - disc) > 0 ? (profit / (sub - disc) * 100).toFixed(1) : 0;
+                                                return `$${profit.toFixed(2)} (${margin}%)`;
+                                            })()}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1071,33 +1084,34 @@ export default function QuotationForm() {
                                     <table className="w-full text-sm min-w-[500px] sm:min-w-0">
                                         <thead className="bg-muted/50 border-b">
                                             <tr>
+                                                <th className="text-left p-3 w-32">SKU</th>
                                                 <th className="text-left p-3">Descripción</th>
-                                                <th className="text-right p-3 w-20">Cant.</th>
-                                                <th className="text-right p-3 w-32">Precio</th>
-                                                <th className="text-right p-3 w-32">Total</th>
+                                                <th className="text-right p-3 w-16">Cant.</th>
+                                                <th className="text-right p-3 w-28">Precio</th>
+                                                <th className="text-right p-3 w-28">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y">
                                             {viewingVersion.data.items?.map((item, idx) => (
-                                                <tr key={idx}>
-                                                    <td className="p-3">{item.description || (item.product?.description) || 'Sin descripción'}</td>
+                                                <tr key={idx} className="hover:bg-muted/30 transition-colors">
+                                                    <td className="p-3 text-xs font-mono text-muted-foreground">
+                                                        {item.product?.sku || item.product?.code || '-'}
+                                                    </td>
+                                                    <td className="p-3">
+                                                        <div className="font-medium text-foreground">{item.description}</div>
+                                                        {item.product?.name && item.product.name !== item.description && (
+                                                            <div className="text-[10px] text-muted-foreground italic line-clamp-1">{item.product.name}</div>
+                                                        )}
+                                                    </td>
                                                     <td className="p-3 text-right">{item.quantity}</td>
-                                                    <td className="p-3 text-right">${parseFloat(item.unitPrice).toFixed(2)}</td>
-                                                    <td className="p-3 text-right font-medium">${parseFloat(item.total).toFixed(2)}</td>
+                                                    <td className="p-3 text-right line-through-none">${parseFloat(item.unitPrice).toFixed(2)}</td>
+                                                    <td className="p-3 text-right font-semibold text-foreground">${parseFloat(item.total).toFixed(2)}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
                                 </div>
 
-                                {viewingVersion.data.notes && (
-                                    <div className="space-y-2">
-                                        <div className="text-[10px] uppercase font-bold text-muted-foreground">Notas de esta versión</div>
-                                        <div className="p-4 bg-muted/20 rounded-xl text-sm whitespace-pre-wrap italic text-muted-foreground border border-border/50">
-                                            {viewingVersion.data.notes}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </>
                     )}
