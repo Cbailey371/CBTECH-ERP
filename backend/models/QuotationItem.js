@@ -63,6 +63,12 @@ const QuotationItem = sequelize.define('QuotationItem', {
         allowNull: false,
         defaultValue: 0
     },
+    unitCost: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0,
+        field: 'unit_cost'
+    },
     total: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false

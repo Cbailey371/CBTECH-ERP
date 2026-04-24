@@ -251,6 +251,7 @@ export default function QuotationsPage() {
                                         <TableHead className="text-muted-foreground">Cliente</TableHead>
                                         <TableHead className="text-muted-foreground">Fecha</TableHead>
                                         <TableHead className="text-muted-foreground">Total</TableHead>
+                                        <TableHead className="text-muted-foreground text-emerald-500">Ganancia</TableHead>
                                         <TableHead className="text-muted-foreground">Estado</TableHead>
                                         <TableHead className="text-right text-muted-foreground">Acciones</TableHead>
                                     </TableRow>
@@ -282,6 +283,14 @@ export default function QuotationsPage() {
                                                 </TableCell>
                                                 <TableCell className="font-medium text-foreground">
                                                     ${parseFloat(quotation.total).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell className="font-bold text-emerald-600 dark:text-emerald-400">
+                                                    {(() => {
+                                                        const totalCost = quotation.items?.reduce((acc, item) => acc + (parseFloat(item.quantity) * parseFloat(item.unitCost || 0)), 0) || 0;
+                                                        const subtotalNet = (parseFloat(quotation.total) - parseFloat(quotation.tax || 0)) + parseFloat(quotation.retention || 0);
+                                                        const profit = subtotalNet - totalCost;
+                                                        return `$${profit.toFixed(2)}`;
+                                                    })()}
                                                 </TableCell>
                                                 <TableCell>
                                                     <div className="relative inline-block">
@@ -378,9 +387,19 @@ export default function QuotationsPage() {
                                             <p className="text-foreground font-medium line-clamp-2">{quotation.customer?.name}</p>
                                             <div className="flex justify-between text-sm text-muted-foreground">
                                                 <span>{new Date(quotation.date).toLocaleDateString()}</span>
-                                                <span className="font-bold text-foreground text-base">
-                                                    ${parseFloat(quotation.total).toFixed(2)}
-                                                </span>
+                                                <div className="flex flex-col items-end">
+                                                    <span className="font-bold text-foreground text-base">
+                                                        ${parseFloat(quotation.total).toFixed(2)}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">
+                                                        Ganancia: {(() => {
+                                                            const totalCost = quotation.items?.reduce((acc, item) => acc + (parseFloat(item.quantity) * parseFloat(item.unitCost || 0)), 0) || 0;
+                                                            const subtotalNet = (parseFloat(quotation.total) - parseFloat(quotation.tax || 0)) + parseFloat(quotation.retention || 0);
+                                                            const profit = subtotalNet - totalCost;
+                                                            return `$${profit.toFixed(2)}`;
+                                                        })()}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="flex justify-end gap-3 pt-2">

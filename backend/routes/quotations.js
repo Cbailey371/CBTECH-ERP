@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Op } = require('sequelize');
-const { sequelize, Quotation, QuotationItem, Customer, QuotationHistory, User } = require('../models');
+const { sequelize, Quotation, QuotationItem, Customer, QuotationHistory, User, Product } = require('../models');
 const { authenticateToken } = require('../middleware/auth');
 const {
   companyContext,
@@ -53,6 +53,11 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
           model: Customer,
           as: 'customer',
           attributes: ['id', 'name', 'email']
+        },
+        {
+          model: QuotationItem,
+          as: 'items',
+          attributes: ['quantity', 'unitPrice', 'unitCost', 'total']
         }
       ],
       limit: parseInt(limit),
@@ -136,11 +141,25 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
     // Calcular totales
     let subtotalItems = 0;
 
+    // Buscar todos los costos de productos involucrados
+    const productIds = items.map(i => i.productId).filter(id => id);
+    const productsInvolved = await Product.findAll({
+      where: { id: { [Op.in]: productIds } },
+      attributes: ['id', 'cost']
+    });
+    const costMap = productsInvolved.reduce((acc, p) => {
+      acc[p.id] = parseFloat(p.cost);
+      return acc;
+    }, {});
+
     const itemsToCreate = items.map(item => {
       const qty = parseFloat(item.quantity);
       const price = parseFloat(item.unitPrice);
       const itemDiscountValue = parseFloat(item.discountValue) || 0;
       const itemDiscountType = item.discountType || 'amount';
+      
+        itemUnitCost = costMap[item.productId] || 0;
+      }
 
       let itemTotalBeforeDiscount = qty * price;
       let itemDiscountAmount = 0;
@@ -156,6 +175,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
 
       return {
         ...item,
+        unitCost: itemUnitCost, // NUEVO
         discount: itemDiscountAmount, // Guardamos el monto del descuento calculado
         discountType: itemDiscountType,
         discountValue: itemDiscountValue,
@@ -207,6 +227,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
+          unitCost: item.unitCost, // NUEVO
           discount: item.discount,
           discountType: item.discountType,
           discountValue: item.discountValue,
@@ -315,7 +336,26 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
         const itemDiscountValue = parseFloat(item.discountValue) || 0;
         const itemDiscountType = item.discountType || 'amount';
 
-        let itemTotalBeforeDiscount = qty * price;
+        // Buscar todos los costos de productos involucrados para el PUT
+        const productIds = items.map(i => i.productId).filter(id => id);
+        const productsInvolved = await Product.findAll({
+          where: { id: { [Op.in]: productIds } },
+          attributes: ['id', 'cost']
+        });
+        const costMap = productsInvolved.reduce((acc, p) => {
+          acc[p.id] = parseFloat(p.cost);
+          return acc;
+        }, {});
+
+        // Mapear items con sus costos
+        itemsToCreate = items.map(item => {
+          const qty = parseFloat(item.quantity);
+          const price = parseFloat(item.unitPrice);
+          const itemDiscountValue = parseFloat(item.discountValue) || 0;
+          const itemDiscountType = item.discountType || 'amount';
+          const itemUnitCost = item.productId ? (costMap[item.productId] || 0) : 0;
+
+          let itemTotalBeforeDiscount = qty * price;
         let itemDiscountAmount = 0;
 
         if (itemDiscountType === 'percentage') {
@@ -329,6 +369,7 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
 
         return {
           ...item,
+          unitCost: itemUnitCost,
           discount: itemDiscountAmount,
           discountType: itemDiscountType,
           discountValue: itemDiscountValue,
@@ -394,6 +435,7 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
+            unitCost: item.unitCost, // NUEVO
             discount: item.discount,
             discountType: item.discountType,
             discountValue: item.discountValue,

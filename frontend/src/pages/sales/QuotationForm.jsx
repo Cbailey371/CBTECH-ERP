@@ -113,12 +113,11 @@ export default function QuotationForm() {
     }, [id, formData.notes]);
 
     const [totals, setTotals] = useState({
-        subtotal: 0,
-        discount: 0,
-        taxable: 0,
         tax: 0,
         retention: 0,
-        total: 0
+        total: 0,
+        totalCost: 0,
+        profit: 0
     });
 
     const [history, setHistory] = useState([]);
@@ -258,6 +257,7 @@ export default function QuotationForm() {
         let grossItemsTotal = 0;
         let totalItemDiscounts = 0;
         let itemsTaxableBase = 0;
+        let totalCost = 0;
 
         // 1. Calcular totales de línea, descuentos y base imponible por ítem
         formData.items.forEach(item => {
@@ -284,6 +284,10 @@ export default function QuotationForm() {
             if (!isCustomerExempt && !isProductExempt) {
                 itemsTaxableBase += itemNet;
             }
+
+            // --- NUEVO: CÁLCULO DE COSTO ---
+            const unitCost = parseFloat(product?.cost || item.unitCost || 0);
+            totalCost += unitCost * qty;
         });
 
         // Net Items Total (Base for Global Discount)
@@ -329,6 +333,8 @@ export default function QuotationForm() {
             taxable: finalTaxableBase,
             tax,
             retention,
+            totalCost: totalCost,
+            profit: (netItemsTotal - globalDiscount) - totalCost,
             total: Math.max(0, total)
         });
     };
@@ -864,6 +870,11 @@ export default function QuotationForm() {
                             <div className="pt-3 border-t border-border flex justify-between text-xl font-bold text-foreground">
                                 <span>{totals.retention > 0 ? 'Total a Recibir:' : 'Total:'}</span>
                                 <span>${totals.total.toFixed(2)}</span>
+                            </div>
+
+                            <div className="pt-2 flex justify-between text-xs font-bold text-emerald-500 border-t border-emerald-500/20">
+                                <span className="uppercase tracking-wider">Ganancia Proyectada:</span>
+                                <span>${totals.profit.toFixed(2)} ({totals.totalCost > 0 ? ((totals.profit / totals.totalCost) * 100).toFixed(1) : 0}%)</span>
                             </div>
                         </CardContent>
                     </Card>
