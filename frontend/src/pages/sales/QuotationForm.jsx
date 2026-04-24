@@ -113,6 +113,9 @@ export default function QuotationForm() {
     }, [id, formData.notes]);
 
     const [totals, setTotals] = useState({
+        subtotal: 0,
+        discount: 0,
+        taxable: 0,
         tax: 0,
         retention: 0,
         total: 0,
