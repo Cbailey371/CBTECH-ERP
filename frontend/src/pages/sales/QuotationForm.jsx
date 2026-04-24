@@ -885,7 +885,7 @@ export default function QuotationForm() {
 
                             <div className="pt-2 flex justify-between text-xs font-bold text-emerald-500 border-t border-emerald-500/20">
                                 <span className="uppercase tracking-wider">Ganancia Proyectada:</span>
-                                <span>${totals.profit.toFixed(2)} ({ (totals.subtotal - totals.discount) > 0 ? ((totals.profit / (totals.subtotal - totals.discount)) * 100).toFixed(1) : 0}%)</span>
+                                <span>${totals.profit.toFixed(2)} ({ (totals.subtotal - totals.discount) !== 0 ? (((totals.profit) / (totals.subtotal - totals.discount)) * 100).toFixed(1) : '0.0'}%)</span>
                             </div>
                         </CardContent>
                     </Card>
