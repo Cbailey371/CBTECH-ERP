@@ -57,7 +57,8 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
         model: Product,
         as: 'product',
         attributes: ['id', 'cost', 'type', 'margin']
-      }]
+      }],
+      order: [['position', 'ASC']]
     });
 
     const results = quotations.map(q => {
@@ -96,6 +97,9 @@ router.get('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       include: [
         { model: Customer, as: 'customer' },
         { model: QuotationItem, as: 'items', include: ['product'] }
+      ],
+      order: [
+        [{ model: QuotationItem, as: 'items' }, 'position', 'ASC']
       ]
     });
     res.json({ success: true, quotation });
@@ -141,7 +145,7 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
     const q = await Quotation.findOne({ where: { id: req.params.id, ...getCompanyFilter(req) } });
     if (!q) return res.status(404).json({ success: false });
 
-    // Snapshot historial con productos incluidos para SKU y Ganancia
+    // Snapshot historial con productos incluidos y ORDENADOS
     const snap = await Quotation.findByPk(q.id, { 
       include: [
         { 
@@ -150,6 +154,9 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
           include: [{ model: Product, as: 'product' }]
         }
       ], 
+      order: [
+        [{ model: QuotationItem, as: 'items' }, 'position', 'ASC']
+      ],
       transaction: t 
     });
     const v = (await QuotationHistory.max('version', { where: { quotationId: q.id }, transaction: t }) || 0) + 1;
