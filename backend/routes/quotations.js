@@ -118,9 +118,8 @@ router.get('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
     }
 
     res.json({ success: true, quotation });
-
   } catch (error) {
-    console.error('Error al obtener cotización:', error);
+    console.error('Error al obtener detalle de cotización:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
@@ -141,14 +140,14 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       retention = 0
     } = req.body;
 
-    // Generar número secuencial (simple por ahora)
+    // Generar número secuencial
     const count = await Quotation.count({ where: getCompanyFilter(req) });
     const number = `COT-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
 
     // Calcular totales
     let subtotalItems = 0;
 
-    // Buscar todos los costos de productos involucrados
+    // Buscar costos de productos involucrados
     const productIds = items.map(i => i.productId).filter(id => id);
     const productsInvolved = await Product.findAll({
       where: { id: { [Op.in]: productIds } },
@@ -165,8 +164,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       const itemDiscountValue = parseFloat(item.discountValue) || 0;
       const itemDiscountType = item.discountType || 'amount';
       
-        itemUnitCost = costMap[item.productId] || 0;
-      }
+      const itemUnitCost = item.productId ? (costMap[item.productId] || 0) : 0;
 
       let itemTotalBeforeDiscount = qty * price;
       let itemDiscountAmount = 0;
@@ -182,15 +180,14 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
 
       return {
         ...item,
-        unitCost: itemUnitCost, // NUEVO
-        discount: itemDiscountAmount, // Guardamos el monto del descuento calculado
+        unitCost: itemUnitCost,
+        discount: itemDiscountAmount,
         discountType: itemDiscountType,
         discountValue: itemDiscountValue,
         total: itemTotal
       };
     });
 
-    // Calcular descuento global
     let globalDiscountAmount = 0;
     const globalDiscountVal = parseFloat(discountValue) || 0;
 
@@ -205,7 +202,6 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
     const tax = taxable * effectiveTaxRate;
     const total = taxable + tax - parseFloat(retention || 0);
 
-    // Crear cabecera
     const quotation = await Quotation.create({
       companyId: req.companyContext.companyId,
       customerId,
@@ -225,7 +221,6 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       createdBy: req.user.id
     }, { transaction: t });
 
-    // Crear items
     if (itemsToCreate.length > 0) {
       await QuotationItem.bulkCreate(
         itemsToCreate.map((item, index) => ({
@@ -234,7 +229,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          unitCost: item.unitCost, // NUEVO
+          unitCost: item.unitCost,
           discount: item.discount,
           discountType: item.discountType,
           discountValue: item.discountValue,
@@ -245,31 +240,20 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       );
     }
 
-    // Retornar cotización completa (DENTRO de la transacción para ser consistente)
     const createdQuotation = await Quotation.findByPk(quotation.id, {
       include: ['customer', {
         model: QuotationItem,
         as: 'items',
         include: ['product']
       }],
-      order: [
-        [{ model: QuotationItem, as: 'items' }, 'position', 'ASC']
-      ],
       transaction: t
     });
 
     await t.commit();
-
-    res.status(201).json({
-      success: true,
-      message: 'Cotización creada exitosamente',
-      quotation: createdQuotation
-    });
+    res.status(201).json({ success: true, quotation: createdQuotation });
 
   } catch (error) {
-    if (t && !t.finished) {
-      try { await t.rollback(); } catch (rollbackError) { /* ignore */ }
-    }
+    if (t && !t.finished) await t.rollback();
     console.error('Error al crear cotización:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
   }
@@ -304,31 +288,27 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       await t.rollback();
       return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
     }
- 
-    // --- NUEVO: GUARDAR HISTORIAL ANTES DE ACTUALIZAR ---
-    // Obtener snapshot completo actual
+
+    //Snapshot para historial
     const currentSnapshot = await Quotation.findByPk(id, {
       include: [{ model: QuotationItem, as: 'items' }],
       transaction: t
     });
- 
-    // Obtener última versión
+
     const lastHistory = await QuotationHistory.findOne({
       where: { quotationId: id },
       order: [['version', 'DESC']],
       transaction: t
     });
     const nextVersion = lastHistory ? lastHistory.version + 1 : 1;
- 
+
     await QuotationHistory.create({
       quotationId: id,
       version: nextVersion,
       changedBy: req.user.id,
       data: currentSnapshot.toJSON()
     }, { transaction: t });
-    // --- FIN HISTORIAL ---
 
-    // 1. Recalcular totales (Solo si se envían items)
     let updateData = {};
     let shouldUpdateItems = false;
     let itemsToCreate = [];
@@ -337,32 +317,25 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       shouldUpdateItems = true;
       let subtotalItems = 0;
 
+      // Buscar costos
+      const productIds = items.map(i => i.productId).filter(id => id);
+      const productsInvolved = await Product.findAll({
+        where: { id: { [Op.in]: productIds } },
+        attributes: ['id', 'cost']
+      });
+      const costMap = productsInvolved.reduce((acc, p) => {
+        acc[p.id] = parseFloat(p.cost);
+        return acc;
+      }, {});
+
       itemsToCreate = items.map(item => {
         const qty = parseFloat(item.quantity);
         const price = parseFloat(item.unitPrice);
         const itemDiscountValue = parseFloat(item.discountValue) || 0;
         const itemDiscountType = item.discountType || 'amount';
+        const itemUnitCost = item.productId ? (costMap[item.productId] || 0) : 0;
 
-        // Buscar todos los costos de productos involucrados para el PUT
-        const productIds = items.map(i => i.productId).filter(id => id);
-        const productsInvolved = await Product.findAll({
-          where: { id: { [Op.in]: productIds } },
-          attributes: ['id', 'cost']
-        });
-        const costMap = productsInvolved.reduce((acc, p) => {
-          acc[p.id] = parseFloat(p.cost);
-          return acc;
-        }, {});
-
-        // Mapear items con sus costos
-        itemsToCreate = items.map(item => {
-          const qty = parseFloat(item.quantity);
-          const price = parseFloat(item.unitPrice);
-          const itemDiscountValue = parseFloat(item.discountValue) || 0;
-          const itemDiscountType = item.discountType || 'amount';
-          const itemUnitCost = item.productId ? (costMap[item.productId] || 0) : 0;
-
-          let itemTotalBeforeDiscount = qty * price;
+        let itemTotalBeforeDiscount = qty * price;
         let itemDiscountAmount = 0;
 
         if (itemDiscountType === 'percentage') {
@@ -384,7 +357,6 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
         };
       });
 
-      // Calcular descuento global
       let globalDiscountAmount = 0;
       const globalDiscountVal = parseFloat(discountValue) || 0;
 
@@ -414,7 +386,6 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
         validUntil
       };
     } else {
-      // Si no se envían items, solo actualizar campos sueltos si vienen
       if (date) updateData.date = date;
       if (validUntil) updateData.validUntil = validUntil;
       if (notes !== undefined) updateData.notes = notes;
@@ -425,15 +396,8 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
 
     await quotation.update(updateData, { transaction: t });
 
-    // 3. Reemplazar Items (Solo si se enviaron items)
     if (shouldUpdateItems) {
-      // Borrar items anteriores
-      await QuotationItem.destroy({
-        where: { quotationId: id },
-        transaction: t
-      });
-
-      // Crear nuevos items
+      await QuotationItem.destroy({ where: { quotationId: id }, transaction: t });
       if (itemsToCreate.length > 0) {
         await QuotationItem.bulkCreate(
           itemsToCreate.map((item, index) => ({
@@ -442,7 +406,7 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
-            unitCost: item.unitCost, // NUEVO
+            unitCost: item.unitCost,
             discount: item.discount,
             discountType: item.discountType,
             discountValue: item.discountValue,
@@ -454,31 +418,21 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       }
     }
 
-    // Obtener actualizada DENTRO de la transacción para ser consistente
     const updatedQuotation = await Quotation.findByPk(id, {
       include: ['customer', {
         model: QuotationItem,
         as: 'items',
         include: ['product']
       }],
-      order: [
-        [{ model: QuotationItem, as: 'items' }, 'position', 'ASC']
-      ],
+      order: [[{ model: QuotationItem, as: 'items' }, 'position', 'ASC']],
       transaction: t
     });
 
     await t.commit();
-
-    res.json({
-      success: true,
-      message: 'Cotización actualizada exitosamente',
-      quotation: updatedQuotation
-    });
+    res.json({ success: true, message: 'Cotización actualizada exitosamente', quotation: updatedQuotation });
 
   } catch (error) {
-    if (t && !t.finished) {
-      try { await t.rollback(); } catch (rollbackError) { /* ignore */ }
-    }
+    if (t && !t.finished) await t.rollback();
     console.error('Error al actualizar cotización:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor', error: error.message });
   }
@@ -499,7 +453,6 @@ router.delete('/:id', requireCompanyContext, requireCompanyPermission(['quotatio
     }
 
     await quotation.destroy();
-
     res.json({ success: true, message: 'Cotización eliminada exitosamente' });
 
   } catch (error) {
@@ -508,29 +461,19 @@ router.delete('/:id', requireCompanyContext, requireCompanyPermission(['quotatio
   }
 });
 
- 
 // GET /api/quotations/:id/history - Obtener historial de cambios
 router.get('/:id/history', requireCompanyContext, requireCompanyPermission(['quotations.read'], 'user'), async (req, res) => {
   try {
     const history = await QuotationHistory.findAll({
-      where: {
-        quotationId: req.params.id
-      },
-      include: [
-        {
-          model: User,
-          as: 'editor',
-          attributes: ['id', 'firstName', 'lastName']
-        }
-      ],
+      where: { quotationId: req.params.id },
+      include: [{ model: User, as: 'editor', attributes: ['id', 'firstName', 'lastName'] }],
       order: [['version', 'DESC']]
     });
- 
     res.json({ success: true, history });
   } catch (error) {
     console.error('Error al obtener historial:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 });
- 
+
 module.exports = router;
