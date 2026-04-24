@@ -13,7 +13,7 @@ const {
 router.use(authenticateToken);
 router.use(companyContext);
 
-// GET /api/quotations - Listar cotizaciones (OPTIMIZADO PARA ESTABILIDAD)
+// GET /api/quotations - Listado con Ganancia Calculada
 router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.read'], 'user'), async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '', startDate, endDate, status } = req.query;
@@ -40,7 +40,6 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
       whereClause.status = status;
     }
 
-    // 1. Obtener las cotizaciones con lo básico (Cliente)
     const { count, rows: quotations } = await Quotation.findAndCountAll({
       where: whereClause,
       include: [{
@@ -54,7 +53,6 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
       distinct: true
     });
 
-    // 2. Obtener los ítems con sus costos para estas cotizaciones específicas (Para la ganancia)
     const quotationIds = quotations.map(q => q.id);
     const items = await QuotationItem.findAll({
       where: { quotationId: { [Op.in]: quotationIds } },
@@ -66,10 +64,23 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
       }]
     });
 
-    // 3. Unir los datos
     const results = quotations.map(q => {
       const qJson = q.toJSON();
-      qJson.items = items.filter(item => item.quotationId === q.id);
+      const qItems = items.filter(item => item.quotationId === q.id);
+      
+      // Cálculo de Ganancia Real en el Servidor
+      const totalCost = qItems.reduce((acc, item) => {
+        const cost = parseFloat(item.unitCost || item.product?.cost || 0);
+        return acc + (parseFloat(item.quantity) * cost);
+      }, 0);
+
+      const subtotalNet = parseFloat(q.subtotal || 0);
+      const discount = parseFloat(q.discount || 0);
+      
+      // Ganancia = (Subtotal - Descuento Global) - Costo Total de Productos
+      qJson.profit = (subtotalNet - discount) - totalCost;
+      qJson.items = qItems;
+      
       return qJson;
     });
 
@@ -89,7 +100,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
   }
 });
 
-// GET /detail
+// GET /api/quotations/:id
 router.get('/:id', requireCompanyContext, requireCompanyPermission(['quotations.read'], 'user'), async (req, res) => {
   try {
     const quotation = await Quotation.findOne({
@@ -103,7 +114,7 @@ router.get('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
   } catch (e) { res.status(500).json({ success: false }); }
 });
 
-// POST
+// POST /api/quotations
 router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.create'], 'user'), async (req, res) => {
   const t = await sequelize.transaction();
   try {
@@ -140,14 +151,13 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
   }
 });
 
-// PUT
+// PUT /api/quotations/:id
 router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.update'], 'user'), async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const q = await Quotation.findOne({ where: { id: req.params.id, ...getCompanyFilter(req) } });
     if (!q) return res.status(404).json({ success: false });
 
-    // Historial
     const snap = await Quotation.findByPk(q.id, { include: ['items'], transaction: t });
     const version = (await QuotationHistory.max('version', { where: { quotationId: q.id }, transaction: t }) || 0) + 1;
     await QuotationHistory.create({ quotationId: q.id, version, changedBy: req.user.id, data: snap.toJSON() }, { transaction: t });
