@@ -120,7 +120,8 @@ export default function QuotationForm() {
         retention: 0,
         total: 0,
         totalCost: 0,
-        profit: 0
+        profit: 0,
+        marginPercentage: 0
     });
 
     const [history, setHistory] = useState([]);
@@ -335,6 +336,9 @@ export default function QuotationForm() {
         }
 
         const total = (netItemsTotal - globalDiscount) + tax - retention;
+        const netBase = (netItemsTotal - globalDiscount);
+        const profitValue = netBase - totalCost;
+        const marginPercentage = netBase !== 0 ? (profitValue / netBase) * 100 : 0;
 
         setTotals({
             subtotal: grossItemsTotal,
@@ -345,7 +349,8 @@ export default function QuotationForm() {
             tax,
             retention,
             totalCost: totalCost,
-            profit: (netItemsTotal - globalDiscount) - totalCost,
+            profit: profitValue,
+            marginPercentage: marginPercentage,
             total: Math.max(0, total)
         });
     };
@@ -885,7 +890,7 @@ export default function QuotationForm() {
 
                             <div className="pt-2 flex justify-between text-xs font-bold text-emerald-500 border-t border-emerald-500/20">
                                 <span className="uppercase tracking-wider">Ganancia Proyectada:</span>
-                                <span>${totals.profit.toFixed(2)} ({ (totals.subtotal - totals.discount) !== 0 ? (((totals.profit) / (totals.subtotal - totals.discount)) * 100).toFixed(1) : '0.0'}%)</span>
+                                <span>${totals.profit.toFixed(2)} ({parseFloat(totals.marginPercentage || 0).toFixed(1)}%)</span>
                             </div>
                         </CardContent>
                     </Card>
