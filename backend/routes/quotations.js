@@ -47,6 +47,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
 
     const { count, rows } = await Quotation.findAndCountAll({
       where: whereClause,
+      distinct: true, // Asegura que cuente cotizaciones únicas, no ítems
       attributes: ['id', 'number', 'date', 'status', 'total', 'subtotal', 'discount', 'tax', 'retention', 'currency', 'customerId'],
       include: [
         {
