@@ -70,7 +70,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
       ],
       limit: parseInt(limit),
       offset: offset,
-      order: [['created_at', 'DESC']]
+      order: [['createdAt', 'DESC']]
     });
 
     res.json({
