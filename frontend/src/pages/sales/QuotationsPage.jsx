@@ -284,11 +284,23 @@ export default function QuotationsPage() {
                                                 <TableCell className="font-medium text-foreground">
                                                     ${parseFloat(quotation.total).toFixed(2)}
                                                 </TableCell>
-                                                <TableCell className="font-bold text-emerald-600 dark:text-emerald-400">
+                                                <TableCell className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">
                                                     {(() => {
-                                                        const totalCost = quotation.items?.reduce((acc, item) => acc + (parseFloat(item.quantity) * parseFloat(item.unitCost || 0)), 0) || 0;
-                                                        const subtotalNet = (parseFloat(quotation.total) - parseFloat(quotation.tax || 0)) + parseFloat(quotation.retention || 0);
-                                                        const profit = subtotalNet - totalCost;
+                                                        const totalCost = quotation.items?.reduce((acc, item) => {
+                                                            // Usamos el costo guardado (unitCost) o el costo actual del producto como fallback
+                                                            const cost = parseFloat(item.unitCost || item.product?.cost || 0);
+                                                            return acc + (parseFloat(item.quantity) * cost);
+                                                        }, 0) || 0;
+                                                        
+                                                        // Ganancia = (Subtotal Neto) - (Costo Total)
+                                                        // El subtotal neto es el total sin impuestos de cada línea
+                                                        const subtotalNet = quotation.items?.reduce((acc, item) => acc + parseFloat(item.total), 0) || 0;
+                                                        
+                                                        // Si hay un descuento global, debemos prorratearlo o restarlo del subtotal
+                                                        // Para simplicidad en el ERP, usamos subtotalItems - globalDiscount
+                                                        const subtotalWithGlobalDiscount = parseFloat(quotation.subtotal || subtotalNet) - parseFloat(quotation.discount || 0);
+                                                        
+                                                        const profit = subtotalWithGlobalDiscount - totalCost;
                                                         return `$${profit.toFixed(2)}`;
                                                     })()}
                                                 </TableCell>
@@ -391,11 +403,16 @@ export default function QuotationsPage() {
                                                     <span className="font-bold text-foreground text-base">
                                                         ${parseFloat(quotation.total).toFixed(2)}
                                                     </span>
-                                                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">
+                                                    <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-tight bg-emerald-500/10 px-2 py-0.5 rounded-full mt-1">
                                                         Ganancia: {(() => {
-                                                            const totalCost = quotation.items?.reduce((acc, item) => acc + (parseFloat(item.quantity) * parseFloat(item.unitCost || 0)), 0) || 0;
-                                                            const subtotalNet = (parseFloat(quotation.total) - parseFloat(quotation.tax || 0)) + parseFloat(quotation.retention || 0);
-                                                            const profit = subtotalNet - totalCost;
+                                                            const totalCost = quotation.items?.reduce((acc, item) => {
+                                                                const cost = parseFloat(item.unitCost || item.product?.cost || 0);
+                                                                return acc + (parseFloat(item.quantity) * cost);
+                                                            }, 0) || 0;
+                                                            const subtotalWithGlobalDiscount = parseFloat(quotation.subtotal || 0) - parseFloat(quotation.discount || 0);
+                                                            // Si subtotal es 0 (no vino en la query), intentamos suma de items
+                                                            const base = subtotalWithGlobalDiscount || (quotation.items?.reduce((acc, item) => acc + parseFloat(item.total), 0) || 0);
+                                                            const profit = base - totalCost;
                                                             return `$${profit.toFixed(2)}`;
                                                         })()}
                                                     </span>

@@ -47,7 +47,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
 
     const { count, rows } = await Quotation.findAndCountAll({
       where: whereClause,
-      attributes: ['id', 'number', 'date', 'status', 'total', 'currency', 'customerId'],
+      attributes: ['id', 'number', 'date', 'status', 'total', 'subtotal', 'discount', 'tax', 'retention', 'currency', 'customerId'],
       include: [
         {
           model: Customer,
@@ -57,7 +57,14 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
         {
           model: QuotationItem,
           as: 'items',
-          attributes: ['quantity', 'unitPrice', 'unitCost', 'total']
+          attributes: ['quantity', 'unitPrice', 'unitCost', 'total'],
+          include: [
+            {
+              model: Product,
+              as: 'product',
+              attributes: ['id', 'cost']
+            }
+          ]
         }
       ],
       limit: parseInt(limit),
