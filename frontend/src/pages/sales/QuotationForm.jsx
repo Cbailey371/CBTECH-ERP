@@ -289,7 +289,15 @@ export default function QuotationForm() {
             }
 
             // --- NUEVO: CÁLCULO DE COSTO ---
-            const unitCost = parseFloat(product?.cost || item.unitCost || 0);
+            const isService = product?.type === 'service';
+            const productMargin = parseFloat(product?.margin || 0);
+            
+            let unitCost = parseFloat(product?.cost || item.unitCost || 0);
+            // Regla: Si es servicio y el margen en catálogo es 0, el costo es 0 (ganancia 100%)
+            if (isService && productMargin === 0) {
+                unitCost = 0;
+            }
+            
             totalCost += unitCost * qty;
         });
 
@@ -877,7 +885,7 @@ export default function QuotationForm() {
 
                             <div className="pt-2 flex justify-between text-xs font-bold text-emerald-500 border-t border-emerald-500/20">
                                 <span className="uppercase tracking-wider">Ganancia Proyectada:</span>
-                                <span>${totals.profit.toFixed(2)} ({totals.totalCost > 0 ? ((totals.profit / totals.totalCost) * 100).toFixed(1) : 0}%)</span>
+                                <span>${totals.profit.toFixed(2)} ({ (totals.subtotal - totals.discount) > 0 ? ((totals.profit / (totals.subtotal - totals.discount)) * 100).toFixed(1) : 0}%)</span>
                             </div>
                         </CardContent>
                     </Card>

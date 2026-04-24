@@ -13,7 +13,7 @@ const {
 router.use(authenticateToken);
 router.use(companyContext);
 
-// GET /api/quotations - Listado con Ganancia Calculada
+// GET /api/quotations - Listado
 router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.read'], 'user'), async (req, res) => {
   try {
     const { page = 1, limit = 10, search = '', startDate, endDate, status } = req.query;
@@ -42,11 +42,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
 
     const { count, rows: quotations } = await Quotation.findAndCountAll({
       where: whereClause,
-      include: [{
-        model: Customer,
-        as: 'customer',
-        attributes: ['id', 'name']
-      }],
+      include: [{ model: Customer, as: 'customer', attributes: ['id', 'name'] }],
       limit: parseInt(limit),
       offset: offset,
       order: [['createdAt', 'DESC']],
@@ -60,7 +56,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
       include: [{
         model: Product,
         as: 'product',
-        attributes: ['id', 'cost']
+        attributes: ['id', 'cost', 'type', 'margin']
       }]
     });
 
@@ -68,35 +64,27 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
       const qJson = q.toJSON();
       const qItems = items.filter(item => item.quotationId === q.id);
       
-      // Cálculo de Ganancia Real en el Servidor
       const totalCost = qItems.reduce((acc, item) => {
-        const cost = parseFloat(item.unitCost || item.product?.cost || 0);
+        // Lógica de Servicios: Si es service y margen 0, costo es 0 (ganancia 100%)
+        const isService = item.product?.type === 'service';
+        const margin = parseFloat(item.product?.margin || 0);
+        
+        let cost = parseFloat(item.unitCost || item.product?.cost || 0);
+        if (isService && margin === 0) cost = 0;
+        
         return acc + (parseFloat(item.quantity) * cost);
       }, 0);
 
-      const subtotalNet = parseFloat(q.subtotal || 0);
-      const discount = parseFloat(q.discount || 0);
-      
-      // Ganancia = (Subtotal - Descuento Global) - Costo Total de Productos
-      qJson.profit = (subtotalNet - discount) - totalCost;
+      const netBase = (parseFloat(q.subtotal || 0) - parseFloat(q.discount || 0));
+      qJson.profit = netBase - totalCost;
       qJson.items = qItems;
-      
       return qJson;
     });
 
-    res.json({
-      success: true,
-      quotations: results,
-      pagination: {
-        current_page: parseInt(page),
-        total_pages: Math.ceil(count / limit),
-        total_items: count
-      }
-    });
-
+    res.json({ success: true, quotations: results, pagination: { current_page: parseInt(page), total_pages: Math.ceil(count / limit), total_items: count } });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ success: false, message: 'Error interno', detail: error.message });
+    res.status(500).json({ success: false, message: 'Error interno' });
   }
 });
 
@@ -114,7 +102,7 @@ router.get('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
   } catch (e) { res.status(500).json({ success: false }); }
 });
 
-// POST /api/quotations
+// POST
 router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.create'], 'user'), async (req, res) => {
   const t = await sequelize.transaction();
   try {
@@ -122,45 +110,41 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
     const count = await Quotation.count({ where: getCompanyFilter(req) });
     const number = `COT-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
 
-    const quotation = await Quotation.create({
-      ...data,
-      companyId: req.companyContext.companyId,
-      number,
-      createdBy: req.user.id,
-      status: 'draft'
-    }, { transaction: t });
+    // Obtener productos para capturar costos actuales
+    const productIds = (data.items || []).map(i => i.productId).filter(id => id);
+    const products = await Product.findAll({ where: { id: { [Op.in]: productIds } } });
+    const productMap = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
+
+    const quotation = await Quotation.create({ ...data, companyId: req.companyContext.companyId, number, createdBy: req.user.id, status: 'draft' }, { transaction: t });
 
     if (data.items) {
-      const productIds = data.items.map(i => i.productId).filter(id => id);
-      const products = await Product.findAll({ where: { id: { [Op.in]: productIds } } });
-      const costs = products.reduce((acc, p) => { acc[p.id] = p.cost; return acc; }, {});
-
-      await QuotationItem.bulkCreate(data.items.map((item, i) => ({
-        ...item,
-        quotationId: quotation.id,
-        unitCost: item.productId ? (costs[item.productId] || 0) : 0,
-        position: i
-      })), { transaction: t });
+      await QuotationItem.bulkCreate(data.items.map((item, i) => {
+        const prod = productMap[item.productId];
+        let unitCost = item.productId ? (prod?.cost || 0) : 0;
+        // Aplicar regla de servicios en el guardado histórico
+        if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
+          unitCost = 0;
+        }
+        return { ...item, quotationId: quotation.id, unitCost, position: i };
+      }), { transaction: t });
     }
 
     await t.commit();
     res.status(201).json({ success: true, quotation });
-  } catch (e) { 
-    if (t) await t.rollback();
-    res.status(500).json({ success: false, error: e.message }); 
-  }
+  } catch (e) { if (t) await t.rollback(); res.status(500).json({ success: false, error: e.message }); }
 });
 
-// PUT /api/quotations/:id
+// PUT
 router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.update'], 'user'), async (req, res) => {
   const t = await sequelize.transaction();
   try {
     const q = await Quotation.findOne({ where: { id: req.params.id, ...getCompanyFilter(req) } });
     if (!q) return res.status(404).json({ success: false });
 
+    // Historial
     const snap = await Quotation.findByPk(q.id, { include: ['items'], transaction: t });
-    const version = (await QuotationHistory.max('version', { where: { quotationId: q.id }, transaction: t }) || 0) + 1;
-    await QuotationHistory.create({ quotationId: q.id, version, changedBy: req.user.id, data: snap.toJSON() }, { transaction: t });
+    const v = (await QuotationHistory.max('version', { where: { quotationId: q.id }, transaction: t }) || 0) + 1;
+    await QuotationHistory.create({ quotationId: q.id, version: v, changedBy: req.user.id, data: snap.toJSON() }, { transaction: t });
 
     await q.update(req.body, { transaction: t });
 
@@ -168,22 +152,21 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       await QuotationItem.destroy({ where: { quotationId: q.id }, transaction: t });
       const productIds = req.body.items.map(i => i.productId).filter(id => id);
       const products = await Product.findAll({ where: { id: { [Op.in]: productIds } } });
-      const costs = products.reduce((acc, p) => { acc[p.id] = p.cost; return acc; }, {});
+      const productMap = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
-      await QuotationItem.bulkCreate(req.body.items.map((item, i) => ({
-        ...item,
-        quotationId: q.id,
-        unitCost: item.productId ? (costs[item.productId] || 0) : 0,
-        position: i
-      })), { transaction: t });
+      await QuotationItem.bulkCreate(req.body.items.map((item, i) => {
+        const prod = productMap[item.productId];
+        let unitCost = item.productId ? (prod?.cost || 0) : 0;
+        if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
+          unitCost = 0;
+        }
+        return { ...item, quotationId: q.id, unitCost, position: i };
+      }), { transaction: t });
     }
 
     await t.commit();
     res.json({ success: true });
-  } catch (e) {
-    if (t) await t.rollback();
-    res.status(500).json({ success: false, error: e.message });
-  }
+  } catch (e) { if (t) await t.rollback(); res.status(500).json({ success: false, error: e.message }); }
 });
 
 router.delete('/:id', async (req, res) => {
@@ -193,12 +176,8 @@ router.delete('/:id', async (req, res) => {
 });
 
 router.get('/:id/history', async (req, res) => {
-  const history = await QuotationHistory.findAll({
-    where: { quotationId: req.params.id },
-    include: [{ model: User, as: 'editor', attributes: ['firstName', 'lastName'] }],
-    order: [['version', 'DESC']]
-  });
-  res.json({ success: true, history });
+  const h = await QuotationHistory.findAll({ where: { quotationId: req.params.id }, include: [{ model: User, as: 'editor', attributes: ['firstName', 'lastName'] }], order: [['version', 'DESC']] });
+  res.json({ success: true, history: h });
 });
 
 module.exports = router;
