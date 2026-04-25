@@ -293,14 +293,16 @@ export default function QuotationForm() {
             const isService = product?.type === 'service';
             const productMargin = parseFloat(product?.margin || 0);
             
-            // Prioridad: 1. Costo específico del ítem (histórico) / 2. Costo del catálogo / 3. Cero
-            // Esto permite que el botón de recalcular funcione al actualizar el unitCost del ítem
-            let unitCost = parseFloat(item.unitCost !== undefined && item.unitCost !== 0 ? item.unitCost : (product?.cost || 0));
+            // Prioridad: 1. Costo específico del ítem (histórico)
+            let currentCost = parseFloat(item.unitCost !== undefined ? item.unitCost : (product?.cost || 0));
             
-            // Regla: Si es servicio y el margen en catálogo es 0, el costo es 0 (ganancia 100%)
+            // REGLA DE ORO: Si es servicio y el margen en catálogo es 0, el costo SIEMPRE es 0 (100% ganancia)
+            // Esta regla es prioritaria sobre el costo guardado para permitir correcciones rápidas
             if (isService && productMargin === 0) {
-                unitCost = 0;
+                currentCost = 0;
             }
+            
+            const unitCost = currentCost;
             
             totalCost += unitCost * qty;
         });
