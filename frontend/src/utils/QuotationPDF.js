@@ -258,9 +258,9 @@ export const generateQuotationPDF = async (quotation, company = {}) => {
 
         // 7. TOTAL
         currentY += 8;
-        doc.setFontSize(12);
+        doc.setFontSize(10.5); // Reducido de 12 para evitar colisiones
         doc.setFont(undefined, 'bold');
-        doc.text(quotation.retention > 0 ? 'TOTAL A RECIBIR:' : 'TOTAL A PAGAR:', totalsX, currentY);
+        doc.text(quotation.retention > 0 ? 'TOTAL A RECIBIR:' : 'TOTAL A PAGAR:', totalsX - 5, currentY);
         doc.text(`$${(parseFloat(quotation.total) || 0).toFixed(2)}`, pageWidth - 15, currentY, { align: 'right' });
 
         // Notes (Left aligned)
