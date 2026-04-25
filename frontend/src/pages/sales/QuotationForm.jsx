@@ -5,7 +5,7 @@ import * as customerService from '../../services/customerService';
 import * as companyService from '../../services/companyService';
 import productService from '../../services/productService'; // Corrected import
 import { useNavigate, useParams } from 'react-router-dom';
-import { Plus, Trash2, Save, ArrowLeft, Calculator, History, Clock, User as UserIcon, Eye } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Calculator, History, Clock, User as UserIcon, Eye, RefreshCw } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent } from '../../components/ui/Card';
@@ -355,6 +355,33 @@ export default function QuotationForm() {
             marginPercentage: marginPercentage,
             total: Math.max(0, total)
         });
+    };
+
+    // Función para forzar la actualización de costos desde el catálogo
+    const forceRecalculate = () => {
+        if (!products || products.length === 0) {
+            console.warn('No hay productos cargados en el catálogo.');
+            return;
+        }
+
+        const updatedItems = formData.items.map(item => {
+            const product = products.find(p => String(p.id) === String(item.productId));
+            if (product) {
+                // Si el producto existe en el catálogo, actualizamos el unitCost
+                let newUnitCost = parseFloat(product.cost || 0);
+                const productMargin = parseFloat(product.margin || 0);
+                
+                // Regla de servicios: margen 0 = costo 0 (ganancia 100%)
+                if (product.type === 'service' && productMargin === 0) {
+                    newUnitCost = 0;
+                }
+                return { ...item, unitCost: newUnitCost };
+            }
+            return item;
+        });
+
+        setFormData(prev => ({ ...prev, items: updatedItems }));
+        // El useEffect de calculateTotals se encargará del resto al detectar el cambio en items
     };
 
     const handleItemChange = (index, field, value) => {
@@ -890,8 +917,18 @@ export default function QuotationForm() {
                                 <span>${totals.total.toFixed(2)}</span>
                             </div>
 
-                            <div className="pt-2 flex justify-between text-xs font-bold text-emerald-500 border-t border-emerald-500/20">
-                                <span className="uppercase tracking-wider">Ganancia Proyectada:</span>
+                            <div className="pt-2 flex justify-between items-center text-xs font-bold text-emerald-500 border-t border-emerald-500/20">
+                                <div className="flex items-center gap-2">
+                                    <span className="uppercase tracking-wider">Ganancia Proyectada:</span>
+                                    <button 
+                                        type="button"
+                                        onClick={forceRecalculate}
+                                        className="p-1 hover:bg-emerald-500/20 rounded-full transition-colors"
+                                        title="Recalcular costos desde el catálogo"
+                                    >
+                                        <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                                    </button>
+                                </div>
                                 <span>${totals.profit.toFixed(2)} ({parseFloat(totals.marginPercentage || 0).toFixed(1)}%)</span>
                             </div>
                         </CardContent>
