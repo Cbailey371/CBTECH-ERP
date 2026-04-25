@@ -552,7 +552,7 @@ export default function QuotationForm() {
                                 searchPlaceholder="Buscar cliente..."
                             />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 md:col-span-2">
                             <label className="block text-sm font-medium text-muted-foreground">Fecha Emisión</label>
                             <Input
                                 type="date"
@@ -923,10 +923,10 @@ export default function QuotationForm() {
                                     <button 
                                         type="button"
                                         onClick={forceRecalculate}
-                                        className="p-1 hover:bg-emerald-500/20 rounded-full transition-colors"
+                                        className="p-2 hover:bg-emerald-500/20 rounded-full transition-all active:scale-90 border border-emerald-500/20 shadow-sm"
                                         title="Recalcular costos desde el catálogo"
                                     >
-                                        <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                                        <RefreshCw size={18} className={`${loading ? 'animate-spin' : ''} text-emerald-600`} />
                                     </button>
                                 </div>
                                 <span>${totals.profit.toFixed(2)} ({parseFloat(totals.marginPercentage || 0).toFixed(1)}%)</span>
