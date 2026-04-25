@@ -52,7 +52,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
     const quotationIds = quotations.map(q => q.id);
     const items = await QuotationItem.findAll({
       where: { quotationId: { [Op.in]: quotationIds } },
-      attributes: ['quotationId', 'productId', 'quantity', 'unitPrice', 'unitCost', 'total'],
+      attributes: ['quotationId', 'productId', 'quantity', 'unitPrice', 'unitCost', 'total', 'discountValue', 'discountType'],
       include: [{
         model: Product,
         as: 'product',
@@ -65,19 +65,32 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
       const qJson = q.toJSON();
       const qItems = items.filter(item => item.quotationId === q.id);
       
-      const totalCost = qItems.reduce((acc, item) => {
-        // Lógica de Servicios: Si es service y margen 0, costo es 0 (ganancia 100%)
-        const isService = item.product?.type === 'service';
-        const margin = parseFloat(item.product?.margin || 0);
+      let profitValue = 0;
+      qItems.forEach(item => {
+        const product = item.product;
+        const qty = parseFloat(item.quantity) || 0;
+        const price = parseFloat(item.unitPrice) || 0;
+        const discVal = parseFloat(item.discountValue) || 0;
         
-        let cost = parseFloat(item.unitCost || item.product?.cost || 0);
-        if (isService && margin === 0) cost = 0;
-        
-        return acc + (parseFloat(item.quantity) * cost);
-      }, 0);
+        let itemLineTotal = qty * price;
+        if (item.discountType === 'percentage') {
+          itemLineTotal -= (itemLineTotal * (discVal / 100));
+        } else {
+          itemLineTotal -= discVal;
+        }
 
-      const netBase = (parseFloat(q.subtotal || 0) - parseFloat(q.discount || 0));
-      qJson.profit = netBase - totalCost;
+        let unitCost = parseFloat(item.unitCost || (product ? product.cost : 0));
+        const isService = product?.type === 'service';
+        const productMargin = parseFloat(product?.margin || 0);
+
+        if (isService && productMargin === 0) {
+          unitCost = 0;
+        }
+
+        profitValue += (itemLineTotal - (unitCost * qty));
+      });
+
+      qJson.profit = profitValue;
       qJson.items = qItems;
       return qJson;
     });

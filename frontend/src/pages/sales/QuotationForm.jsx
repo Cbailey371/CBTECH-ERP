@@ -280,8 +280,8 @@ export default function QuotationForm() {
             grossItemsTotal += itemGross;
             totalItemDiscounts += itemDiscount;
 
-            // Verificar si el producto es exento
-            const product = products.find(p => String(p.id) === String(item.productId));
+            // Prioridad: 1. El objeto de producto ya cargado en el ítem / 2. El producto buscado en el catálogo cargado
+            const product = item.product || products.find(p => String(p.id) === String(item.productId));
             const isProductExempt = product?.isTaxExempt === true;
 
             // Si ni el cliente ni el producto son exentos, se suma a la base imponible
@@ -920,17 +920,7 @@ export default function QuotationForm() {
                             </div>
 
                             <div className="pt-2 flex justify-between items-center text-xs font-bold text-emerald-500 border-t border-emerald-500/20">
-                                <div className="flex items-center gap-2">
-                                    <span className="uppercase tracking-wider">Ganancia Proyectada:</span>
-                                    <button 
-                                        type="button"
-                                        onClick={forceRecalculate}
-                                        className="p-2 hover:bg-emerald-500/20 rounded-full transition-all active:scale-90 border border-emerald-500/20 shadow-sm"
-                                        title="Recalcular costos desde el catálogo"
-                                    >
-                                        <RefreshCw size={18} className={`${loading ? 'animate-spin' : ''} text-emerald-600`} />
-                                    </button>
-                                </div>
+                                <span className="uppercase tracking-wider">Ganancia Proyectada:</span>
                                 <span>${totals.profit.toFixed(2)} ({parseFloat(totals.marginPercentage || 0).toFixed(1)}%)</span>
                             </div>
                         </CardContent>
