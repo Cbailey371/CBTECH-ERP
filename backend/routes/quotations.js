@@ -188,29 +188,37 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
     const v = (await QuotationHistory.max('version', { where: { quotationId: q.id }, transaction: t }) || 0) + 1;
     await QuotationHistory.create({ quotationId: q.id, version: v, changedBy: req.user.id, data: snap.toJSON() }, { transaction: t });
 
-    await q.update(req.body, { transaction: t });
+    // 1. Sanitizar los campos de la cotización (eliminar campos virtuales/relacionales)
+    const { 
+      id, companyId, createdAt, updatedAt, 
+      customer, profit, items: bodyItems, 
+      ...validQuotationData 
+    } = req.body;
 
-    if (req.body.items) {
+    await q.update(validQuotationData, { transaction: t });
+
+    // 2. Si vienen ítems, sanitizarlos también
+    if (bodyItems) {
       await QuotationItem.destroy({ where: { quotationId: q.id }, transaction: t });
-      const productIds = req.body.items.map(i => i.productId).filter(id => id);
+      
+      const productIds = bodyItems.map(i => i.productId).filter(id => id);
       const products = await Product.findAll({ where: { id: { [Op.in]: productIds } } });
       const productMap = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
-      await QuotationItem.bulkCreate(req.body.items.map((item, i) => {
+      await QuotationItem.bulkCreate(bodyItems.map((item, i) => {
         const prod = productMap[item.productId];
         let unitCost = item.productId ? (prod?.cost || 0) : 0;
         if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
           unitCost = 0;
         }
         
-        // Solo campos válidos para la DB
         return {
           quotationId: q.id,
           productId: item.productId,
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
-          unitCost: unitCost, // Snapshot del costo actual
+          unitCost: unitCost,
           taxRate: item.taxRate,
           total: item.total,
           discountType: item.discountType,
