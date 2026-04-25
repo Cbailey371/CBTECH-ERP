@@ -293,8 +293,9 @@ export default function QuotationForm() {
             const isService = product?.type === 'service';
             const productMargin = parseFloat(product?.margin || 0);
             
-            // Prioridad: 1. Costo cargado con el producto / 2. Costo guardado en el ítem / 3. Cero
-            let unitCost = parseFloat(product?.cost !== undefined ? product.cost : (item.unitCost || 0));
+            // Prioridad: 1. Costo específico del ítem (histórico) / 2. Costo del catálogo / 3. Cero
+            // Esto permite que el botón de recalcular funcione al actualizar el unitCost del ítem
+            let unitCost = parseFloat(item.unitCost !== undefined && item.unitCost !== 0 ? item.unitCost : (product?.cost || 0));
             
             // Regla: Si es servicio y el margen en catálogo es 0, el costo es 0 (ganancia 100%)
             if (isService && productMargin === 0) {
@@ -359,29 +360,28 @@ export default function QuotationForm() {
 
     // Función para forzar la actualización de costos desde el catálogo
     const forceRecalculate = () => {
+        console.log('Recalculando costos desde catálogo...');
         if (!products || products.length === 0) {
-            console.warn('No hay productos cargados en el catálogo.');
+            alert('Catálogo no cargado aún.');
             return;
         }
 
         const updatedItems = formData.items.map(item => {
             const product = products.find(p => String(p.id) === String(item.productId));
             if (product) {
-                // Si el producto existe en el catálogo, actualizamos el unitCost
                 let newUnitCost = parseFloat(product.cost || 0);
                 const productMargin = parseFloat(product.margin || 0);
-                
-                // Regla de servicios: margen 0 = costo 0 (ganancia 100%)
                 if (product.type === 'service' && productMargin === 0) {
                     newUnitCost = 0;
                 }
+                console.log(`Actualizando ${item.description || 'producto'}: Nuevo costo ${newUnitCost}`);
                 return { ...item, unitCost: newUnitCost };
             }
             return item;
         });
 
         setFormData(prev => ({ ...prev, items: updatedItems }));
-        // El useEffect de calculateTotals se encargará del resto al detectar el cambio en items
+        alert('Costos actualizados desde el catálogo.');
     };
 
     const handleItemChange = (index, field, value) => {
