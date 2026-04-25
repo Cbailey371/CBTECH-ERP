@@ -216,7 +216,7 @@ export default function QuotationForm() {
 
     useEffect(() => {
         calculateTotals();
-    }, [formData.items, formData.discountType, formData.discountValue, formData.taxRate, formData.taxEnabled]);
+    }, [formData.items, formData.discountType, formData.discountValue, formData.taxRate, formData.taxEnabled, products]);
 
     const loadCustomers = async () => {
         try {
@@ -293,7 +293,9 @@ export default function QuotationForm() {
             const isService = product?.type === 'service';
             const productMargin = parseFloat(product?.margin || 0);
             
-            let unitCost = parseFloat(product?.cost || item.unitCost || 0);
+            // Prioridad: 1. Costo cargado con el producto / 2. Costo guardado en el ítem / 3. Cero
+            let unitCost = parseFloat(product?.cost !== undefined ? product.cost : (item.unitCost || 0));
+            
             // Regla: Si es servicio y el margen en catálogo es 0, el costo es 0 (ganancia 100%)
             if (isService && productMargin === 0) {
                 unitCost = 0;
