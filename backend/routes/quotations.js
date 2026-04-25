@@ -138,11 +138,24 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
       await QuotationItem.bulkCreate(data.items.map((item, i) => {
         const prod = productMap[item.productId];
         let unitCost = item.productId ? (prod?.cost || 0) : 0;
-        // Aplicar regla de servicios en el guardado histórico
         if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
           unitCost = 0;
         }
-        return { ...item, quotationId: quotation.id, unitCost, position: i };
+        
+        // Solo extraemos los campos que pertenecen a QuotationItem
+        return {
+          quotationId: quotation.id,
+          productId: item.productId,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          unitCost: unitCost,
+          taxRate: item.taxRate,
+          total: item.total,
+          discountType: item.discountType,
+          discountValue: item.discountValue,
+          position: i
+        };
       }), { transaction: t });
     }
 
@@ -189,7 +202,21 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
         if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
           unitCost = 0;
         }
-        return { ...item, quotationId: q.id, unitCost, position: i };
+        
+        // Solo campos válidos para la DB
+        return {
+          quotationId: q.id,
+          productId: item.productId,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          unitCost: unitCost, // Snapshot del costo actual
+          taxRate: item.taxRate,
+          total: item.total,
+          discountType: item.discountType,
+          discountValue: item.discountValue,
+          position: i
+        };
       }), { transaction: t });
     }
 
