@@ -164,57 +164,70 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
   } catch (e) { if (t) await t.rollback(); res.status(500).json({ success: false, error: e.message }); }
 });
 
-// PUT
+// PUT /api/quotations/:id
 router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.update'], 'user'), async (req, res) => {
   const t = await sequelize.transaction();
   try {
-    const q = await Quotation.findOne({ where: { id: req.params.id, ...getCompanyFilter(req) } });
-    if (!q) return res.status(404).json({ success: false });
+    const q = await Quotation.findOne({ 
+      where: { id: req.params.id, ...getCompanyFilter(req) },
+      transaction: t
+    });
+    
+    if (!q) {
+      await t.rollback();
+      return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
+    }
 
-    // Snapshot historial con productos incluidos y ORDENADOS
+    // 1. Guardar historial antes de actualizar
     const snap = await Quotation.findByPk(q.id, { 
-      include: [
-        { 
-          model: QuotationItem, 
-          as: 'items',
-          include: [{ model: Product, as: 'product' }]
-        }
-      ], 
-      order: [
-        [{ model: QuotationItem, as: 'items' }, 'position', 'ASC']
-      ],
+      include: [{ model: QuotationItem, as: 'items', include: ['product'] }], 
+      order: [[{ model: QuotationItem, as: 'items' }, 'position', 'ASC']],
       transaction: t 
     });
-    const v = (await QuotationHistory.max('version', { where: { quotationId: q.id }, transaction: t }) || 0) + 1;
-    await QuotationHistory.create({ quotationId: q.id, version: v, changedBy: req.user.id, data: snap.toJSON() }, { transaction: t });
+    const version = (await QuotationHistory.max('version', { where: { quotationId: q.id }, transaction: t }) || 0) + 1;
+    await QuotationHistory.create({ 
+      quotationId: q.id, 
+      version, 
+      changedBy: req.user.id, 
+      data: snap.toJSON() 
+    }, { transaction: t });
 
-    // 1. Sanitizar los campos de la cotización (eliminar campos virtuales/relacionales)
-    const { 
-      id, companyId, createdAt, updatedAt, 
-      customer, profit, items: bodyItems, 
-      ...validQuotationData 
-    } = req.body;
+    // 2. Extraer solo campos del modelo Quotation para evitar errores de Sequelize
+    const allowedFields = [
+      'customerId', 'date', 'validUntil', 'status', 'currency', 'discount', 
+      'discountType', 'discountValue', 'subtotal', 'tax', 'taxRate', 'total', 
+      'retention', 'notes'
+    ];
+    
+    const updateData = {};
+    allowedFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    });
 
-    await q.update(validQuotationData, { transaction: t });
+    await q.update(updateData, { transaction: t });
 
-    // 2. Si vienen ítems, sanitizarlos también
-    if (bodyItems) {
+    // 3. Actualizar ítems si vienen en la petición
+    if (req.body.items && Array.isArray(req.body.items)) {
       await QuotationItem.destroy({ where: { quotationId: q.id }, transaction: t });
       
-      const productIds = bodyItems.map(i => i.productId).filter(id => id);
+      const productIds = req.body.items.map(i => i.productId).filter(id => id);
       const products = await Product.findAll({ where: { id: { [Op.in]: productIds } } });
       const productMap = products.reduce((acc, p) => { acc[p.id] = p; return acc; }, {});
 
-      await QuotationItem.bulkCreate(bodyItems.map((item, i) => {
+      const itemsToCreate = req.body.items.map((item, i) => {
         const prod = productMap[item.productId];
-        let unitCost = item.productId ? (prod?.cost || 0) : 0;
+        let unitCost = item.unitCost !== undefined ? parseFloat(item.unitCost) : (prod?.cost || 0);
+        
+        // Regla de servicios
         if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
           unitCost = 0;
         }
-        
+
         return {
           quotationId: q.id,
-          productId: item.productId,
+          productId: item.productId || null,
           description: item.description,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
@@ -225,12 +238,18 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
           discountValue: item.discountValue,
           position: i
         };
-      }), { transaction: t });
+      });
+
+      await QuotationItem.bulkCreate(itemsToCreate, { transaction: t });
     }
 
     await t.commit();
     res.json({ success: true });
-  } catch (e) { if (t) await t.rollback(); res.status(500).json({ success: false, error: e.message }); }
+  } catch (error) {
+    if (t) await t.rollback();
+    console.error('CRITICAL ERROR UPDATING QUOTATION:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 router.delete('/:id', async (req, res) => {
