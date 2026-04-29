@@ -146,7 +146,7 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
         return {
           quotationId: quotation.id,
           productId: item.productId,
-          description: item.description || prod?.description || '', // Asegurar que no sea nulo
+          description: item.description !== undefined && item.description !== null ? item.description : (prod?.description || ''), // Respetar string vacío enviado por frontend
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           unitCost: unitCost,
@@ -228,7 +228,7 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
         return {
           quotationId: q.id,
           productId: item.productId || null,
-          description: item.description || prod?.description || '', // Asegurar que no sea nulo
+          description: item.description !== undefined && item.description !== null ? item.description : (prod?.description || ''), // Respetar string vacío enviado por frontend
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           unitCost: unitCost,
