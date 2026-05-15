@@ -178,9 +178,11 @@ export default function QuotationForm() {
                         description: i.description,
                         quantity: i.quantity,
                         unitPrice: i.unitPrice,
+                        unitCost: i.unitCost, // Cargar costo guardado
                         discountType: i.discountType || 'amount',
                         discountValue: i.discountValue || 0,
                         sku: i.product?.sku || '',
+                        product: i.product, // Cargar objeto producto si existe
                         total: (qty * price) - discount
                     };
                 }) : [{
@@ -414,6 +416,7 @@ export default function QuotationForm() {
         newItems[index].productId = product.id;
         newItems[index].description = ''; // Leave empty to avoid duplication (PDF auto-adds product name)
         newItems[index].unitPrice = parseFloat(product.price) || 0;
+        newItems[index].unitCost = parseFloat(product.cost) || 0; // Inicializar costo desde catálogo
         newItems[index].quantity = 1;
         newItems[index].sku = product.sku || ''; // Store SKU in item context
 
@@ -437,6 +440,7 @@ export default function QuotationForm() {
                 description: '',
                 quantity: 1,
                 unitPrice: 0,
+                unitCost: 0, // Inicializar costo
                 discountType: 'amount',
                 discountValue: 0,
                 total: 0

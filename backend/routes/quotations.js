@@ -79,7 +79,7 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
           itemLineTotal -= discVal;
         }
 
-        let unitCost = parseFloat(item.unitCost || (product ? product.cost : 0));
+        let unitCost = item.unitCost !== null && item.unitCost !== undefined ? parseFloat(item.unitCost) : parseFloat(product?.cost || 0);
         const isService = product?.type === 'service';
         const productMargin = parseFloat(product?.margin || 0);
 
@@ -137,7 +137,9 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
     if (data.items) {
       await QuotationItem.bulkCreate(data.items.map((item, i) => {
         const prod = productMap[item.productId];
-        let unitCost = item.productId ? (prod?.cost || 0) : 0;
+        let unitCost = item.unitCost !== undefined ? parseFloat(item.unitCost) : (item.productId ? (parseFloat(prod?.cost || 0)) : 0);
+        
+        // Regla de servicios: Si es servicio y el margen es 0, el costo es 0 (100% ganancia)
         if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
           unitCost = 0;
         }
