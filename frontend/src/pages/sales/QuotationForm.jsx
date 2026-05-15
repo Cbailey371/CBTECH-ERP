@@ -620,11 +620,12 @@ export default function QuotationForm() {
                                 <table className="w-full mb-4">
                                     <thead>
                                         <tr className="border-b border-border">
-                                            <th className="text-left py-2 w-[60%] text-sm font-medium text-muted-foreground">Descripción</th>
+                                            <th className="text-left py-2 w-[50%] text-sm font-medium text-muted-foreground">Descripción</th>
                                             <th className="text-right py-2 w-[8%] text-sm font-medium text-muted-foreground">Cant.</th>
                                             <th className="text-right py-2 w-[12%] text-sm font-medium text-muted-foreground">Precio</th>
-                                            <th className="text-right py-2 w-[10%] text-sm font-medium text-muted-foreground">Descuento</th>
+                                            <th className="text-right py-2 w-[10%] text-sm font-medium text-muted-foreground">Desc.</th>
                                             <th className="text-right py-2 w-[10%] text-sm font-medium text-muted-foreground">Total</th>
+                                            <th className="text-right py-2 w-[10%] text-sm font-medium text-muted-foreground">Rent.</th>
                                             <th className="w-[0%]"></th>
                                         </tr>
                                     </thead>
@@ -691,6 +692,32 @@ export default function QuotationForm() {
                                                 </td>
                                                 <td className="py-2 text-right font-medium text-muted-foreground">
                                                     ${parseFloat(item.total).toFixed(2)}
+                                                </td>
+                                                <td className="py-2 px-2">
+                                                    {(() => {
+                                                        const lp = parseFloat(item.unitPrice || 0);
+                                                        const lq = parseFloat(item.quantity || 0);
+                                                        const lc = parseFloat(item.unitCost || 0);
+                                                        const ld = item.discountType === 'percentage' 
+                                                            ? (lp * lq * (parseFloat(item.discountValue || 0) / 100))
+                                                             : parseFloat(item.discountValue || 0);
+                                                        const ln = (lp * lq) - ld;
+                                                        const ltc = lc * lq;
+                                                        const lprof = ln - ltc;
+                                                        const lmar = ln > 0 ? (lprof / ln) * 100 : 0;
+                                                        const isNeg = lprof < 0;
+
+                                                        return (
+                                                            <div className={`flex flex-col items-end ${isNeg ? 'text-red-500' : 'text-emerald-500'}`}>
+                                                                <span className="text-[9px] font-bold leading-tight">
+                                                                    {isNeg ? 'PÉRDIDA' : 'MARGEN'}
+                                                                </span>
+                                                                <span className="text-xs font-bold">
+                                                                    {lmar.toFixed(1)}%
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </td>
                                                 <td className="py-2 text-center">
                                                     <button
@@ -787,6 +814,26 @@ export default function QuotationForm() {
                                                 <span className="text-lg font-black text-primary">
                                                     ${parseFloat(item.total || 0).toFixed(2)}
                                                 </span>
+                                                {(() => {
+                                                    const lp = parseFloat(item.unitPrice || 0);
+                                                    const lq = parseFloat(item.quantity || 0);
+                                                    const lc = parseFloat(item.unitCost || 0);
+                                                    const ld = item.discountType === 'percentage' 
+                                                        ? (lp * lq * (parseFloat(item.discountValue || 0) / 100))
+                                                        : parseFloat(item.discountValue || 0);
+                                                    const ln = (lp * lq) - ld;
+                                                    const ltc = lc * lq;
+                                                    const lprof = ln - ltc;
+                                                    const lmar = ln > 0 ? (lprof / ln) * 100 : 0;
+                                                    const isNeg = lprof < 0;
+
+                                                    return (
+                                                        <div className={`flex items-center gap-1 mt-1 ${isNeg ? 'text-red-500' : 'text-emerald-500'}`}>
+                                                            <span className="text-[10px] font-bold uppercase">{isNeg ? 'Pérdida' : 'Margen'}:</span>
+                                                            <span className="text-xs font-black">{lmar.toFixed(1)}%</span>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
                                         </div>
                                     </div>
