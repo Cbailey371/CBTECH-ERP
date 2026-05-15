@@ -80,10 +80,10 @@ router.get('/', requireCompanyContext, requireCompanyPermission(['quotations.rea
         }
 
         let unitCost = item.unitCost !== null && item.unitCost !== undefined ? parseFloat(item.unitCost) : parseFloat(product?.cost || 0);
-        const isService = product?.type === 'service';
         const productMargin = parseFloat(product?.margin || 0);
 
-        if (isService && productMargin === 0) {
+        // REGLA DE ORO UNIVERSAL: Si el margen es 0, el costo es 0 (Ganancia pura)
+        if (productMargin === 0) {
           unitCost = 0;
         }
 
@@ -139,8 +139,8 @@ router.post('/', requireCompanyContext, requireCompanyPermission(['quotations.cr
         const prod = productMap[item.productId];
         let unitCost = item.unitCost !== undefined ? parseFloat(item.unitCost) : (item.productId ? (parseFloat(prod?.cost || 0)) : 0);
         
-        // Regla de servicios: Si es servicio y el margen es 0, el costo es 0 (100% ganancia)
-        if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
+        // REGLA DE ORO UNIVERSAL: Si el margen es 0, el costo es 0 (Ganancia pura)
+        if (parseFloat(prod?.margin || 0) === 0) {
           unitCost = 0;
         }
         
@@ -222,8 +222,8 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
         const prod = productMap[item.productId];
         let unitCost = item.unitCost !== undefined ? parseFloat(item.unitCost) : (prod?.cost || 0);
         
-        // Regla de servicios
-        if (prod?.type === 'service' && parseFloat(prod?.margin || 0) === 0) {
+        // REGLA DE ORO UNIVERSAL: Si el margen es 0, el costo es 0 (Ganancia pura)
+        if (parseFloat(prod?.margin || 0) === 0) {
           unitCost = 0;
         }
 

@@ -298,9 +298,9 @@ export default function QuotationForm() {
             // Prioridad: 1. Costo específico del ítem (histórico)
             let currentCost = parseFloat(item.unitCost !== undefined ? item.unitCost : (product?.cost || 0));
             
-            // REGLA DE ORO: Si es servicio y el margen en catálogo es 0, el costo SIEMPRE es 0 (100% ganancia)
-            // Esta regla es prioritaria sobre el costo guardado para permitir correcciones rápidas
-            if (isService && productMargin === 0) {
+            // REGLA DE ORO UNIVERSAL: Si el margen en catálogo es 0, el costo SIEMPRE es 0 (100% ganancia)
+            // Esta regla es prioritaria para permitir Misceláneos y Servicios sin costo.
+            if (productMargin === 0) {
                 currentCost = 0;
             }
             
@@ -697,7 +697,12 @@ export default function QuotationForm() {
                                                     {(() => {
                                                         const lp = parseFloat(item.unitPrice || 0);
                                                         const lq = parseFloat(item.quantity || 0);
-                                                        const lc = parseFloat(item.unitCost || 0);
+                                                        let lc = parseFloat(item.unitCost || 0);
+                                                        
+                                                        // Aplicar Regla de Oro en el Validador de Línea
+                                                        const pMargin = parseFloat(product?.margin || 0);
+                                                        if (pMargin === 0) lc = 0;
+
                                                         const ld = item.discountType === 'percentage' 
                                                             ? (lp * lq * (parseFloat(item.discountValue || 0) / 100))
                                                              : parseFloat(item.discountValue || 0);
@@ -817,7 +822,12 @@ export default function QuotationForm() {
                                                 {(() => {
                                                     const lp = parseFloat(item.unitPrice || 0);
                                                     const lq = parseFloat(item.quantity || 0);
-                                                    const lc = parseFloat(item.unitCost || 0);
+                                                    let lc = parseFloat(item.unitCost || 0);
+                                                    
+                                                    // Aplicar Regla de Oro en el Validador de Línea Móvil
+                                                    const pMargin = parseFloat(product?.margin || 0);
+                                                    if (pMargin === 0) lc = 0;
+
                                                     const ld = item.discountType === 'percentage' 
                                                         ? (lp * lq * (parseFloat(item.discountValue || 0) / 100))
                                                         : parseFloat(item.discountValue || 0);
