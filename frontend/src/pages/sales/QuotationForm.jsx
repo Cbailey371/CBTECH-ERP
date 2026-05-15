@@ -695,6 +695,7 @@ export default function QuotationForm() {
                                                 </td>
                                                 <td className="py-2 px-2">
                                                     {(() => {
+                                                        const product = products.find(p => String(p.id) === String(item.productId));
                                                         const lp = parseFloat(item.unitPrice || 0);
                                                         const lq = parseFloat(item.quantity || 0);
                                                         let lc = parseFloat(item.unitCost || 0);
@@ -820,6 +821,7 @@ export default function QuotationForm() {
                                                     ${parseFloat(item.total || 0).toFixed(2)}
                                                 </span>
                                                 {(() => {
+                                                    const product = products.find(p => String(p.id) === String(item.productId));
                                                     const lp = parseFloat(item.unitPrice || 0);
                                                     const lq = parseFloat(item.quantity || 0);
                                                     let lc = parseFloat(item.unitCost || 0);
