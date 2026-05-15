@@ -12,7 +12,9 @@ import { Card, CardContent } from '../../components/ui/Card';
 import { Combobox } from '../../components/ui/Combobox';
 import { Textarea } from '../../components/ui/Textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../components/ui/Dialog';
+import ProductModal from '../../components/inventory/ProductModal';
 import { generateQuotationPDF } from '../../utils/QuotationPDF';
+import { Settings } from 'lucide-react';
 
 const DEFAULT_NOTES = `Término de pago: 50% contra orden de compra y restantes 50% contra entrega
 
@@ -127,6 +129,36 @@ export default function QuotationForm() {
     const [history, setHistory] = useState([]);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [viewingVersion, setViewingVersion] = useState(null);
+
+    // Estado para edición rápida de productos
+    const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+    const [selectedProductForEdit, setSelectedProductForEdit] = useState(null);
+    const [isUpdatingProduct, setIsUpdatingProduct] = useState(false);
+
+    const handleEditProduct = (productId) => {
+        const prod = products.find(p => String(p.id) === String(productId));
+        if (prod) {
+            setSelectedProductForEdit(prod);
+            setIsProductModalOpen(true);
+        }
+    };
+
+    const handleProductUpdate = async (productData) => {
+        try {
+            setIsUpdatingProduct(true);
+            const response = await productService.updateProduct(selectedProductForEdit.id, productData);
+            if (response.success) {
+                // Refrescar lista de productos para que los totales se recalculen
+                await loadProducts();
+                setIsProductModalOpen(false);
+                setSelectedProductForEdit(null);
+            }
+        } catch (error) {
+            console.error('Error al actualizar producto:', error);
+        } finally {
+            setIsUpdatingProduct(false);
+        }
+    };
 
     useEffect(() => {
         if (selectedCompany) {
@@ -633,16 +665,28 @@ export default function QuotationForm() {
                                         {formData.items.map((item, index) => (
                                             <tr key={index}>
                                                 <td className="py-2">
-                                                    <Combobox
-                                                        options={products.map(p => ({
-                                                            value: p.id,
-                                                            label: `${p.code || 'S/C'} ${p.sku ? '[' + p.sku + '] ' : ''}- ${p.description}`.trim()
-                                                        }))}
-                                                        value={item.productId}
-                                                        onChange={(value) => handleProductSelect(index, value)}
-                                                        placeholder="Buscar producto..."
-                                                        className="w-full mb-1"
-                                                    />
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <Combobox
+                                                            options={products.map(p => ({
+                                                                value: p.id,
+                                                                label: `${p.code || 'S/C'} ${p.sku ? '[' + p.sku + '] ' : ''}- ${p.description}`.trim()
+                                                            }))}
+                                                            value={item.productId}
+                                                            onChange={(value) => handleProductSelect(index, value)}
+                                                            placeholder="Buscar producto..."
+                                                            className="flex-1"
+                                                        />
+                                                        {item.productId && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleEditProduct(item.productId)}
+                                                                className="p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+                                                                title="Editar en catálogo"
+                                                            >
+                                                                <Settings size={14} />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                     <Textarea
                                                         className="bg-background border-border text-foreground text-xs min-h-[60px] resize-y"
                                                         placeholder="Detalle adicional..."
@@ -1211,6 +1255,17 @@ export default function QuotationForm() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            <ProductModal
+                isOpen={isProductModalOpen}
+                onClose={() => {
+                    setIsProductModalOpen(false);
+                    setSelectedProductForEdit(null);
+                }}
+                product={selectedProductForEdit}
+                onSubmit={handleProductUpdate}
+                loading={isUpdatingProduct}
+            />
         </div >
     );
 }
