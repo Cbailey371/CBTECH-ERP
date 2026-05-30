@@ -148,6 +148,39 @@ export default function QuotationForm() {
             setIsUpdatingProduct(true);
             const response = await productService.updateProduct(selectedProductForEdit.id, productData);
             if (response.success) {
+                const updatedProduct = response.data.product || productData;
+                
+                // Actualizar automáticamente los ítems de esta cotización que usan este producto
+                setFormData(prev => {
+                    const newItems = prev.items.map(item => {
+                        if (String(item.productId) === String(selectedProductForEdit.id)) {
+                            const qty = parseFloat(item.quantity) || 0;
+                            const price = parseFloat(updatedProduct.price) || 0;
+                            let discount = 0;
+                            if (item.discountType === 'percentage') {
+                                discount = (qty * price) * (parseFloat(item.discountValue || 0) / 100);
+                            } else {
+                                discount = parseFloat(item.discountValue || 0);
+                            }
+                            
+                            let cost = parseFloat(updatedProduct.cost || 0);
+                            // Aplicar regla de oro si el margen es 0
+                            if (parseFloat(updatedProduct.margin || 0) === 0) {
+                                cost = 0;
+                            }
+
+                            return {
+                                ...item,
+                                unitPrice: price,
+                                unitCost: cost,
+                                total: (qty * price) - discount
+                            };
+                        }
+                        return item;
+                    });
+                    return { ...prev, items: newItems };
+                });
+
                 // Refrescar lista de productos para que los totales se recalculen
                 await loadProducts();
                 setIsProductModalOpen(false);
