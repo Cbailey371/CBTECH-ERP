@@ -180,6 +180,11 @@ router.put('/:id', requireCompanyContext, requireCompanyPermission(['quotations.
       return res.status(404).json({ success: false, message: 'Cotización no encontrada' });
     }
 
+    if (q.status === 'invoiced') {
+      await t.rollback();
+      return res.status(400).json({ success: false, message: 'No se puede modificar una cotización que ya ha sido facturada.' });
+    }
+
     // 1. Guardar historial antes de actualizar
     const snap = await Quotation.findByPk(q.id, { 
       include: [{ model: QuotationItem, as: 'items', include: ['product'] }], 

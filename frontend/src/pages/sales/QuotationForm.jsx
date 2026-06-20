@@ -592,6 +592,23 @@ export default function QuotationForm() {
                 </h1>
             </div>
 
+            {formData.status === 'invoiced' && (
+                <div className="bg-red-500/10 border-l-4 border-red-500 text-red-700 dark:text-red-400 p-4 rounded-r-md mb-6">
+                    <div className="flex">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <p className="text-sm font-medium">
+                                Esta cotización ha sido facturada. No se pueden realizar modificaciones.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Cabecera */}
                 <Card className="bg-card/50 border-border backdrop-blur-sm relative z-20">
@@ -666,6 +683,8 @@ export default function QuotationForm() {
                                 <option value="sent">Enviada</option>
                                 <option value="accepted">Aceptada</option>
                                 <option value="rejected">Rechazada</option>
+                                <option value="invoiced" disabled>Facturada</option>
+                                <option value="expired" disabled>Expirada</option>
                             </select>
                         </div>
                     </CardContent>
@@ -1115,24 +1134,29 @@ export default function QuotationForm() {
                             </Button>
                         </div>
                     )}
-                    <div className="flex gap-3 w-full md:w-auto">
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            onClick={() => navigate('/quotations')}
-                            className="flex-1 md:flex-none text-muted-foreground hover:text-foreground hover:bg-accent h-12 md:h-10"
-                        >
-                            Cancelar
-                        </Button>
+                    {isEditMode && formData.status !== 'invoiced' && (
+                        <div className="text-sm text-muted-foreground mr-auto hidden sm:block">
+                            Última modificación: {new Date().toLocaleDateString()}
+                        </div>
+                    )}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => navigate('/quotations')}
+                        className="w-full sm:w-auto h-12 text-muted-foreground hover:text-foreground"
+                    >
+                        Cancelar
+                    </Button>
+                    {formData.status !== 'invoiced' && (
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 h-12 md:h-10"
+                            className="w-full sm:w-auto h-12 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20"
                         >
                             <Save size={20} className="mr-2" />
-                            {loading ? 'Guardando...' : 'Guardar'}
+                            {loading ? 'Guardando...' : 'Guardar Cotización'}
                         </Button>
-                    </div>
+                    )}
                 </div>
             </form >
 
