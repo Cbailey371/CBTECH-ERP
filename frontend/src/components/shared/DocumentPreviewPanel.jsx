@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import {
     Dialog,
     DialogContent,
@@ -12,9 +13,50 @@ import { Badge } from '../ui/Badge';
 export default function DocumentPreviewPanel({ 
     isOpen, 
     onClose, 
-    document, 
-    title = 'Vista Previa de Documento'
+    document: initialDocument, 
+    title = 'Vista Previa de Documento',
+    type = 'quotation'
 }) {
+    const [fullDocument, setFullDocument] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && initialDocument?.id) {
+            setFullDocument(initialDocument); // Mostrar info básica mientras carga
+            fetchFullDocument(initialDocument.id);
+        } else {
+            setFullDocument(null);
+        }
+    }, [isOpen, initialDocument]);
+
+    const fetchFullDocument = async (id) => {
+        setLoading(true);
+        try {
+            let endpoint = '';
+            if (type === 'quotation') endpoint = `/quotations/${id}`;
+            else if (type === 'invoice') endpoint = `/sales-orders/${id}`;
+            else if (type === 'delivery-note') endpoint = `/delivery-notes/${id}`;
+            else if (type === 'credit-note') endpoint = `/credit-notes/${id}`;
+
+            if (endpoint) {
+                const res = await api.get(endpoint);
+                if (res.data?.success || res.data?.id) {
+                    const docKey = type === 'quotation' ? 'quotation' : 
+                                   type === 'invoice' ? 'order' : 
+                                   type === 'delivery-note' ? 'deliveryNote' : 
+                                   type === 'credit-note' ? 'creditNote' : 'data';
+                    const data = res.data[docKey] || res.data;
+                    setFullDocument(data);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching full document:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const document = fullDocument || initialDocument;
     if (!document) return null;
 
     const getStatusBadge = (status) => {
@@ -61,7 +103,8 @@ export default function DocumentPreviewPanel({
                     <div className="flex justify-between items-center pr-8">
                         <DialogTitle className="text-xl font-bold flex items-center gap-3">
                             {title}
-                            <span className="text-primary font-mono">{document.number}</span>
+                            <span className="text-primary font-mono">{document.number || document.orderNumber}</span>
+                            {loading && <span className="text-xs text-muted-foreground animate-pulse ml-2">Cargando detalles...</span>}
                         </DialogTitle>
                         {getStatusBadge(document.status)}
                     </div>
@@ -101,10 +144,16 @@ export default function DocumentPreviewPanel({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {(document.items || []).length === 0 ? (
+                            {loading && (!document.items || document.items.length === 0) ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                                        No se encontraron ítems detallados o se deben cargar al editar.
+                                        Cargando ítems...
+                                    </TableCell>
+                                </TableRow>
+                            ) : (document.items || []).length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                                        No se encontraron ítems detallados.
                                     </TableCell>
                                 </TableRow>
                             ) : (
