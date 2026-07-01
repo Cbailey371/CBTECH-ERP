@@ -360,7 +360,7 @@ export default function SalesOrdersPage() {
                             </Button>
                         </div>
                     </div>
-                </div>
+                </CardContent>
             </Card>
 
             <DocumentPreviewPanel
