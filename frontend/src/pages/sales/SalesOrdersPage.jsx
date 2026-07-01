@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import * as salesOrderService from '../../services/salesOrderService';
-import { Plus, Search, Eye, FileText, Truck, AlertCircle } from 'lucide-react';
+import { Plus, Search, Eye, FileText, Truck, AlertCircle, ScanSearch } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import DocumentPreviewPanel from '../../components/shared/DocumentPreviewPanel';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
@@ -20,6 +21,10 @@ export default function SalesOrdersPage() {
     const [endDate, setEndDate] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
+
+    // Preview State
+    const [previewDoc, setPreviewDoc] = useState(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     useEffect(() => {
         if (selectedCompany) fetchOrders();
@@ -153,7 +158,24 @@ export default function SalesOrdersPage() {
                                             <TableCell>${parseFloat(order.total).toFixed(2)}</TableCell>
                                             <TableCell>{getStatusBadge(order)}</TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="ghost" size="icon" onClick={() => navigate(`/sales-orders/${order.id}`)}>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    onClick={() => {
+                                                        // Map to expected generic format
+                                                        const doc = {
+                                                            ...order,
+                                                            number: order.orderNumber,
+                                                            date: order.issueDate
+                                                        };
+                                                        setPreviewDoc(doc);
+                                                        setIsPreviewOpen(true);
+                                                    }}
+                                                    title="Vista Previa Rápida"
+                                                >
+                                                    <ScanSearch className="w-4 h-4 text-muted-foreground hover:text-primary" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" onClick={() => navigate(`/sales-orders/${order.id}`)} title="Ver / Editar">
                                                     <Eye className="w-4 h-4" />
                                                 </Button>
                                                 {order.feDocument && (
@@ -243,6 +265,23 @@ export default function SalesOrdersPage() {
                                             className="flex-1 h-10 gap-2"
                                             onClick={(e) => {
                                                 e.stopPropagation();
+                                                const doc = {
+                                                    ...order,
+                                                    number: order.orderNumber,
+                                                    date: order.issueDate
+                                                };
+                                                setPreviewDoc(doc);
+                                                setIsPreviewOpen(true);
+                                            }}
+                                        >
+                                            <ScanSearch size={16} /> Previo
+                                        </Button>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="flex-1 h-10 gap-2"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 navigate(`/sales-orders/${order.id}`);
                                             }}
                                         >
@@ -321,8 +360,16 @@ export default function SalesOrdersPage() {
                             </Button>
                         </div>
                     </div>
-                </CardContent>
+                </div>
             </Card>
+
+            <DocumentPreviewPanel
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                document={previewDoc}
+                title="Vista Previa de Factura"
+                type="invoice"
+            />
         </div>
     );
 }

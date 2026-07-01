@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as quotationService from '../../services/quotationService';
 import * as salesOrderService from '../../services/salesOrderService';
-import { Plus, Search, Eye, Trash2, FileText } from 'lucide-react';
+import { Plus, Search, Eye, Trash2, FileText, ScanSearch } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import DocumentPreviewPanel from '../../components/shared/DocumentPreviewPanel';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
@@ -39,6 +40,10 @@ export default function QuotationsPage() {
     const [quotationToInvoice, setQuotationToInvoice] = useState(null);
     const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
     const [generating, setGenerating] = useState(false);
+
+    // Preview State
+    const [previewDoc, setPreviewDoc] = useState(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     const [filters, setFilters] = useState({
         startDate: '',
@@ -319,9 +324,21 @@ export default function QuotationsPage() {
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
+                                                            onClick={() => {
+                                                                setPreviewDoc(quotation);
+                                                                setIsPreviewOpen(true);
+                                                            }}
+                                                            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                            title="Vista Previa Rápida"
+                                                        >
+                                                            <ScanSearch className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
                                                             onClick={() => navigate(`/quotations/${quotation.id}`)}
                                                             className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-muted"
-                                                            title="Ver detalle"
+                                                            title="Ver / Editar"
                                                         >
                                                             <Eye className="h-4 w-4" />
                                                         </Button>
@@ -405,6 +422,28 @@ export default function QuotationsPage() {
                                                 </Button>
                                             )}
                                             <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPreviewDoc(quotation);
+                                                    setIsPreviewOpen(true);
+                                                }}
+                                                className="flex-1 text-muted-foreground"
+                                            >
+                                                <ScanSearch className="h-4 w-4 mr-2" />
+                                                Ver Rápido
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={(e) => { e.stopPropagation(); navigate(`/quotations/${quotation.id}`); }}
+                                                className="flex-1 text-muted-foreground"
+                                            >
+                                                <Eye className="h-4 w-4 mr-2" />
+                                                Editar
+                                            </Button>
+                                            <Button
                                                 variant="destructive"
                                                 size="sm"
                                                 onClick={(e) => { e.stopPropagation(); handleDelete(quotation); }}
@@ -486,6 +525,13 @@ export default function QuotationsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+            <DocumentPreviewPanel
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                document={previewDoc}
+                title="Vista Previa de Cotización"
+                type="quotation"
+            />
         </div >
     );
 }

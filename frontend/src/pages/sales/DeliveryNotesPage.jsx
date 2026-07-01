@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import * as deliveryNoteService from '../../services/deliveryNoteService';
-import { Plus, Search, Eye, FileText, Download, Trash2, CheckCircle, RotateCcw, PenTool } from 'lucide-react';
+import { Plus, Search, Eye, FileText, Download, Trash2, CheckCircle, RotateCcw, PenTool, ScanSearch } from 'lucide-react';
 import SignaturePad from '../../components/SignaturePad';
 import { Dialog, DialogContent } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import DocumentPreviewPanel from '../../components/shared/DocumentPreviewPanel';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/Table';
@@ -21,6 +22,10 @@ export default function DeliveryNotesPage() {
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
     const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
     const [selectedNoteForSignature, setSelectedNoteForSignature] = useState(null);
+
+    // Preview State
+    const [previewDoc, setPreviewDoc] = useState(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     useEffect(() => {
         if (selectedCompany) fetchNotes();
@@ -187,6 +192,12 @@ export default function DeliveryNotesPage() {
                                                 <Button variant="ghost" size="icon" onClick={() => openSignatureModal(note)} title="Firmar Nota" className={`h-8 w-8 ${note.signature ? 'text-emerald-500 hover:bg-emerald-50' : 'text-blue-500 hover:bg-blue-50'}`}>
                                                     <PenTool className="w-4 h-4" />
                                                 </Button>
+                                                <Button variant="ghost" size="icon" onClick={() => {
+                                                    setPreviewDoc(note);
+                                                    setIsPreviewOpen(true);
+                                                }} title="Vista Previa Rápida" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                                                    <ScanSearch className="w-4 h-4" />
+                                                </Button>
                                                 <Button variant="ghost" size="icon" onClick={() => navigate(`/delivery-notes/${note.id}`)} title="Ver/Editar" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                                                     <Eye className="w-4 h-4" />
                                                 </Button>
@@ -225,6 +236,16 @@ export default function DeliveryNotesPage() {
                                             </p>
                                         </div>
                                         <div className="flex gap-1">
+                                            <button 
+                                                onClick={() => {
+                                                    setPreviewDoc(note);
+                                                    setIsPreviewOpen(true);
+                                                }}
+                                                className="p-2.5 bg-muted rounded-xl text-foreground active:scale-95 transition-transform"
+                                                title="Vista Previa Rápida"
+                                            >
+                                                <ScanSearch size={20} />
+                                            </button>
                                             <button 
                                                 onClick={() => handleDownload(note.id, note.number)}
                                                 className="p-2.5 bg-muted rounded-xl text-foreground active:scale-95 transition-transform"
@@ -303,6 +324,14 @@ export default function DeliveryNotesPage() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            <DocumentPreviewPanel
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                document={previewDoc}
+                title="Vista Previa de Nota de Entrega"
+                type="delivery-note"
+            />
         </div>
     );
 }

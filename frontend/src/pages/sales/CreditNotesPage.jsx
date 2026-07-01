@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { Plus, Search, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { Plus, Search, FileText, CheckCircle, AlertCircle, ScanSearch, Eye } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
+import DocumentPreviewPanel from '../../components/shared/DocumentPreviewPanel';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import {
@@ -25,6 +26,10 @@ const CreditNotesPage = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const { selectedCompany } = useAuth();
     const navigate = useNavigate();
+
+    // Preview State
+    const [previewDoc, setPreviewDoc] = useState(null);
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
     useEffect(() => {
         if (selectedCompany) {
@@ -151,9 +156,21 @@ const CreditNotesPage = () => {
                                             <TableCell>{new Date(note.date).toLocaleDateString()}</TableCell>
                                             <TableCell className="text-right font-bold">${Number(note.total).toFixed(2)}</TableCell>
                                             <TableCell className="text-center">{statusBadge(note.status)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <Button variant="ghost" size="sm" onClick={() => navigate(`/credit-notes/${note.id}`)} className="h-8">
-                                                    Ver Detalle
+                                            <TableCell className="text-right flex justify-end gap-1">
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    onClick={() => {
+                                                        setPreviewDoc(note);
+                                                        setIsPreviewOpen(true);
+                                                    }}
+                                                    title="Vista Previa Rápida"
+                                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                                                >
+                                                    <ScanSearch className="h-4 w-4" />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" onClick={() => navigate(`/credit-notes/${note.id}`)} title="Ver Detalle" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                                    <Eye className="w-4 h-4" />
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
@@ -198,12 +215,45 @@ const CreditNotesPage = () => {
                                             {new Date(note.date).toLocaleDateString()}
                                         </div>
                                     </div>
+                                    <div className="flex gap-2 pt-2 border-t border-border/50">
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="flex-1 h-10 gap-2"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setPreviewDoc(note);
+                                                setIsPreviewOpen(true);
+                                            }}
+                                        >
+                                            <ScanSearch size={16} /> Previo
+                                        </Button>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="flex-1 h-10 gap-2"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                navigate(`/credit-notes/${note.id}`);
+                                            }}
+                                        >
+                                            <Eye size={16} /> Ver
+                                        </Button>
+                                    </div>
                                 </div>
                             ))
                         )}
                     </div>
                 </CardContent>
             </Card>
+
+            <DocumentPreviewPanel
+                isOpen={isPreviewOpen}
+                onClose={() => setIsPreviewOpen(false)}
+                document={previewDoc}
+                title="Vista Previa de Nota de Crédito"
+                type="credit-note"
+            />
         </div>
     );
 };
